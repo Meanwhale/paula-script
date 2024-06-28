@@ -131,13 +131,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\byteautomata.cpp" />
     <ClCompile Include="..\..\src\paula.cpp" />
+    <ClCompile Include="..\..\src\stream.cpp" />
     <ClCompile Include="..\..\src\tree.cpp" />
     <ClCompile Include="paula-vs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\array.h" />
+    <ClInclude Include="..\..\src\byteautomata.h" />
+    <ClInclude Include="..\..\src\defs.h" />
     <ClInclude Include="..\..\src\paula.h" />
+    <ClInclude Include="..\..\src\stream.h" />
     <ClInclude Include="..\..\src\tree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

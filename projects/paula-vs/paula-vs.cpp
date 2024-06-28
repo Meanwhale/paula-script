@@ -2,6 +2,8 @@
 //
 
 #include "paula.h"
+#include "tree.h"
+#include "stream.h"
 
 using namespace paula;
 
@@ -12,7 +14,8 @@ int main()
 	LOG("Hello World!\n");
 	treeTest();
 	Paula p;
-	p.run("test script");
+	CharInputStream input("test script\nsecond line");
+	p.run(input);
 }
 
 void treeTest()

@@ -1,6 +1,6 @@
 #ifndef _ARRAY_H_
 #define _ARRAY_H_
-#include "paula.h"
+#include "defs.h"
 namespace paula
 {
 template <class T> class Array
@@ -9,29 +9,33 @@ protected:
 
 	T*				data;
 	int				size; // size of reserved array; 0 if not allocated (, negative on error?)
+	bool			destructorClear;
 
 
 public:
 
 	explicit Array() :
 		data(0),
-		size(0)
+		size(0),
+		destructorClear(false)
 	{
 	}
 	explicit Array(int s) :
 		data(new T[s]),
-		size(s)
+		size(s),
+		destructorClear(true)
 	{
 	}
 	explicit Array(T * a, int s) :
 		data(a),
-		size(s)
+		size(s),
+		destructorClear(false)
 	{
 	}
 
 	~Array()
 	{
-		clear();
+		if (destructorClear) clear();
 	}
 
 	void clear()
@@ -50,6 +54,7 @@ public:
 		data = new T[s];
 		size = s;
 		for (int i=0; i<s; i++) data[i] = a[i];
+		destructorClear = true;
 	}
 
 	void reset(int s)
@@ -57,6 +62,7 @@ public:
 		delete[] data;
 		data = new T[s];
 		size = s;
+		destructorClear = true;
 	}
 	bool inRange(int i)
 	{

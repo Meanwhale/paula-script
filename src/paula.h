@@ -1,26 +1,30 @@
 #pragma once
 
-#include <iostream>
+#include "defs.h"
+#include "array.h"
+#include "byteautomata.h"
 
 namespace paula
 {
-#define LOG(x) std::cout<<x;
-#define LOGLINE(x) std::cout<<x<<std::endl;
+	class IInputStream;
 
-#define HALT std::exit(0) 
-#define STR(x) #x
-#define ASSERT(x,msg) { if (!(x)) { printf("FAIL: (%s), file %s, line %d.\n", STR(x), __FILE__, __LINE__); assert(false, msg); }}
+	const int BUFFER_SIZE = 1024;
 
-typedef int32_t INT;
+	class Paula
+	{
+	public:
+		Paula();
+		void run(IInputStream&);
 
-void assert(bool, const char *);
+	private:
 
-class Paula
-{
-public:
+		ByteAutomata automata;
+		Array<CHAR> buffer;
+		INT index, lineStart, state, indentation;
 
-	void run(const char *);
-};
-
+		void scan(CHAR);
+		void startExpression();
+		void endExpression();
+		void execute();
+	};
 }
-#include "tree.h"
