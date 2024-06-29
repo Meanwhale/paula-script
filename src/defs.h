@@ -3,6 +3,7 @@
 #include <iostream>
 
 #define LOG(x) std::cout<<x;
+#define LOGCHAR(x) logChar(x);
 #define LOGLINE(x) std::cout<<x<<std::endl;
 #define LOGERROR(x) std::cout<<"\nERROR: "<<x;
 
@@ -11,8 +12,9 @@
 
 // assert: internal error, check: user error
 
-#define ASSERT(x,msg) { if (!(x)) { printf("FAIL: (%s), file %s, line %d.\n", STR(x), __FILE__, __LINE__); assert(false, msg); }}
-#define CHECK(x,msg) { if (!(x)) { LOGERROR(msg); }}
+//#define ASSERT(x,msg) { if (!(x)) { printf("FAIL: (%s), file %s, line %d.\n", STR(x), __FILE__, __LINE__); assert(false, msg); }}
+#define ASSERT(x,msg) { if (!(x)) { std::cout<<"FAIL: ("<<STR(x)<<"), file "<<__FILE__<<", line "<<__LINE__<<std::endl; assert(false, msg); }}
+#define CHECK(x,msg) { if (!(x)) { LOGERROR(msg); ASSERT(false, "CHECK failed"); }}
 #define EXIT(msg) { LOGERROR(msg); }
 
 #define IS_CHAR(c) (c>='a' && c<='z')
@@ -24,4 +26,5 @@ namespace paula
 	typedef uint8_t BYTE;
 
 	void assert(bool, const char *);
+	void logChar(CHAR);
 }

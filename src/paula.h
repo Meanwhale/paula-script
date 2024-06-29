@@ -23,7 +23,7 @@ namespace paula
 		INT index, lineStart, state, indentation;
 
 		void scan(CHAR);
-		void startExpression();
+		void startExpression(CHAR);
 		void endExpression();
 		void execute();
 	};

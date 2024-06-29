@@ -11,6 +11,12 @@ void paula::assert(bool x, const char * msg)
 	}
 }
 
+void paula::logChar(CHAR c)
+{
+	if (c>=32 && c<127) std::cout<<c; // printable
+	else std::cout<<'#'<<static_cast<unsigned int>(static_cast<unsigned char>(c)); // control char: print number
+}
+
 Paula::Paula() : buffer(BUFFER_SIZE), index(0)
 {
 }
@@ -33,28 +39,43 @@ void Paula::run(IInputStream& input)
 	}
 	if (index > lineStart)
 	{
+		index--; // index would else point to the line break
 		endExpression();
 	}
 }
 
 void paula::Paula::scan(CHAR c)
 {
-	LOGLINE("SCAN "<<c<<" state:"<<state<<" ind:"<<indentation);
+	LOG("SCAN ");
+	LOGCHAR(c);
+	LOGLINE(" state:"<<state<<" ind:"<<indentation);
 
 	switch(state)
 	{
 	case STATE_INDENTATION:
 
 		if (c == '\t') indentation ++;
-		else if (IS_CHAR(c)) startExpression();
+		else if (IS_CHAR(c)) startExpression(c);
 		else if (c == '\n') indentation = 0;
-		else CHECK(false, "invalid character at the beginning of a line: '"<<c<<"'");
+		else
+		{
+			LOGERROR("invalid character at the beginning of a line:");
+			LOGCHAR(c);
+			CHECK(false, "");
+		}
 		break;
 
 	case STATE_EXPRESSION:
 
-		if (c == '\n') endExpression();
-		buffer[index++] = c;
+		if (c == '\n')
+		{
+			index--; // index would else point to the line break
+			endExpression();
+		}
+		else
+		{
+			buffer[index++] = c;
+		}
 		break;
 
 	default:
@@ -62,10 +83,11 @@ void paula::Paula::scan(CHAR c)
 	};
 }
 
-void paula::Paula::startExpression()
+void paula::Paula::startExpression(CHAR c)
 {
 	state = STATE_EXPRESSION;
-	index = 0;
+	buffer[0] = c; // set the first character
+	index = 1;
 	lineStart = 0;
 }
 
