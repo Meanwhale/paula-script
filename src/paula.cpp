@@ -1,23 +1,23 @@
 #include "paula.h"
 #include "stream.h"
+
+#ifdef PAULA_EXCEPTIONS
+#include <stdexcept>
+#endif
+
 using namespace paula;
 
-void paula::assert(bool x, const char * msg)
-{
-	if (!x)
+
+
+// PAULA
+
+Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
+	automata(*this),
+	commands
 	{
-		std::cout<<msg<<std::endl;
-		HALT;
+		Command("print"),
+		Command("exit"),
 	}
-}
-
-void paula::logChar(CHAR c)
-{
-	if (c>=32 && c<127) std::cout<<c; // printable
-	else std::cout<<'#'<<static_cast<unsigned int>(static_cast<unsigned char>(c)); // control char: print number
-}
-
-Paula::Paula() : buffer(BUFFER_SIZE), index(0)
 {
 }
 
@@ -25,86 +25,53 @@ const int
 	STATE_INDENTATION = 0,
 	STATE_EXPRESSION = 1;
 
-void Paula::run(IInputStream& input)
+void Paula::run(IInputStream& input, bool handleException)
 {
 	LOGLINE("RUN STRING: ");
-	
-	index = 0;
-	lineStart = 0;
-	state = STATE_INDENTATION;
-	
-	while(!input.end())
+
+#ifdef PAULA_EXCEPTIONS
+	if (handleException)
 	{
-		scan(input.read());
+		try
+		{
+			automata.run(input);
+		}
+		catch (const PaulaException& e)
+		{
+			LOGLINE("Caught an exception: " << e.what()<<" (id="<<e.id<<")");
+		}
 	}
-	if (index > lineStart)
+	else
+#endif
 	{
-		index--; // index would else point to the line break
-		endExpression();
+		automata.run(input);
 	}
 }
 
-void paula::Paula::scan(CHAR c)
+Command * paula::Paula::findCommand(Tree& tree)
 {
-	LOG("SCAN ");
-	LOGCHAR(c);
-	LOGLINE(" state:"<<state<<" ind:"<<indentation);
+	// get the first child (name)
 
-	switch(state)
+	// TODO
+
+	for (INT i=0; i<NUM_COMMANDS; i++)
 	{
-	case STATE_INDENTATION:
-
-		if (c == '\t') indentation ++;
-		else if (IS_CHAR(c)) startExpression(c);
-		else if (c == '\n') indentation = 0;
-		else
-		{
-			LOGERROR("invalid character at the beginning of a line:");
-			LOGCHAR(c);
-			CHECK(false, "");
-		}
-		break;
-
-	case STATE_EXPRESSION:
-
-		if (c == '\n')
-		{
-			index--; // index would else point to the line break
-			endExpression();
-		}
-		else
-		{
-			buffer[index++] = c;
-		}
-		break;
-
-	default:
-		ASSERT(false, "scan: unhandled state");
-	};
+		return &commands[i];
+	}
+	return 0;
 }
 
-void paula::Paula::startExpression(CHAR c)
+void paula::Paula::execute(INT indentation, Tree& tree)
 {
-	state = STATE_EXPRESSION;
-	buffer[0] = c; // set the first character
-	index = 1;
-	lineStart = 0;
-}
+	LOGLINE("execute: indentation="<<indentation);
 
-void paula::Paula::endExpression()
-{
-	ASSERT(index > lineStart, "");
+	auto cmd = findCommand(tree);
+	if (cmd)
+	{
+		cmd->execute(*this, tree);
+	}
 
-	execute();
+	//BufferInputStream input(buffer, lineStart, index);
 
-	state = STATE_INDENTATION;
-}
-
-void paula::Paula::execute()
-{
-	LOGLINE("execute: "<<lineStart<<"..."<<index);
-
-	BufferInputStream input(buffer, lineStart, index);
-
-	automata.run(input);
+	//automata.run(input);
 }

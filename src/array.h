@@ -1,6 +1,6 @@
 #ifndef _ARRAY_H_
 #define _ARRAY_H_
-#include "defs.h"
+#include "utils.h"
 namespace paula
 {
 template <class T> class Array

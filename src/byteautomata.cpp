@@ -1,31 +1,38 @@
-#pragma once
+﻿#pragma once
 #include "byteautomata.h"
+#include "paula.h"
 
 namespace paula
 {
 constexpr INT
-	TREE_ARRAY_SIZE = 10242,
+	TREE_ARRAY_SIZE = 1024,
 	MAX_STATES = 32,
-	MAX_STATES = 32,
-	BA_BUFFER_SIZE = 512,
-	CFG_MAX_NAME_LENGTH = 128;
+	MAX_DEPTH = 32,
+	BA_BUFFER_SIZE = 1024,
+	CFG_MAX_NAME_LENGTH = 128,
+	
+	LINE_UNDEFINED = 1,
+	LINE_ASSIGNMENT = 2,
+	LINE_CALL = 3;
 
 
 const CHAR
 	*letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	*numbers = "1234567890",
-	*whiteSpace = " \t\n\r",
+	*whiteSpace = " \t", // "\n\r",
 	*linebreak = "\n\r",
-	*expressionBreak = ",;",
-	*blockStart = "([{",
-	*blockEnd = ")]}";
+	//*expressionBreak = ",;",
+	*blockStart = "(", // "([{",
+	*blockEnd = ")"; //")]}";
 
 
-ByteAutomata::ByteAutomata() :
+ByteAutomata::ByteAutomata(Paula& p) :
+	paula(p),
 	tree(TREE_ARRAY_SIZE),
 	tr(MAX_STATES * 256),
 	buffer(BA_BUFFER_SIZE),
 	tmp(BA_BUFFER_SIZE),
+	treeStack(MAX_DEPTH),
 	stateNames(MAX_STATES)
 {
 	ok = true;
@@ -33,12 +40,13 @@ ByteAutomata::ByteAutomata() :
 	currentState = 0;
 	stateCounter = 0;
 	actionCounter = 0;
-	for (INT i=0; i<MAX_STATES * 256; i++) tr[i] = (BYTE)0xff;
 	inputByte = 0;
 	index = 0;
 	lineNumber = 0;
 	stayNextStep = false;
 	running = false;
+
+	tr.fill((BYTE)0xff);
 
 	defineTransitions();
 }
@@ -102,25 +110,6 @@ void ByteAutomata::next (BYTE nextState)
 	currentState = nextState;
 	std::cout<<("Next state: ")<<(stateNames[(INT)currentState])<<std::endl;
 }
-bool ByteAutomata::step (BYTE input)
-{
-	currentInput = input;
-	INT index = (currentState * 256) + input;
-	BYTE actionIndex = tr[index];
-	if (actionIndex == 0) return true; // stay on same state and do nothing else
-	if (actionIndex == 0xff||actionIndex < 0)
-	{
-		ok = false;
-		return false; // end
-	}
-	void (* act)(ByteAutomata*) = actions[actionIndex];
-	if (act == 0)
-	{
-		ASSERT(false, "invalid action index");
-	}
-	act(this);
-	return true;
-}
 INT ByteAutomata::getIndex ()
 {
 	return index;
@@ -138,7 +127,7 @@ void ByteAutomata::stay ()
 
 void ByteAutomata::run (IInputStream & input)
 {
-	currentState = stateSpace;
+	currentState = stateStart;
 
 	inputByte = 0;
 	index = 0;
@@ -146,8 +135,9 @@ void ByteAutomata::run (IInputStream & input)
 	stayNextStep = false;
 	running = true;
 
-	treeParent = 0; // points to root node
-	tree.clear();
+	indentation = 0;
+
+	newLine();
 
 	while ((!input.end() || stayNextStep) && running && ok)
 	{
@@ -167,12 +157,42 @@ void ByteAutomata::run (IInputStream & input)
 		LOGLINE(" ]"<<" state: "<<stateNames[(INT)currentState]);
 		running = step(inputByte);
 	}
-	index++;
+	printTreeStack();
+	if (treeStackTop != 0)
+	{
+		CHECK(false, Error::PARENTHESIS);
+	}
+	if (!stayNextStep)
+	{	index++;
 	running = step('\n');
-	//if (!stayNextStep) index++;
+	}
 
 	LOGLINE("end run");
+
 	tree.print();
+}
+bool ByteAutomata::step (BYTE input)
+{
+	currentInput = input;
+	INT index = (currentState * 256) + input;
+	BYTE actionIndex = tr[index];
+	if (actionIndex == 0) return true; // stay on same state and do nothing else
+	if (actionIndex == 0xff||actionIndex < 0)
+	{
+		LOG("unexpected character: ");
+		LOGCHAR(input);
+		LOGLINE("");
+		ASSERT(false, "parse error");
+		ok = false;
+		return false; // end
+	}
+	void (* act)(ByteAutomata*) = actions[actionIndex];
+	if (act == 0)
+	{
+		ASSERT(false, "invalid action index");
+	}
+	act(this);
+	return true;
 }
 void ByteAutomata::printError ()
 {
@@ -191,41 +211,105 @@ void ByteAutomata::printError ()
 	std::cout<<("\"")<<std::endl;
 }
 
-
+//--------------------------------------------------------------
 // state machine code
+//--------------------------------------------------------------
 
-void ByteAutomata::addExpr()
+INT ByteAutomata::currentParent()
 {
-	//MNode* expr = new MNode(currentBlock, NODE_EXPR, "<EXPR>");
-	//(*currentExpr).next = expr;
-	//currentExpr = expr;
-	//currentToken = 0;
+	return treeStack[treeStackTop];
+}
+void ByteAutomata::printTreeStack()
+{
+	if (treeStackTop < 1) LOG(" tree stack, top: "<<treeStackTop);
+	for(INT i=0; i<=treeStackTop; i++)
+	{
+		//LOG(" ["<<treeStack[i]<<":"<<(tree.getTag(treeStack[i]))<<"] ");
+		LOG(tree.treeTypeName(tree.getTag(treeStack[i]))<<" > ");
+	}
+	LOGLINE("");
+}
+void ByteAutomata::pushTree(INT subtreeType)
+{
+	ASSERT(tree.isSubtreeTag(subtreeType),"");
+
+	INT newParent = tree.addSubtree(currentParent(), subtreeType);
+	treeStackTop++;
+	treeStack[treeStackTop] = newParent;
+
+	LOG("pushTree: ");
+	printTreeStack();
+}
+void ByteAutomata::popTree()
+{
+	treeStackTop--;
+
+	LOG("popTree [top="<<treeStackTop<<"]:");
+	printTreeStack();
+}
+void ByteAutomata::startAssignment ()
+{
+	LOGLINE("startAssignment");
+	ASSERT(lineType = LINE_UNDEFINED, "");
+	lineType = LINE_ASSIGNMENT;
+	tree.init(NODE_ASSIGNMENT);
+	treeStack[0] = 0;
+	treeStackTop = 0;
+}
+void ByteAutomata::startFunction ()
+{
+	LOGLINE("startFunction");
+	ASSERT(lineType = LINE_UNDEFINED, "");
+	lineType = LINE_CALL;
+	tree.init(NODE_COMMAND);
+	treeStack[0] = 0;
+	treeStackTop = 0;
 }
 void ByteAutomata::addTextToken()
 {
-	LOG("addTextToken");
-	tree.addText(treeParent, buffer, lastStart, getIndex());
+	addToken(NODE_TEXT);
 }
 void ByteAutomata::addToken(INT tokenType)
 {
-	
-	//std::string data = (*automata).getString(lastStart, (*automata).getIndex() - lastStart);
-	//vrbout()<<("NEW TOKEN: ")<<(data)<<std::endl;
-	//MNode* token = new MNode(currentExpr, tokenType, data);
-	//if (currentToken == 0) (*currentExpr).child = token;
-	//else (*currentToken).next = token;
-	//(*currentExpr).numChildren++;
-	//currentToken = token;
-	//lastStart = (*automata).getIndex();
+	LOGLINE("addToken, type: "<<tokenType);
+	printTreeStack();
+	// if parent is subtree, start a new expr
+
+	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_SUBTREE)
+	{
+		LOGLINE("addToken: new expr");
+		pushTree(NODE_EXPR);
+	}
+
+	// TODO: parse and save number
+
+	tree.addText(currentParent(), buffer, lastStart, getIndex());
 }
-void ByteAutomata::exprBreak()
+void ByteAutomata::comma()
 {
+	printTreeStack();
+	LOGLINE("comma");
+	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_EXPR)
+	{
+		// pop from expr first
+
+		popTree();
+	}
+}
+void ByteAutomata::lineBreak()
+{
+	LOGLINE("lineBreak: execute command");
+	tree.print();
+	paula.execute(indentation, tree);
+	newLine();
 	//if (currentBlock != 0) (*currentBlock).numChildren ++;
 	//lastStart = -1;
 	//addExpr();
 }
-void ByteAutomata::addBlock()
+void ByteAutomata::startBlock()
 {
+	LOGLINE("addBlock");
+	pushTree(NODE_SUBTREE);
 	//BYTE inputByte = (*automata).getInputByte();
 	//INT blockType = 0;
 	//if (inputByte == '(') blockType = NODE_PARENTHESIS;
@@ -246,6 +330,18 @@ void ByteAutomata::addBlock()
 }
 void ByteAutomata::endBlock()
 {
+	LOGLINE("endBlock");
+	tree.print();
+	
+	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_EXPR)
+	{
+		// pop from expr first
+		LOGLINE("pop expr");
+		printTreeStack();
+		popTree();
+	}
+	
+	popTree();
 	//{if (!((currentBlock != 0))) EXIT("unexpected block end")};
 	//BYTE inputByte = (*automata).getInputByte();
 	//// Check that block-end BYTEacter is the right one.
@@ -259,30 +355,66 @@ void ByteAutomata::endBlock()
 	//currentExpr = (*currentToken).parent;
 	//currentBlock = (*currentExpr).parent;
 }
+void ByteAutomata::newLine()
+{
+	indentation = 0;
+	lineType = LINE_UNDEFINED;
+	tree.clear();
+	
+	// tree node to the top of the stack
+	
+	treeStackTop = 0;
+	tree.clear();
+	next(stateStart);
+}
+void ByteAutomata::startExpr(BYTE firstState)
+{
+	LOGLINE("startExpr: indentation="<<indentation);
+	stay();
+	next(firstState);
+}
 void ByteAutomata::defineTransitions()
 {
+	/*
+			states: start (ind.) → name [first name] → [post name]
+				1) assign → read expr
+				2) function → read args ()
+	*/
 
+	stateStart = addState("start");
 	stateSpace = addState("space");
+	stateName = addState("name");
+	stateFirstName = addState("first name");
+	statePostName = addState("post name");
 	stateName = addState("name");
 	stateNumber = addState("number");
 	
-	transition(stateSpace, whiteSpace, 0);
-	transition(stateSpace, letters, [](ByteAutomata*ba)					{ ba->next(ba->stateName); });
-	transition(stateSpace, numbers, [](ByteAutomata*ba)					{ ba->next(ba->stateNumber); });
-	transition(stateSpace, expressionBreak, [](ByteAutomata*ba)			{ ba->exprBreak(); });
-	transition(stateSpace, blockStart, [](ByteAutomata*ba)				{ ba->addBlock();});
-	transition(stateSpace, blockEnd, [](ByteAutomata*ba)				{ ba->endBlock();});
-	
+	transition(stateStart, "\t", [](ByteAutomata*ba)					{ ba->indentation++; });
+	transition(stateStart, letters, [](ByteAutomata*ba)					{ ba->startExpr(ba->stateFirstName); });
+	transition(stateSpace, linebreak, [](ByteAutomata*ba)				{ ba->newLine(); });
+
+	transition(stateFirstName, letters, 0);
+	transition(stateFirstName, whiteSpace, [](ByteAutomata*ba)			{ ba->addTextToken(); ba->next(ba->stateSpace); });
+	transition(stateFirstName, ":", [](ByteAutomata*ba)					{ ba->startAssignment(); ba->addTextToken(); ba->next(ba->stateSpace); });
+	transition(stateFirstName, blockStart, [](ByteAutomata*ba)			{ ba->startFunction(); ba->addTextToken(); ba->stay(); ba->next(ba->stateSpace); });
+
 	transition(stateName, letters, 0);
 	transition(stateName, whiteSpace, [](ByteAutomata*ba)				{ ba->addTextToken(); ba->next(ba->stateSpace); });
 	transition(stateName, blockStart, [](ByteAutomata*ba)				{ ba->addTextToken(); ba->stay(); ba->next(ba->stateSpace); });
 	transition(stateName, blockEnd, [](ByteAutomata*ba)					{ ba->addTextToken(); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateName, expressionBreak, [](ByteAutomata*ba)			{ ba->addTextToken(); ba->exprBreak(); ba->next(ba->stateSpace); });
+	transition(stateName, linebreak, [](ByteAutomata*ba)				{ ba->addTextToken(); ba->lineBreak(); });
+
+	transition(stateSpace, whiteSpace, 0);
+	transition(stateSpace, letters, [](ByteAutomata*ba)					{ ba->next(ba->stateName); });
+	transition(stateSpace, numbers, [](ByteAutomata*ba)					{ ba->next(ba->stateNumber); });
+	transition(stateSpace, linebreak, [](ByteAutomata*ba)				{ ba->lineBreak(); });
+	transition(stateSpace, blockStart, [](ByteAutomata*ba)				{ ba->startBlock();});
+	transition(stateSpace, blockEnd, [](ByteAutomata*ba)				{ ba->endBlock();});
 
 	transition(stateNumber, numbers, 0);
 	transition(stateNumber, whiteSpace, [](ByteAutomata*ba)				{ ba->addToken(NODE_INTEGER); ba->next(ba->stateSpace); });
-	transition(stateNumber, blockStart, [](ByteAutomata*ba)				{ ba->addToken(NODE_INTEGER); ba->stay(); ba->next(ba->stateSpace); });
+	transition(stateNumber, ",", [](ByteAutomata*ba)					{ ba->addToken(NODE_INTEGER); ba->comma(); ba->next(ba->stateSpace); });
 	transition(stateNumber, blockEnd, [](ByteAutomata*ba)				{ ba->addToken(NODE_INTEGER); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateNumber, expressionBreak, [](ByteAutomata*ba)		{ ba->addToken(NODE_INTEGER); ba->exprBreak(); ba->next(ba->stateSpace); });
+	transition(stateNumber, linebreak, [](ByteAutomata*ba)				{ ba->addToken(NODE_INTEGER); ba->lineBreak(); });
 }
 }

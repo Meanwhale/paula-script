@@ -20,7 +20,7 @@ INT paula::Tree::node(INT tag, INT size)
 
 INT paula::Tree::insertNode(INT parentIndex, INT tag, INT size)
 {
-	ASSERT(isStruct(parentIndex), "not a struct");
+	ASSERT(isSubtree(parentIndex), "not a subtree");
 	INT sibling = data[parentIndex + 3]; // save previous first child
 	data[parentIndex + 3] = top; // set the new node as new first child
 
@@ -39,32 +39,6 @@ void paula::Tree::addInt(INT parentIndex, INT value)
 	data[top++] = value;
 }
 
-void bytesToInts(Array<BYTE>& bytes, int bytesOffset, Array<INT>& ints, int intsOffset, int bytesLength)
-{
-	// order: 0x04030201
-
-	// bytes:	b[3] b[2] b[1] b[0] b[7] b[6] b[5] b[4]...
-	// ints:	_________i[0]______|_________i[1]______...
-
-	int shift = 0;
-	ints[intsOffset] = 0;
-	for (int i = 0; i <= bytesLength;)
-	{
-		auto theByte = i == bytesLength ? '\0' : bytes[bytesOffset + i]; // add ending character to the end
-		ints[(i / 4) + intsOffset] += (theByte & 0x000000FF) << shift;
-
-		i++;
-		if (i % 4 == 0)
-		{
-			shift = 0;
-			if (i <= bytesLength)
-			{
-				ints[(i / 4) + intsOffset] = 0;
-			}
-		}
-		else shift += 8;
-	}
-}
 
 void Tree::addText(INT parentIndex, Array<BYTE>& src, INT firstByte, INT lastByte)
 {
@@ -83,24 +57,39 @@ void Tree::addText(INT parentIndex, Array<BYTE>& src, INT firstByte, INT lastByt
 	
 	data[top++] = numBytes;
 
-	bytesToInts(src, firstByte, data, top, numBytes);
+	bytesToInts(src.get(), firstByte, data, top, numBytes);
 
 	top += textDataSize;
 }
 
-INT paula::Tree::addStruct(INT parentIndex)
+INT paula::Tree::addSubtree(INT parentIndex, INT type)
 {
-	INT newStructIndex = insertNode(parentIndex, NODE_STRUCT, 3);
+	ASSERT(isSubtreeTag(type), "");
+	INT newSubtreeIndex = insertNode(parentIndex, type, 3);
 	data[top++] = -1;
-	return newStructIndex;
+	return newSubtreeIndex;
 }
 
-bool paula::Tree::isStruct(INT nodeIndex)
+INT Tree::get(INT index)
 {
-	return nodeTag(data[nodeIndex]) == NODE_STRUCT;
+	return data[index];
+}
+INT Tree::getTag(INT index)
+{
+	return maskNodeTag(data[index]);
 }
 
-int paula::Tree::nodeTag(INT node)
+bool paula::Tree::isSubtree(INT nodeIndex)
+{
+	return isSubtreeTag(maskNodeTag(data[nodeIndex]));
+}
+
+bool paula::Tree::isSubtreeTag(INT tag)
+{
+	return (tag & 0xf0ffffff) == 0;
+}
+
+int paula::Tree::maskNodeTag(INT node)
 {
 	return node & TAG_MASK;
 }
@@ -110,18 +99,34 @@ int paula::Tree::nodeSize(INT node)
 	return node & SIZE_MASK;
 }
 
-void Tree::clear()
+void Tree::init(INT parentType)
 {
 	// add root node
-	data[0] = node(NODE_STRUCT, 1);
+	data[0] = node(parentType, 1);
 	data[1] = -1; // no parent
 	data[2] = -1; // no sibling
 	data[3] = -1; // no child
 	top = 4;
 }
 
-void paula::Tree::print()
+void Tree::clear()
 {
+	data[0] = 0;
+	top = -1;
+}
+
+bool Tree::isClear()
+{
+	return top < 0;
+}
+
+void paula::Tree::printData()
+{
+	if (isClear())
+	{
+		LOGLINE("TREE is CLEAR");
+		return;
+	}
 	for(int n=0; n<top; n++)
 	{
 		LOG(n);
@@ -129,17 +134,38 @@ void paula::Tree::print()
 		LOG(data[n]);
 		LOG("\n");
 	}
+}
+
+void paula::Tree::print()
+{
+	if (isClear())
+	{
+		LOGLINE("TREE is CLEAR");
+		return;
+	}
 
 	printNode(0, 0);
+}
+const char* Tree::treeTypeName(INT tag)
+{
+	switch(tag)
+	{
+	case 0x01000000: return "<subtree>";
+	case 0x02000000: return "<expr>";
+	case 0x03000000: return "<assignment>";
+	case 0x04000000: return "<command>";
+	}
+	return "<! ! ! error ! ! !>";
 }
 void paula::Tree::printNode(INT index, INT depth)
 {
 	if (data[index+2] > 0) printNode(data[index+2], depth);
 	for (int n=0; n<depth; n++) LOG("  ");
 
-	LOG("parent="<<(data[index+1])<<" next="<<(data[index+2])<<" data size="<<nodeSize(data[index]));
+	// LOG("parent="<<(data[index+1])<<" next="<<(data[index+2])<<" data size="<<nodeSize(data[index]));
+	LOG("NODE");
 
-	if (nodeTag(data[index]) == NODE_TEXT)
+	if (maskNodeTag(data[index]) == NODE_TEXT)
 	{
 		LOG(" TEXT: ["<<(data[index+3])<<"] "); // print number of characters
 		auto ptr = (data.get() + index + 4);
@@ -149,10 +175,15 @@ void paula::Tree::printNode(INT index, INT depth)
 	}
 	else
 	{
-		LOGLINE(" data: "<<(data[index+3]));
+		if (isSubtreeTag(maskNodeTag(data[index])))
+		{
+			LOG(treeTypeName(maskNodeTag(data[index])));
+		}
+		LOGLINE("");
+		//LOGLINE(" data: "<<(data[index+3]));
 	}
 
-	if (isStruct(index))
+	if (isSubtree(index))
 	{
 		INT childIndex = data[index+3];
 		if (childIndex > 0) printNode(childIndex, depth+1);

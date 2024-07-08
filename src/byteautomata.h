@@ -7,6 +7,8 @@
 #include <iostream>
 namespace paula
 {
+	class Paula;
+
 	class ByteAutomata
 	{
 	public:
@@ -25,19 +27,25 @@ namespace paula
 		bool running = false;
 		Array<BYTE> buffer;
 		Array<BYTE> tmp;
+		Array<INT> treeStack;
 		Array<const CHAR *> stateNames;
 		Tree tree;
 
 		// declarations
 		
-		ByteAutomata();
+		ByteAutomata(Paula&);
 		BYTE addState(const CHAR *);
 		void transition(BYTE state, const CHAR *, void (* action)(ByteAutomata*));
 		void fillTransition(BYTE state, void (* action)(ByteAutomata*));
 		BYTE addAction(void (* action)(ByteAutomata*));
+		void startAssignment();
+		void startFunction();
 		void next(BYTE nextState);
 		void print();
 		void printError();
+        void printTreeStack();
+        void pushTree(INT parent);
+		void popTree();
 		//std::string getString(INT,INT);
 		bool step(BYTE input);
 		INT getIndex();
@@ -48,17 +56,20 @@ namespace paula
 		// state machine functions
 		
 		void stay();
-		void addExpr();
 		void addToken(INT tokenType);
 		void addTextToken();
-		void exprBreak();
-		void addBlock();
+		void lineBreak();
+		void comma();
+		void startBlock();
 		void endBlock();
+		void newLine();
+		void startExpr(BYTE firstState);
 		void defineTransitions();
 
 	private:
-		INT treeParent;
-		BYTE stateSpace, stateName, stateNumber;
-		INT lastStart;
+		INT currentParent();
+		Paula& paula;
+		INT lastStart, indentation, lineType, treeStackTop;
+		BYTE stateStart, stateSpace, stateName, stateFirstName, statePostName, stateNumber;
 	};
 }
