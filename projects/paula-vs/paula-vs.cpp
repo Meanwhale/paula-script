@@ -9,20 +9,44 @@
 using namespace paula;
 
 void treeTest();
+void stackTest();
 
 int main()
 {
 	LOG("Hello World!\n");
 	
-	parenthesisTest();
+	//iteratorTest();
+	//parenthesisTest();
+	
+	//stackTest();
 
 	//treeTest();
-	Paula p;
 	//CharInputStream input("f(5,5)");
 	//CharInputStream input("x:5\nx:f(5)\nfoo(12, (34, 56))");
-	CharInputStream input("foo(12 34, (34, 56)");
 	//CharInputStream input("x:5\nx:f(5)");
-	p.run(input, true);
+	
+	CharInputStream input("print(123456, foo(3, 4))");
+	Paula::one.run(input, false);
+}
+
+void stackTest()
+{
+	Tree stack(1024);
+	stack.init(NODE_STACK);
+	stack.pushInt(0, 123);
+	LOGLINE("stack size: "<<stack.stackSize(0));
+	stack.pushInt(0, 456);
+	LOGLINE("stack size: "<<stack.stackSize(0));
+	stack.print();
+	stack.pop(0);
+	stack.print();
+	stack.pushInt(0, 789);
+	stack.print();
+	stack.pop(0);
+	stack.print();
+	stack.pop(0);
+	LOGLINE("stack size: "<<stack.stackSize(0));
+	LOGLINE("stack empty? "<<stack.stackEmpty(0));
 }
 
 void treeTest()

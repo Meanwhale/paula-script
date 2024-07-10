@@ -12,6 +12,13 @@ namespace paula
 	class ByteAutomata
 	{
 	public:
+
+		ByteAutomata(Paula&);
+		~ByteAutomata();
+		void run(IInputStream & input);
+
+	private:
+
 		bool ok;
 		Array<BYTE> tr;
 		BYTE currentInput;
@@ -33,13 +40,16 @@ namespace paula
 
 		// declarations
 		
-		ByteAutomata(Paula&);
 		BYTE addState(const CHAR *);
 		void transition(BYTE state, const CHAR *, void (* action)(ByteAutomata*));
 		void fillTransition(BYTE state, void (* action)(ByteAutomata*));
 		BYTE addAction(void (* action)(ByteAutomata*));
 		void startAssignment();
 		void startFunction();
+		INT parseInt(Array<BYTE>& src, INT firstByte, INT lastByte);
+		void addIntegerToken();
+		void addNameToken();
+		void prepareAddToken();
 		void next(BYTE nextState);
 		void print();
 		void printError();
@@ -49,14 +59,11 @@ namespace paula
 		//std::string getString(INT,INT);
 		bool step(BYTE input);
 		INT getIndex();
-		BYTE getInputByte();
-		void run(IInputStream & input);
-		~ByteAutomata();
 
 		// state machine functions
 		
 		void stay();
-		void addToken(INT tokenType);
+		void addLiteralToken(INT tokenType);
 		void addTextToken();
 		void lineBreak();
 		void comma();
@@ -66,10 +73,13 @@ namespace paula
 		void startExpr(BYTE firstState);
 		void defineTransitions();
 
-	private:
 		INT currentParent();
 		Paula& paula;
 		INT lastStart, indentation, lineType, treeStackTop;
 		BYTE stateStart, stateSpace, stateName, stateFirstName, statePostName, stateNumber;
+		
+		// hide
+		ByteAutomata() = delete;
+		ByteAutomata& operator=(const ByteAutomata&) = delete;
 	};
 }

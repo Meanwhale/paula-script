@@ -7,7 +7,7 @@
 
 // UTILS
 
-void paula::assert(bool x, const char * msg, Error e)
+void paula::assert(bool x, const char * msg, const Error& e)
 {
 	if (!x)
 	{
@@ -20,12 +20,16 @@ void paula::assert(bool x, const char * msg, Error e)
 	}
 }
 
-void paula::logChar(CHAR c)
+void paula::logChar(CHAR c, std::ostream& output)
 {
-	if (c>=32 && c<127) std::cout<<c; // printable
-	else std::cout<<'#'<<static_cast<unsigned int>(static_cast<unsigned char>(c)); // control char: print number
+	if (c>=32 && c<127) output<<c; // printable
+	else output<<'#'<<static_cast<unsigned int>(static_cast<unsigned char>(c)); // control char: print number
 }
 
+paula::INT paula::textDataSize(INT numBytes)
+{
+	return (numBytes / 4) + 2; // size int + ints with 4 char in one int and \0 at the end
+}
 void paula::bytesToInts(const unsigned char * bytes, int bytesOffset, Array<INT>& ints, int intsOffset, int bytesLength)
 {
 	// order: 0x04030201

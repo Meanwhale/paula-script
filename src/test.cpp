@@ -10,8 +10,8 @@ void paula::runErrorCheck(void(*test)(), Error expectedError)
 	}
 	catch (const PaulaException& e)
 	{
-		LOGLINE("test: caught an exception: " << e.what()<<" (id="<<e.id<<")");
-		if (e.id != expectedError)
+		LOGLINE("test: caught an exception: " << e.error.name<<" (id="<<e.error.id<<")");
+		if (e.error.id != expectedError.id)
 		{
 			ASSERT(false, "error don't match");
 		}
@@ -21,8 +21,12 @@ void paula::runErrorCheck(void(*test)(), Error expectedError)
 void paula::parenthesisTest()
 {
 	runErrorCheck([]() {
-		Paula p;
 		CharInputStream input("foo(12, (34, 56)");
-		p.run(input, false);
-	}, Error::PARENTHESIS);
+		Paula::one.run(input, false);
+	}, PARENTHESIS);
+}
+
+void paula::iteratorTest()
+{
+	// TODO
 }

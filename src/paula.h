@@ -10,24 +10,32 @@ namespace paula
 	class IInputStream;
 	class Tree;
 
-	const int BUFFER_SIZE = 1024;
 	const int NUM_COMMANDS = 2;
 
 	class Paula
 	{
 	public:
-		Paula();
+		static Paula one; // the one Paula object
 		void run(IInputStream&, bool handleException);
+		void readCommandArgs(Tree& tree);
+		void pushArgList(TreeIterator&);
 		void execute(INT indentation, Tree& tree);
 
 	private:
 
+		Paula();
+
 		ByteAutomata automata;
-		//Array<CHAR> buffer;
-		//INT index, lineStart, state, indentation;
+
+		Tree args;
+
+		ArgDef commandArgDef, functionArgDef, intArgDef;
 
 		Command commands[NUM_COMMANDS];
 
-		Command* findCommand(Tree& tree);
+		Command* findCommand(TreeIterator& it);
+
+		// hide
+		Paula& operator=(const Paula&) = delete;
 	};
 }

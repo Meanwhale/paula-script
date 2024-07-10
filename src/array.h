@@ -84,20 +84,18 @@ public:
 	}
 	T & get(int i)
 	{
-		ASSERT(inRange(i), "out of range");
+		CHECK(inRange(i), ARRAY_OUT_OF_RANGE);
 		return data[i];
 	}
 	T & operator[] (int i)
 	{
-		ASSERT(inRange(i), "out of range");
+		CHECK(inRange(i), ARRAY_OUT_OF_RANGE);
 		return get(i);
 	}
 	int length()
 	{
 		return size;
 	}
-
-private:
 };
 }
 #endif // _ARRAY_H_
