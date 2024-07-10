@@ -16,6 +16,8 @@ namespace paula
 	{
 	public:
 		static Paula one; // the one Paula object
+		static const POut& log; // log output
+
 		void run(IInputStream&, bool handleException);
 		void readCommandArgs(Tree& tree);
 		void pushArgList(TreeIterator&);

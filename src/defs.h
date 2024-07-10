@@ -58,6 +58,8 @@ namespace paula
 	ERROR_TYPE (ITERATOR_WRONG_DATA_TYPE);
 }
 
+
+
 #ifdef PAULA_EXCEPTIONS
 #include <exception>
 namespace paula

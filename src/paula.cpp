@@ -28,6 +28,8 @@ void fooAction (Paula&p,Tree&args)
 }
 
 Paula Paula::one = Paula();
+STDOut stdOut = STDOut();
+const POut& Paula::log = stdOut;
 
 Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	automata(*this),
@@ -41,7 +43,8 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	functionArgDef(2),
 	intArgDef(1)
 {
-	LOGLINE("---------------- NEW PAULA ----------------")
+	LOGLINE("---------------- NEW PAULA ----------------");
+	log.print("toimii!").endl();
 
 	args.init(NODE_STACK);
 

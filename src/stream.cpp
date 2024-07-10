@@ -1,4 +1,5 @@
 #include "stream.h"
+#include <iostream>
 
 using namespace paula;
 
@@ -41,4 +42,58 @@ bool paula::BufferInputStream::end()
 
 void paula::BufferInputStream::close()
 {
+}
+
+const POut& paula::POut::print(int x) const
+{
+	return print((long)x);
+}
+
+const POut& paula::POut::print(float x) const
+{
+	return print((double)x);
+}
+
+const POut& paula::POut::print(bool x) const
+{
+	return print(x ? "true" : "false");
+}
+
+const POut& paula::POut::println(const char* x) const
+{
+	return print(x).endl();
+}
+
+const POut& paula::POut::endl() const
+{
+	return print('\n');
+}
+
+void paula::STDOut::close()
+{
+}
+
+bool paula::STDOut::closed()
+{
+	return false;
+}
+
+const POut& paula::STDOut::print(char x) const
+{
+	std::cout<<x; return *this;
+}
+
+const POut& paula::STDOut::print(const char* x) const
+{
+	std::cout<<x; return *this;
+}
+
+const POut& paula::STDOut::print(long x) const
+{
+	std::cout<<x; return *this;
+}
+
+const POut& paula::STDOut::print(double x) const
+{
+	std::cout<<x; return *this;
 }
