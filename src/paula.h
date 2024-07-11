@@ -11,16 +11,19 @@ namespace paula
 	class Tree;
 
 	const int NUM_COMMANDS = 2;
+	extern const POut& log; // log output
+	extern const POut& err; // error output
+	extern const POut& user; // print output
 
 	class Paula
 	{
 	public:
 		static Paula one; // the one Paula object
-		static const POut& log; // log output
 
 		void run(IInputStream&, bool handleException);
 		void readCommandArgs(Tree& tree);
 		void pushArgList(TreeIterator&);
+		void pushSingleValue(TreeIterator& _it);
 		void pushOneArg(TreeIterator&);
 		INT operate(CHAR op, INT a, INT b);
 		void pushOneSubtreeArg(TreeIterator& _it);
@@ -32,9 +35,9 @@ namespace paula
 
 		ByteAutomata automata;
 
-		Tree args;
+		Tree args, vars;
 
-		ArgDef commandArgDef, intArgDef, IntIntOperatorArgDef, IntSubtreeOperatorArgDef;
+		ArgDef commandArgDef, singleArgDef, OperatorArgDef;
 
 		Command commands[NUM_COMMANDS];
 

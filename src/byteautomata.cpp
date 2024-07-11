@@ -233,8 +233,8 @@ void ByteAutomata::printTreeStack()
 	if (treeStackTop < 1) LOG(" tree stack, top: "<<treeStackTop);
 	for(INT i=0; i<=treeStackTop; i++)
 	{
-		//LOG(" ["<<treeStack[i]<<":"<<(tree.getTag(treeStack[i]))<<"] ");
-		LOG(tree.treeTypeName(tree.getType(treeStack[i]))<<" > ");
+		//LOOOG.print(" ["<<treeStack[i]<<":"<<(tree.getTag(treeStack[i]))<<"] ");
+		LOOOG.print(tree.treeTypeName(tree.getType(treeStack[i]))).print(" > ");
 	}
 	LOGLINE("");
 }
@@ -401,7 +401,7 @@ void ByteAutomata::defineTransitions()
 	
 	transition(stateStart, "\t", [](ByteAutomata*ba)					{ ba->indentation++; });
 	transition(stateStart, letters, [](ByteAutomata*ba)					{ ba->startExpr(ba->stateFirstName); });
-	transition(stateSpace, linebreak, [](ByteAutomata*ba)				{ ba->newLine(); });
+	transition(stateStart, linebreak, [](ByteAutomata*ba)				{ ba->newLine(); });
 
 	transition(stateFirstName, letters, 0);
 	transition(stateFirstName, whiteSpace, [](ByteAutomata*ba)			{ ba->addNameToken(); ba->next(ba->stateSpace); });
@@ -410,7 +410,7 @@ void ByteAutomata::defineTransitions()
 
 	transition(stateName, letters, 0);
 	transition(stateName, whiteSpace, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->next(ba->stateSpace); });
-	transition(stateNumber, operators, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
+	transition(stateName, operators, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
 	transition(stateName, blockStart, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
 	transition(stateName, blockEnd, [](ByteAutomata*ba)					{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
 	transition(stateName, linebreak, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->lineBreak(); });

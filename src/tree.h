@@ -14,8 +14,12 @@ namespace paula
 		NODE_COMMAND			= 0x04000000,
 
 		NODE_STACK				= 0x11000000,
+		NODE_MAP				= 0x12000000, // like dictionary. list of KV nodes
+		NODE_KV					= 0x13000000, // key-value pairs for map
 
 		// data types
+
+		NODE_ANY_DATA			= 0x20000000,
 
 		NODE_NAME				= 0x21000000, // variable, constant, or function name
 		NODE_INTEGER			= 0x22000000, // e.g. 123

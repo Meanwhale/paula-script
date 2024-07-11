@@ -8,6 +8,7 @@
 using namespace paula;
 
 constexpr INT ARG_STACK_SIZE = 1024;
+constexpr INT VARS_SIZE = 1024;
 
 // PAULA
 
@@ -28,21 +29,27 @@ void fooAction (Paula&p,Tree&args)
 }
 
 Paula Paula::one = Paula();
+
+// outputs
 STDOut stdOut = STDOut();
-const POut& Paula::log = stdOut;
+STDErr stdErr = STDErr();
+STDOut stdPrint = STDOut();
+const POut& paula::log = stdOut;
+const POut& paula::err = stdErr;
+const POut& paula::user = stdPrint;
 
 Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	automata(*this),
 	args(ARG_STACK_SIZE),
+	vars(VARS_SIZE),
 	commands
 	{
 		Command("print", printAction),
 		Command("foo", fooAction),
 	},
 	commandArgDef(2),
-	intArgDef(1),
-	IntIntOperatorArgDef(3),
-	IntSubtreeOperatorArgDef(3)
+	singleArgDef(1),
+	OperatorArgDef(3)
 {
 	LOGLINE("---------------- NEW PAULA ----------------");
 	log.print("toimii!").endl();
@@ -52,15 +59,11 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	commandArgDef.types[0] = NODE_NAME;
 	commandArgDef.types[1] = NODE_SUBTREE;
 
-	intArgDef.types[0] = NODE_INTEGER;
+	singleArgDef.types[0] = NODE_ANY_DATA;
 
-	IntIntOperatorArgDef.types[0] = NODE_INTEGER;
-	IntIntOperatorArgDef.types[1] = NODE_OPERATOR;
-	IntIntOperatorArgDef.types[2] = NODE_INTEGER;
-
-	IntSubtreeOperatorArgDef.types[0] = NODE_INTEGER;
-	IntSubtreeOperatorArgDef.types[1] = NODE_OPERATOR;
-	IntSubtreeOperatorArgDef.types[2] = NODE_SUBTREE;
+	OperatorArgDef.types[0] = NODE_ANY_DATA;
+	OperatorArgDef.types[1] = NODE_OPERATOR;
+	OperatorArgDef.types[2] = NODE_ANY_DATA;
 }
 
 const int
@@ -156,16 +159,41 @@ void paula::Paula::pushArgList(TreeIterator& _it)
 	while(it.next());
 }
 
+void paula::Paula::pushSingleValue(TreeIterator&_it)
+{
+	// push a value in expression,
+	// eg. "1" in "f(1)" or "2" in "f(2+3)" or "(4+5)" in "f((4+5)+6)"
+
+	LOGLINE("push single value");
+	INT stackSizeBefore = args.stackSize(0);
+	TreeIterator it(_it);
+
+	if (it.isType(NODE_INTEGER))
+	{
+		args.pushData(0,it);
+	}
+	else if(it.isType(NODE_SUBTREE))
+	{
+		pushOneSubtreeArg(it);
+	}
+	else
+	{
+		LOGLINE("unhandled value node: "<<it.type());
+	}
+
+	INT stackSizeAfter = args.stackSize(0);
+	CHECK(stackSizeBefore + 1 == stackSizeAfter, VALUE_MISSING);
+}
+
 void paula::Paula::pushOneArg(TreeIterator&_it)
 {
 	INT stackSizeBefore = args.stackSize(0);
 
 	TreeIterator it(_it);
 
-	if (intArgDef.match(it))
+	if (singleArgDef.match(it))
 	{
-		LOGLINE("push integer");
-		args.pushData(0,it);
+		pushSingleValue(it);
 	}
 	else if (commandArgDef.match(it))
 	{
@@ -184,30 +212,42 @@ void paula::Paula::pushOneArg(TreeIterator&_it)
 			CHECK(false, UNKNOWN_COMMAND);
 		}
 	}
-	else if (IntIntOperatorArgDef.match(it))
+	else if (OperatorArgDef.match(it))
 	{
-		LOGLINE("int [op] int operator");
-		INT a = it.getInt();
+		LOGLINE("int [op] int operator"); // eg. "a + b"
+		
+		// get the first value
+
+		pushSingleValue(it);
+		INT a = args.popInt(0);
+
+		// read the operator
+
 		it.next();
 		ASSERT(it.isType(NODE_OPERATOR),"");
 		CHAR op = it.getOp();
+
+		// get the second value
+
 		it.next();
-		INT b = it.getInt();
+		pushSingleValue(it);
+		INT b = args.popInt(0);
+
 		LOGLINE("a="<<a<<" b="<<b);
 		args.pushInt(0, operate(op, a, b));
 	}
-	else if (IntSubtreeOperatorArgDef.match(it))
-	{
-		LOGLINE("int [op] subtree operator");
-		INT a = it.getInt();
-		it.next();
-		ASSERT(it.isType(NODE_OPERATOR),"");
-		it.next();
-		pushOneSubtreeArg(it);
-		INT b = args.popInt(0);
-		LOGLINE("a="<<a<<" b="<<b);
-		args.pushInt(0, a + b);
-	}
+	//else if (IntSubtreeOperatorArgDef.match(it))
+	//{
+	//	LOGLINE("int [op] subtree operator");
+	//	INT a = it.getInt();
+	//	it.next();
+	//	ASSERT(it.isType(NODE_OPERATOR),"");
+	//	it.next();
+	//	pushOneSubtreeArg(it);
+	//	INT b = args.popInt(0);
+	//	LOGLINE("a="<<a<<" b="<<b);
+	//	args.pushInt(0, a + b);
+	//}
 	else
 	{
 		LOGLINE("expression type not found:");
@@ -216,7 +256,7 @@ void paula::Paula::pushOneArg(TreeIterator&_it)
 		CHECK(false, UNKNOWN_EXPRESSION);
 	}
 	INT stackSizeAfter = args.stackSize(0);
-	CHECK(stackSizeBefore + 1 == stackSizeAfter, FUNCTION_DID_NOT_RETURN_A_VALUE);
+	CHECK(stackSizeBefore + 1 == stackSizeAfter, VALUE_MISSING);
 }
 INT paula::Paula::operate(CHAR op, INT a, INT b)
 {

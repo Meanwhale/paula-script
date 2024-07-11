@@ -37,7 +37,7 @@ bool paula::ArgDef::match(TreeIterator& _it)
 	do
 	{
 		if (i >= types.length()) return false;
-		if (!it.isType(types[i])) return false;
+		if (!(types[i] == NODE_ANY_DATA) && !it.isType(types[i])) return false;
 		i++;
 	}
 	while(it.next());

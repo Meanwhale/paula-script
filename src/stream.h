@@ -50,6 +50,17 @@ namespace paula
 		const POut& print(long) const override;
 		const POut& print(double) const override;
 	};
+	class STDErr : public POut
+	{
+	public:
+		// Inherited via POut
+		void close() override;
+		bool closed() override;
+		const POut& print(char) const override;
+		const POut& print(const char*) const override;
+		const POut& print(long) const override;
+		const POut& print(double) const override;
+	};
 
 	// INPUT
 

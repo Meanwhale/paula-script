@@ -69,31 +69,21 @@ const POut& paula::POut::endl() const
 	return print('\n');
 }
 
-void paula::STDOut::close()
-{
-}
+// sdt::cout
 
-bool paula::STDOut::closed()
-{
-	return false;
-}
+void paula::STDOut::close() { }
+bool paula::STDOut::closed() { return false; }
+const POut& paula::STDOut::print(char x) const { std::cout<<x; return *this; }
+const POut& paula::STDOut::print(const char* x) const { std::cout<<x; return *this; }
+const POut& paula::STDOut::print(long x) const { std::cout<<x; return *this; }
+const POut& paula::STDOut::print(double x) const { std::cout<<x; return *this; }
 
-const POut& paula::STDOut::print(char x) const
-{
-	std::cout<<x; return *this;
-}
 
-const POut& paula::STDOut::print(const char* x) const
-{
-	std::cout<<x; return *this;
-}
+// sdt::cerr
 
-const POut& paula::STDOut::print(long x) const
-{
-	std::cout<<x; return *this;
-}
-
-const POut& paula::STDOut::print(double x) const
-{
-	std::cout<<x; return *this;
-}
+void paula::STDErr::close() { }
+bool paula::STDErr::closed() { return false; }
+const POut& paula::STDErr::print(char x) const { std::cerr<<x; return *this; }
+const POut& paula::STDErr::print(const char* x) const { std::cerr<<x; return *this; }
+const POut& paula::STDErr::print(long x) const { std::cerr<<x; return *this; }
+const POut& paula::STDErr::print(double x) const { std::cerr<<x; return *this; }

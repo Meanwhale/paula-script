@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#define LOOOG paula::log
 
 #define LOG(x) std::cout<<x;
 #define LOGCHAR(x) logChar(x, std::cout);
@@ -47,7 +48,7 @@ namespace paula
 	ERROR_TYPE (SYNTAX_ERROR);
 	ERROR_TYPE (UNKNOWN_COMMAND);
 	ERROR_TYPE (UNKNOWN_EXPRESSION);
-	ERROR_TYPE (FUNCTION_DID_NOT_RETURN_A_VALUE);
+	ERROR_TYPE (VALUE_MISSING);
 	ERROR_TYPE (TYPE_MISMATCH);
 	ERROR_TYPE (INVALID_OPERATOR);
 
