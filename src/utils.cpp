@@ -20,11 +20,6 @@ void paula::assert(bool x, const char * msg, const Error& e)
 	}
 }
 
-void paula::logChar(CHAR c, std::ostream& output)
-{
-	if (c>=32 && c<127) output<<c; // printable
-	else output<<'#'<<charToInt(c); // control char: print number
-}
 
 paula::INT paula::charToInt(CHAR c)
 {

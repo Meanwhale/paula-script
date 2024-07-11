@@ -14,15 +14,15 @@ constexpr INT VARS_SIZE = 1024;
 
 void printAction (Paula&,Tree&args)
 {
-	LOGLINE("printAction");
+	LOG.println("printAction");
 	TreeIterator it(args);
-	if (!it.hasChild()) { LOGLINE("<empty>"); return; }
+	if (!it.hasChild()) { LOG.println("<empty>"); return; }
 	args.printCompact(it);
-	LOGLINE("");
+	LOG.println("");
 }
 void fooAction (Paula&p,Tree&args)
 {
-	LOGLINE("fooAction");
+	LOG.println("fooAction");
 	args.pop(0);
 	args.pop(0);
 	args.pushInt(0,555);
@@ -51,7 +51,7 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	singleArgDef(1),
 	OperatorArgDef(3)
 {
-	LOGLINE("---------------- NEW PAULA ----------------");
+	LOG.println("---------------- NEW PAULA ----------------");
 	log.print("toimii!").endl();
 
 	args.init(NODE_STACK);
@@ -72,7 +72,7 @@ const int
 
 void Paula::run(IInputStream& input, bool handleException)
 {
-	LOGLINE("RUN STRING: ");
+	LOG.println("RUN STRING: ");
 
 #ifdef PAULA_EXCEPTIONS
 	if (handleException)
@@ -83,7 +83,13 @@ void Paula::run(IInputStream& input, bool handleException)
 		}
 		catch (const PaulaException& e)
 		{
-			LOGLINE("Caught an exception: " << e.error.name<<" (id="<<e.error.id<<")");
+			ERR
+				.print("Caught an exception: ")
+				.print(e.error.name)
+				.print(" (id=")
+				.print(e.error.id)
+				.print(")")
+				.endl();
 		}
 	}
 	else
@@ -98,11 +104,11 @@ void paula::Paula::execute(INT indentation, Tree& tree)
 {
 	if (tree.getType(0) == NODE_ASSIGNMENT)
 	{
-		LOGLINE("execute ASSIGNMENT: indentation="<<indentation);
+		LOG.print("execute ASSIGNMENT: indentation=").print(indentation).endl();
 	}
 	else if (tree.getType(0) == NODE_COMMAND)
 	{
-		LOGLINE("execute COMMAND: indentation="<<indentation);
+		LOG.print("execute COMMAND: indentation=").print(indentation).endl();
 
 		CHECK(commandArgDef.match(tree), SYNTAX_ERROR); // check that it's <name> <subtree>, eg. "foo(1)"
 
@@ -128,7 +134,7 @@ void paula::Paula::execute(INT indentation, Tree& tree)
 
 void Paula::readCommandArgs(Tree& tree)
 {
-	LOGLINE("readCommandArgs");
+	LOG.println("readCommandArgs");
 	args.init(NODE_STACK);
 	TreeIterator it(tree);
 	it.toChild();
@@ -164,7 +170,7 @@ void paula::Paula::pushSingleValue(TreeIterator&_it)
 	// push a value in expression,
 	// eg. "1" in "f(1)" or "2" in "f(2+3)" or "(4+5)" in "f((4+5)+6)"
 
-	LOGLINE("push single value");
+	LOG.println("push single value");
 	INT stackSizeBefore = args.stackSize(0);
 	TreeIterator it(_it);
 
@@ -178,7 +184,7 @@ void paula::Paula::pushSingleValue(TreeIterator&_it)
 	}
 	else
 	{
-		LOGLINE("unhandled value node: "<<it.type());
+		LOG.print("unhandled value node: ").print(it.type()).endl();
 	}
 
 	INT stackSizeAfter = args.stackSize(0);
@@ -197,7 +203,7 @@ void paula::Paula::pushOneArg(TreeIterator&_it)
 	}
 	else if (commandArgDef.match(it))
 	{
-		LOGLINE("push function return value");
+		LOG.println("push function return value");
 		auto cmd = findCommand(it);
 		if (cmd)
 		{
@@ -214,7 +220,7 @@ void paula::Paula::pushOneArg(TreeIterator&_it)
 	}
 	else if (OperatorArgDef.match(it))
 	{
-		LOGLINE("int [op] int operator"); // eg. "a + b"
+		LOG.println("int [op] int operator"); // eg. "a + b"
 		
 		// get the first value
 
@@ -233,24 +239,24 @@ void paula::Paula::pushOneArg(TreeIterator&_it)
 		pushSingleValue(it);
 		INT b = args.popInt(0);
 
-		LOGLINE("a="<<a<<" b="<<b);
+		LOG.print("a=").print(a).print(" b=").print(b).endl();
 		args.pushInt(0, operate(op, a, b));
 	}
 	//else if (IntSubtreeOperatorArgDef.match(it))
 	//{
-	//	LOGLINE("int [op] subtree operator");
+	//	LOG.println("int [op] subtree operator");
 	//	INT a = it.getInt();
 	//	it.next();
 	//	ASSERT(it.isType(NODE_OPERATOR),"");
 	//	it.next();
 	//	pushOneSubtreeArg(it);
 	//	INT b = args.popInt(0);
-	//	LOGLINE("a="<<a<<" b="<<b);
+	//	LOG.println("a="<<a<<" b="<<b);
 	//	args.pushInt(0, a + b);
 	//}
 	else
 	{
-		LOGLINE("expression type not found:");
+		LOG.println("expression type not found:");
 		it.toParent();
 		it.printTree(true);
 		CHECK(false, UNKNOWN_EXPRESSION);

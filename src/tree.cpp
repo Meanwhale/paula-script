@@ -1,4 +1,5 @@
 #include "tree.h"
+#include "stream.h"
 
 namespace paula
 {
@@ -110,7 +111,7 @@ void Tree::pushData(INT stackIndex, TreeIterator& src)
 	// copy actual data
 	for(INT i=3; i<=size; i++)
 	{
-		LOGLINE("copy value: "<<src.tree.data[src.index + i]);
+		LOG.print("copy value: ").print(src.tree.data[src.index + i]).endl();
 		data[top++] = src.tree.data[src.index + i];
 	}
 }
@@ -222,15 +223,15 @@ void paula::Tree::printData()
 {
 	if (isClear())
 	{
-		LOGLINE("TREE is CLEAR");
+		LOG.println("TREE is CLEAR");
 		return;
 	}
 	for(int n=0; n<top; n++)
 	{
-		LOG(n);
-		LOG(": ");
-		LOG(data[n]);
-		LOG("\n");
+		LOG.print(n);
+		LOG.print(": ");
+		LOG.print(data[n]);
+		LOG.print("\n");
 	}
 }
 
@@ -238,12 +239,12 @@ void paula::Tree::print()
 {
 	if (isClear())
 	{
-		LOGLINE("TREE is CLEAR");
+		LOG.println("TREE is CLEAR");
 		return;
 	}
 	TreeIterator it(*this);
 	it.print(false);
-	LOGLINE("");
+	LOG.println("");
 	printSubtree(it);
 	//printNode(0, 0);
 
@@ -256,9 +257,9 @@ void Tree::printSubtree(TreeIterator& it)
 
 	do
 	{
-		for (int n=0; n<it.getDepth(); n++) LOG("  ");
+		for (int n=0; n<it.getDepth(); n++) LOG.print("  ");
 		it.print(false);
-		LOGLINE("");
+		LOG.println("");
 
 		if (it.hasChild())
 		{
@@ -273,14 +274,14 @@ void Tree::printCompact(TreeIterator&it)
 {
 	if (!it.hasChild()) return;
 	it.toChild();
-	LOG("(");
+	LOG.print("(");
 	do
 	{
 		it.print(true);
 		if (it.hasChild()) printCompact(it);
-		if (it.hasNext()) LOG(" ");
+		if (it.hasNext()) LOG.print(" ");
 	} while(it.next());
-	LOG(")");
+	LOG.print(")");
 	it.toParent();
 }
 const char* Tree::treeTypeName(INT tag)
@@ -299,27 +300,27 @@ const char* Tree::treeTypeName(INT tag)
 	// tarviiko enää?
 
 	if (data[index+2] > 0) printNode(data[index+2], depth);
-	for (int n=0; n<depth; n++) LOG("  ");
+	for (int n=0; n<depth; n++) LOG.print("  ");
 
-	// LOG("parent="<<(data[index+1])<<" next="<<(data[index+2])<<" data size="<<nodeSize(data[index]));
-	LOG("NODE");
+	// LOG.print("parent="<<(data[index+1])<<" next="<<(data[index+2])<<" data size="<<nodeSize(data[index]));
+	LOG.print("NODE");
 
 	if (maskNodeTag(data[index]) == NODE_TEXT)
 	{
-		LOG(" TEXT: ["<<(data[index+3])<<"] "); // print number of characters
+		LOG.print(" TEXT: ["<<(data[index+3])<<"] "); // print number of characters
 		auto ptr = (data.get() + index + 4);
 		auto chptr = (char *)ptr;
-		LOG(chptr);
-		LOGLINE("");
+		LOG.print(chptr);
+		LOG.println("");
 	}
 	else
 	{
 		if (isSubtreeTag(maskNodeTag(data[index])))
 		{
-			LOG(treeTypeName(maskNodeTag(data[index])));
+			LOG.print(treeTypeName(maskNodeTag(data[index])));
 		}
-		LOGLINE("");
-		//LOGLINE(" data: "<<(data[index+3]));
+		LOG.println("");
+		//LOG.println(" data: "<<(data[index+3]));
 	}
 
 	if (isSubtree(index))
@@ -360,27 +361,27 @@ void TreeIterator::print(bool compact)
 {
 	if (isType(NODE_TEXT) || isType(NODE_NAME))
 	{
-		LOG(getText());
+		LOG.print(getText());
 	}
 	else if (isType(NODE_INTEGER))
 	{
-		LOG(getInt());
+		LOG.print(getInt());
 	}
 	else if (isType(NODE_OPERATOR))
 	{
-		LOG(getOp());
+		LOG.print(getOp());
 	}
 	else if (tree.isSubtree(index))
 	{
-		if (!compact) LOG(tree.treeTypeName(tree.getType(index)));
+		if (!compact) LOG.print(tree.treeTypeName(tree.getType(index)));
 	}
 	else if (tree.isStack(index))
 	{
-		if (!compact) LOG("<stack>");
+		if (!compact) LOG.print("<stack>");
 	}
 	else
 	{
-		LOG("<! ! ! TreeIterator::print: unknown node ! ! !>");
+		LOG.print("<! ! ! TreeIterator::print: unknown node ! ! !>");
 	}
 }
 
@@ -465,7 +466,7 @@ INT TreeIterator::getInt()
 const char* TreeIterator::getText()
 {
 	CHECK(isTextType(), ITERATOR_WRONG_DATA_TYPE);
-	LOG("TEXT ["<<(tree.data[index+3])<<"] ");
+	LOG.print("TEXT [").print(tree.data[index+3]).print("] ");
 	auto ptr = (tree.data.get() + index + 4);
 	return (char *)ptr;
 }
@@ -476,7 +477,7 @@ bool TreeIterator::matchTextData(INT* data)
 
 	CHECK(isTextType(), ITERATOR_WRONG_DATA_TYPE);
 
-	//LOGLINE("match: "<<getText());
+	//LOG.println("match: "<<getText());
 
 	int size = tree.getNodeSize(index);
 	
@@ -484,7 +485,7 @@ bool TreeIterator::matchTextData(INT* data)
 
 	for (INT i=3; i<size; i++)
 	{
-		//LOGLINE("matchTextData: compare "<<data[i-3]<<" vs "<<tree.data[index+i]);
+		//LOG.println("matchTextData: compare "<<data[i-3]<<" vs "<<tree.data[index+i]);
 		if (data[i-3] != tree.data[index+i]) return false;
 	}
 	return true;

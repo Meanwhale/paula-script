@@ -59,6 +59,12 @@ const POut& paula::POut::print(bool x) const
 	return print(x ? "true" : "false");
 }
 
+const POut& paula::POut::printCharSymbol(CHAR c) const
+{
+	if (c>=32 && c<127) print(c); // printable
+	else print('#').print(charToInt(c)); // control char: print number
+	return *this;
+}
 const POut& paula::POut::println(const char* x) const
 {
 	return print(x).endl();

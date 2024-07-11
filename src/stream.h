@@ -30,6 +30,7 @@ namespace paula
 		const POut& print(int x) const;
 		const POut& print(float x) const;
 		const POut& print(bool x) const;
+		const POut& printCharSymbol(CHAR c) const;
 		const POut& println(const char*) const;
 		const POut& endl() const;
 

@@ -2,6 +2,7 @@
 #include"utils.h"
 #include"array.h"
 #include"tree.h"
+#include"stream.h"
 
 paula::Command::Command(const char* str, void (* _action)(Paula&,Tree&)) :
 	action(_action)
@@ -14,7 +15,7 @@ paula::Command::Command(const char* str, void (* _action)(Paula&,Tree&)) :
 
 void paula::Command::execute(Paula& paula, Tree& tree)
 {
-	LOGLINE("Command: EXECUTE!");
+	LOG.println("Command: EXECUTE!");
 	action(paula,tree);
 }
 

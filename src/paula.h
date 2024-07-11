@@ -11,9 +11,6 @@ namespace paula
 	class Tree;
 
 	const int NUM_COMMANDS = 2;
-	extern const POut& log; // log output
-	extern const POut& err; // error output
-	extern const POut& user; // print output
 
 	class Paula
 	{

@@ -13,7 +13,7 @@ void stackTest();
 
 int main()
 {
-	LOG("Hello World!\n");
+	LOG.println("Hello World!\n");
 	
 	//iteratorTest();
 	//parenthesisTest();
@@ -35,9 +35,9 @@ void stackTest()
 	Tree stack(1024);
 	stack.init(NODE_STACK);
 	stack.pushInt(0, 123);
-	LOGLINE("stack size: "<<stack.stackSize(0));
+	LOG.print(stack.stackSize(0)).endl();
 	stack.pushInt(0, 456);
-	LOGLINE("stack size: "<<stack.stackSize(0));
+	LOG.print(stack.stackSize(0)).endl();
 	stack.print();
 	stack.pop(0);
 	stack.print();
@@ -46,8 +46,8 @@ void stackTest()
 	stack.pop(0);
 	stack.print();
 	stack.pop(0);
-	LOGLINE("stack size: "<<stack.stackSize(0));
-	LOGLINE("stack empty? "<<stack.stackEmpty(0));
+	LOG.print(stack.stackSize(0)).endl();
+	LOG.print(stack.stackEmpty(0)).endl();
 }
 
 void treeTest()

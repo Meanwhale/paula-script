@@ -8,7 +8,6 @@ namespace paula
 	template <class INT> class Array;
 
 	void assert(bool, const char *, const Error&);
-	void logChar(CHAR, std::ostream&);
 	INT charToInt(CHAR c);
     INT textDataSize(INT numBytes);
     void bytesToInts(const unsigned char *  bytes, int bytesOffset, Array<INT>& ints, int intsOffset, int bytesLength);

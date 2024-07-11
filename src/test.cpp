@@ -10,7 +10,13 @@ void paula::runErrorCheck(void(*test)(), Error expectedError)
 	}
 	catch (const PaulaException& e)
 	{
-		LOGLINE("test: caught an exception: " << e.error.name<<" (id="<<e.error.id<<")");
+		ERR
+			.print("test: caught an exception: ")
+			.print(e.error.name)
+			.print(" (id=")
+			.print(e.error.id)
+			.print(")")
+			.endl();
 		if (e.error.id != expectedError.id)
 		{
 			ASSERT(false, "error don't match");

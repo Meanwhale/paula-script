@@ -2,23 +2,16 @@
 
 #include <iostream>
 
-#define LOOOG paula::log
-
-#define LOG(x) std::cout<<x;
-#define LOGCHAR(x) logChar(x, std::cout);
-#define LOGLINE(x) std::cout<<x<<std::endl;
-
-#define LOGERRORCHAR(x) logChar(x, std::cerr);
-#define LOGERROR(x) std::cerr<<"\nERROR: "<<x<<std::endl;
+#define LOG paula::log
+#define ERR paula::err
 
 #define HALT std::exit(0) 
 #define STR(x) #x
 
 // assert: internal error, check: user error
 
-//#define ASSERT(x,msg) { if (!(x)) { printf("FAIL: (%s), file %s, line %d.\n", STR(x), __FILE__, __LINE__); assert(false, msg); }}
-#define ASSERT(x,msg) { if (!(x)) { std::cout<<"FAIL: ("<<STR(x)<<"), file "<<__FILE__<<", line "<<__LINE__<<std::endl; assert(false, msg, INTERNAL); }}
-#define EXIT(msg) { LOGERROR(msg); }
+#define ASSERT(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg, INTERNAL); }}
+//#define EXIT(msg) { ERR.println(msg); }
 
 #define IS_CHAR(c) (c>='a' && c<='z')
 
@@ -30,6 +23,12 @@ namespace paula
 	typedef int32_t INT;
 	typedef char CHAR;
 	typedef uint8_t BYTE;
+
+	class POut;
+
+	extern const POut& log; // log output
+	extern const POut& err; // error output
+	extern const POut& user; // print output
 
 	class Error
 	{
@@ -76,5 +75,5 @@ namespace paula
 }
 #define CHECK(x,e) { if (!(x)) { throw PaulaException(e); }}
 #else
-#define CHECK(x,msg) { if (!(x)) { LOGERROR(msg); ASSERT(false, "CHECK failed"); }}
+#define CHECK(x,msg) { if (!(x)) { ERR.println(msg); ASSERT(false, "CHECK failed"); }}
 #endif
