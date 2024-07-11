@@ -20,14 +20,11 @@ namespace paula
 		NODE_NAME				= 0x21000000, // variable, constant, or function name
 		NODE_INTEGER			= 0x22000000, // e.g. 123
 		NODE_FLOAT				= 0x23000000, // e.g. 1.23
-		NODE_TEXT				= 0x24000000, // e.g. "abc d"
+		NODE_TEXT				= 0x24000000, // string/const char*, e.g. "abc d"
 
-		// operators
+		// controls tokens
 
-		NODE_PLUS				= 0x31000000,
-		NODE_MINUS				= 0x32000000,
-		NODE_MUL				= 0x33000000,
-		NODE_DIV				= 0x34000000,
+		NODE_OPERATOR			= 0x31000000,
 
 		//NODE_PARENTHESIS		= 0x00000000,
 		//NODE_SQUARE_BRACKETS	= 0x00000000,
@@ -45,6 +42,7 @@ namespace paula
 		Tree(INT size);
 
 		void addInt(INT parentIndex, INT data);
+		void addOperatorNode(INT parentIndex, CHAR op);
 		void addText(INT parentIndex, Array<BYTE>& src, INT first, INT last, INT nodeType);
 		INT addSubtree(INT parentIndex, INT type);
 
@@ -53,6 +51,7 @@ namespace paula
 		void pushInt(INT stackIndex, INT value);
 		void pushData(INT stackIndex, TreeIterator&src);
 		INT stackTopIndex(INT stackIndex);
+		INT popInt(INT stackIndex);
 		void pop(INT stackIndex);
 		bool stackEmpty(INT stackIndex);
 
@@ -85,6 +84,7 @@ namespace paula
 		void pushStack(INT parentIndex, INT tag, INT size);
 		void insertTree(INT parentIndex, INT tag, INT size);
 
+
 		//void printNode(INT index, INT depth);
 
 		Tree() = delete;
@@ -95,6 +95,8 @@ namespace paula
 	public:
 		TreeIterator(const TreeIterator&);
 		TreeIterator(Tree&);
+
+		void printTree(bool compact);
 
 		void print(bool compact);
 
@@ -115,7 +117,9 @@ namespace paula
 
 		INT getDepth();
 
+
 		INT getInt();
+		CHAR getOp();
 		const char * getText();
 
 		bool matchTextData(INT*data);

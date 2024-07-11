@@ -50,6 +50,7 @@ namespace paula
 		void addIntegerToken();
 		void addNameToken();
 		void prepareAddToken();
+        void addOperatorToken();
 		void next(BYTE nextState);
 		void print();
 		void printError();

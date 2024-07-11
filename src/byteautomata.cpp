@@ -19,6 +19,7 @@ constexpr INT
 const CHAR
 	*letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	*numbers = "1234567890",
+	*operators = "+-*/",
 	*whiteSpace = " \t", // "\n\r",
 	*linebreak = "\n\r",
 	//*expressionBreak = ",;",
@@ -299,6 +300,12 @@ void ByteAutomata::prepareAddToken()
 		pushTree(NODE_EXPR);
 	}
 }
+void ByteAutomata::addOperatorToken()
+{
+	LOGLINE("addOperatorToken");
+	prepareAddToken();
+	tree.addOperatorNode(currentParent(), (char)inputByte);
+}
 void ByteAutomata::addIntegerToken()
 {
 	LOGLINE("addIntegerToken");
@@ -316,7 +323,7 @@ void ByteAutomata::addTextToken()
 }
 void ByteAutomata::addLiteralToken(INT nodeType)
 {
-	LOGLINE("addTextToken: "<<nodeType);
+	LOGLINE("addLiteralToken: "<<nodeType);
 	prepareAddToken();
 	tree.addText(currentParent(), buffer, lastStart, getIndex(), nodeType);
 }
@@ -402,12 +409,14 @@ void ByteAutomata::defineTransitions()
 	transition(stateFirstName, blockStart, [](ByteAutomata*ba)			{ ba->startFunction(); ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
 
 	transition(stateName, letters, 0);
-	transition(stateName, whiteSpace, [](ByteAutomata*ba)				{ ba->addTextToken(); ba->next(ba->stateSpace); });
-	transition(stateName, blockStart, [](ByteAutomata*ba)				{ ba->addTextToken(); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateName, blockEnd, [](ByteAutomata*ba)					{ ba->addTextToken(); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateName, linebreak, [](ByteAutomata*ba)				{ ba->addTextToken(); ba->lineBreak(); });
+	transition(stateName, whiteSpace, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->next(ba->stateSpace); });
+	transition(stateNumber, operators, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
+	transition(stateName, blockStart, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
+	transition(stateName, blockEnd, [](ByteAutomata*ba)					{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
+	transition(stateName, linebreak, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->lineBreak(); });
 
 	transition(stateSpace, whiteSpace, 0);
+	transition(stateSpace, operators, [](ByteAutomata*ba)				{ ba->addOperatorToken(); });
 	transition(stateSpace, letters, [](ByteAutomata*ba)					{ ba->next(ba->stateName); });
 	transition(stateSpace, numbers, [](ByteAutomata*ba)					{ ba->next(ba->stateNumber); });
 	transition(stateSpace, linebreak, [](ByteAutomata*ba)				{ ba->lineBreak(); });
@@ -417,6 +426,7 @@ void ByteAutomata::defineTransitions()
 
 	transition(stateNumber, numbers, 0);
 	transition(stateNumber, whiteSpace, [](ByteAutomata*ba)				{ ba->addIntegerToken(); ba->next(ba->stateSpace); });
+	transition(stateNumber, operators, [](ByteAutomata*ba)				{ ba->addIntegerToken(); ba->stay(); ba->next(ba->stateSpace); });
 	transition(stateNumber, ",", [](ByteAutomata*ba)					{ ba->addIntegerToken(); ba->comma(); ba->next(ba->stateSpace); });
 	transition(stateNumber, blockEnd, [](ByteAutomata*ba)				{ ba->addIntegerToken(); ba->stay(); ba->next(ba->stateSpace); });
 	transition(stateNumber, linebreak, [](ByteAutomata*ba)				{ ba->addIntegerToken(); ba->lineBreak(); });

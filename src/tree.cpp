@@ -40,6 +40,12 @@ void paula::Tree::insertTree(INT parentIndex, INT tag, INT size)
 	data[top++] = -1; // no siblings yet
 }
 
+void paula::Tree::addOperatorNode(INT parentIndex, CHAR op)
+{
+	insertTree(parentIndex, NODE_OPERATOR, 3);
+	data[top++] = charToInt(op);
+}
+
 void paula::Tree::addInt(INT parentIndex, INT value)
 {
 	insertTree(parentIndex, NODE_INTEGER, 3);
@@ -113,6 +119,15 @@ INT Tree::stackTopIndex(INT stackIndex)
 {
 	ASSERT(isStack(stackIndex),"");
 	return data[stackIndex + 3];
+}
+
+INT Tree::popInt(INT stackIndex)
+{
+	INT stackTop = stackTopIndex(stackIndex);
+	CHECK(maskNodeTag(data[stackTop]) == NODE_INTEGER, TYPE_MISMATCH);
+	INT value = data[stackTop + 3];
+	pop(stackIndex);
+	return value;
 }
 
 void Tree::pop(INT stackIndex)
@@ -335,6 +350,12 @@ TreeIterator::TreeIterator(Tree& _tree) :
 	CHECK(!tree.isClear(), TREE_IS_EMPTY);
 }
 
+void TreeIterator::printTree(bool compact)
+{
+	if (compact) tree.printCompact(*this);
+	else tree.printSubtree(*this);
+}
+
 void TreeIterator::print(bool compact)
 {
 	if (isType(NODE_TEXT) || isType(NODE_NAME))
@@ -344,6 +365,10 @@ void TreeIterator::print(bool compact)
 	else if (isType(NODE_INTEGER))
 	{
 		LOG(getInt());
+	}
+	else if (isType(NODE_OPERATOR))
+	{
+		LOG(getOp());
 	}
 	else if (tree.isSubtree(index))
 	{
@@ -423,6 +448,12 @@ INT TreeIterator::size()
 INT TreeIterator::getDepth()
 {
 	return depth;
+}
+
+CHAR TreeIterator::getOp()
+{
+	CHECK(isType(NODE_OPERATOR), ITERATOR_WRONG_DATA_TYPE);
+	return (CHAR)(tree.data[index + 3]);
 }
 
 INT TreeIterator::getInt()

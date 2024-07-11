@@ -25,7 +25,8 @@ int main()
 	//CharInputStream input("x:5\nx:f(5)\nfoo(12, (34, 56))");
 	//CharInputStream input("x:5\nx:f(5)");
 	
-	CharInputStream input("print(123456, foo(3, 4))");
+	//CharInputStream input("print(123456, 1+2, foo(3, 4))");
+	CharInputStream input("print(45/5)");
 	Paula::one.run(input, false);
 }
 

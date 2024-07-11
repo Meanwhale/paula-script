@@ -21,6 +21,9 @@ namespace paula
 		void run(IInputStream&, bool handleException);
 		void readCommandArgs(Tree& tree);
 		void pushArgList(TreeIterator&);
+		void pushOneArg(TreeIterator&);
+		INT operate(CHAR op, INT a, INT b);
+		void pushOneSubtreeArg(TreeIterator& _it);
 		void execute(INT indentation, Tree& tree);
 
 	private:
@@ -31,7 +34,7 @@ namespace paula
 
 		Tree args;
 
-		ArgDef commandArgDef, functionArgDef, intArgDef;
+		ArgDef commandArgDef, intArgDef, IntIntOperatorArgDef, IntSubtreeOperatorArgDef;
 
 		Command commands[NUM_COMMANDS];
 
