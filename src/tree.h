@@ -5,7 +5,9 @@ namespace paula
 	// tags
 
 	constexpr INT
-		
+
+		NODE_UNDEFINED			= 0xff000000,
+
 		// tree types
 
 		NODE_SUBTREE			= 0x01000000, // parser decides what kind or tree is it
@@ -15,7 +17,7 @@ namespace paula
 
 		NODE_STACK				= 0x11000000,
 		NODE_MAP				= 0x12000000, // like dictionary. list of KV nodes
-		NODE_KV					= 0x13000000, // key-value pairs for map
+		NODE_KV					= 0x13000000, // key-value pairs for map: text key that has a link to data
 
 		// data types
 
@@ -113,6 +115,7 @@ namespace paula
 		bool hasChild();
 		bool hasParent();
 		bool isType(INT nodeType);
+		bool isNextType(INT nodeType);
 		bool isTextType();
 		INT type();
 		INT size();

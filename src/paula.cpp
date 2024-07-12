@@ -46,24 +46,24 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	{
 		Command("print", printAction),
 		Command("foo", fooAction),
-	},
-	commandArgDef(2),
-	singleArgDef(1),
-	OperatorArgDef(3)
+	}
+	//commandArgDef(2),
+	//singleArgDef(1),
+	//OperatorArgDef(3)
 {
 	LOG.println("---------------- NEW PAULA ----------------");
 	log.print("toimii!").endl();
 
 	args.init(NODE_STACK);
 
-	commandArgDef.types[0] = NODE_NAME;
-	commandArgDef.types[1] = NODE_SUBTREE;
+	//commandArgDef.types[0] = NODE_NAME;
+	//commandArgDef.types[1] = NODE_SUBTREE;
 
-	singleArgDef.types[0] = NODE_ANY_DATA;
+	//singleArgDef.types[0] = NODE_ANY_DATA;
 
-	OperatorArgDef.types[0] = NODE_ANY_DATA;
-	OperatorArgDef.types[1] = NODE_OPERATOR;
-	OperatorArgDef.types[2] = NODE_ANY_DATA;
+	//OperatorArgDef.types[0] = NODE_ANY_DATA;
+	//OperatorArgDef.types[1] = NODE_OPERATOR;
+	//OperatorArgDef.types[2] = NODE_ANY_DATA;
 }
 
 const int
@@ -100,17 +100,23 @@ void Paula::run(IInputStream& input, bool handleException)
 }
 
 
-void paula::Paula::execute(INT indentation, Tree& tree)
+void paula::Paula::executeLine(INT indentation, Tree& tree)
 {
+	args.init(NODE_STACK);
+
 	if (tree.getType(0) == NODE_ASSIGNMENT)
 	{
+		// TRG : SRC
+
 		LOG.print("execute ASSIGNMENT: indentation=").print(indentation).endl();
 	}
 	else if (tree.getType(0) == NODE_COMMAND)
 	{
+		// COMMAND { funcName ( args ) }
+
 		LOG.print("execute COMMAND: indentation=").print(indentation).endl();
 
-		CHECK(commandArgDef.match(tree), SYNTAX_ERROR); // check that it's <name> <subtree>, eg. "foo(1)"
+		//CHECK(commandArgDef.match(tree), SYNTAX_ERROR); // check that it's <name> <subtree>, eg. "foo(1)"
 
 		TreeIterator it(tree);
 		it.toChild(); // points to command name
@@ -118,7 +124,13 @@ void paula::Paula::execute(INT indentation, Tree& tree)
 		auto cmd = findCommand(it);
 		if (cmd)
 		{
-			readCommandArgs(tree);
+			it.next();
+			CHECK(!it.hasNext(), SYNTAX_ERROR); // extra tokens after ()
+
+			// read command arguments
+
+			pushArgList(it);
+
 			cmd->execute(*this, args);
 		}
 		else
@@ -132,35 +144,19 @@ void paula::Paula::execute(INT indentation, Tree& tree)
 	}
 }
 
-void Paula::readCommandArgs(Tree& tree)
-{
-	LOG.println("readCommandArgs");
-	args.init(NODE_STACK);
-	TreeIterator it(tree);
-	it.toChild();
-	it.next(); // skip command name
-	ASSERT(it.isType(NODE_SUBTREE),"");
-	if (!it.hasChild())
-	{
-		return;
-	}
-	it.toChild();
-	// iterate children
-
-	pushArgList(it);
-
-}
-
 void paula::Paula::pushArgList(TreeIterator& _it)
 {
+	// push list of expressions, eg. ( 1, f(x), y )
+	// --> pushExprArg("1"), pushExprArg("f(x)"), pushExprArg("y")
+
 	TreeIterator it(_it);
+	CHECK(it.isType(NODE_SUBTREE), SYNTAX_ERROR);
+
+	if (!it.hasChild()) return; // empty ()
+	it.toChild();
 	do
 	{
-		CHECK(it.isType(NODE_EXPR), SYNTAX_ERROR);
-		CHECK(it.hasChild(), SYNTAX_ERROR);
-		it.toChild();
-		pushOneArg(it);
-		it.toParent();
+		pushExprArg(it);
 	}
 	while(it.next());
 }
@@ -180,7 +176,12 @@ void paula::Paula::pushSingleValue(TreeIterator&_it)
 	}
 	else if(it.isType(NODE_SUBTREE))
 	{
-		pushOneSubtreeArg(it);
+		// arg. in (), eg. "(2+3)" in "1 + (2+3)"
+		TreeIterator it(_it);
+		ASSERT(it.isType(NODE_SUBTREE), "");
+		it.toChild(); // 1 + ( to here <EXPR> )
+		CHECK(!it.hasNext(), SYNTAX_ERROR);
+		pushExprArg(it);
 	}
 	else
 	{
@@ -191,76 +192,77 @@ void paula::Paula::pushSingleValue(TreeIterator&_it)
 	CHECK(stackSizeBefore + 1 == stackSizeAfter, VALUE_MISSING);
 }
 
-void paula::Paula::pushOneArg(TreeIterator&_it)
+void paula::Paula::pushExprArg(TreeIterator&_it)
 {
 	INT stackSizeBefore = args.stackSize(0);
 
 	TreeIterator it(_it);
 
-	if (singleArgDef.match(it))
+	CHECK(it.isType(NODE_EXPR), SYNTAX_ERROR);
+	CHECK(it.hasChild(), SYNTAX_ERROR);
+	it.toChild();
+
+	// 'it' now points to first element of the expression, eg. "x" in "x + 1"
+
+	if (!it.hasNext())
 	{
+		// eg. "y" in "f(x,y,z)"
 		pushSingleValue(it);
 	}
-	else if (commandArgDef.match(it))
+	else
 	{
-		LOG.println("push function return value");
-		auto cmd = findCommand(it);
-		if (cmd)
+		// next can be
+		// a) () -> function call, eg. "f(x,y)"
+		// b) operator, eg. "x+y"
+
+		if (it.isNextType(NODE_SUBTREE))
 		{
-			TreeIterator argIt(it); // iterator to point to argument list, eg. '1', if args. are (1,2)
-			argIt.next();
-			argIt.toChild();
-			pushArgList(argIt);
-			cmd->execute(*this, args);
+			LOG.println("push function return value");
+			auto cmd = findCommand(it);
+			if (cmd)
+			{
+				it.next(); // it points to "(...)" in "f(...)"
+				CHECK(!it.hasNext(), SYNTAX_ERROR);
+				pushArgList(it);
+				cmd->execute(*this, args);
+			}
+			else
+			{
+				CHECK(false, UNKNOWN_COMMAND);
+			}
+		}
+		else if (it.isNextType(NODE_OPERATOR))
+		{
+			LOG.println("int [op] int operator"); // eg. "a + b"
+		
+			// get the first value
+
+			pushSingleValue(it);
+			INT a = args.popInt(0);
+
+			// read the operator
+
+			it.next();
+			ASSERT(it.isType(NODE_OPERATOR),"");
+			CHAR op = it.getOp();
+
+			// get the second value
+
+			it.next();
+			pushSingleValue(it);
+			INT b = args.popInt(0);
+
+			LOG.print("a=").print(a).print(" b=").print(b).endl();
+			args.pushInt(0, operate(op, a, b));
 		}
 		else
 		{
-			CHECK(false, UNKNOWN_COMMAND);
+			CHECK(false, SYNTAX_ERROR);
 		}
 	}
-	else if (OperatorArgDef.match(it))
-	{
-		LOG.println("int [op] int operator"); // eg. "a + b"
-		
-		// get the first value
 
-		pushSingleValue(it);
-		INT a = args.popInt(0);
+	// check that one argument has actually been pushed
 
-		// read the operator
-
-		it.next();
-		ASSERT(it.isType(NODE_OPERATOR),"");
-		CHAR op = it.getOp();
-
-		// get the second value
-
-		it.next();
-		pushSingleValue(it);
-		INT b = args.popInt(0);
-
-		LOG.print("a=").print(a).print(" b=").print(b).endl();
-		args.pushInt(0, operate(op, a, b));
-	}
-	//else if (IntSubtreeOperatorArgDef.match(it))
-	//{
-	//	LOG.println("int [op] subtree operator");
-	//	INT a = it.getInt();
-	//	it.next();
-	//	ASSERT(it.isType(NODE_OPERATOR),"");
-	//	it.next();
-	//	pushOneSubtreeArg(it);
-	//	INT b = args.popInt(0);
-	//	LOG.println("a="<<a<<" b="<<b);
-	//	args.pushInt(0, a + b);
-	//}
-	else
-	{
-		LOG.println("expression type not found:");
-		it.toParent();
-		it.printTree(true);
-		CHECK(false, UNKNOWN_EXPRESSION);
-	}
 	INT stackSizeAfter = args.stackSize(0);
 	CHECK(stackSizeBefore + 1 == stackSizeAfter, VALUE_MISSING);
 }
@@ -271,21 +273,9 @@ INT paula::Paula::operate(CHAR op, INT a, INT b)
 	case '+': return a + b;
 	case '-': return a - b;
 	case '*': return a * b;
-	case '/': return a / b;
+	case '/': return a / b; // TODO check div zero
 	}
 	CHECK(false,INVALID_OPERATOR);
-}
-void paula::Paula::pushOneSubtreeArg(TreeIterator&_it)
-{
-	// arg. in (), eg. "(2+3)" in "1 + (2+3)"
-	TreeIterator it(_it);
-	ASSERT(it.isType(NODE_SUBTREE), "");
-	it.toChild(); // 1 + ( to here <EXPR> )
-	CHECK(it.isType(NODE_EXPR), SYNTAX_ERROR);
-	CHECK(!it.hasNext(), SYNTAX_ERROR);
-	CHECK(it.hasChild(), SYNTAX_ERROR);
-	it.toChild(); // 1 + ( < to here EXPR> )
-	pushOneArg(it);
 }
 Command * paula::Paula::findCommand(TreeIterator& it)
 {

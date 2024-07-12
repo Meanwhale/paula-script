@@ -18,13 +18,11 @@ namespace paula
 		static Paula one; // the one Paula object
 
 		void run(IInputStream&, bool handleException);
-		void readCommandArgs(Tree& tree);
 		void pushArgList(TreeIterator&);
 		void pushSingleValue(TreeIterator& _it);
-		void pushOneArg(TreeIterator&);
+		void pushExprArg(TreeIterator&);
 		INT operate(CHAR op, INT a, INT b);
-		void pushOneSubtreeArg(TreeIterator& _it);
-		void execute(INT indentation, Tree& tree);
+		void executeLine(INT indentation, Tree& tree);
 
 	private:
 
@@ -34,7 +32,7 @@ namespace paula
 
 		Tree args, vars;
 
-		ArgDef commandArgDef, singleArgDef, OperatorArgDef;
+		//ArgDef commandArgDef, singleArgDef, OperatorArgDef;
 
 		Command commands[NUM_COMMANDS];
 

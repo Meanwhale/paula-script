@@ -28,6 +28,7 @@ namespace paula
 		Command() = delete;
 		Command& operator=(const Command&) = delete;
 	};
+	/*
 	class ArgDef
 	{
 	public:
@@ -42,4 +43,5 @@ namespace paula
 
 		ArgDef() = delete;
 	};
+	*/
 }

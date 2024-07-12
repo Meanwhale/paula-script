@@ -338,7 +338,7 @@ void ByteAutomata::lineBreak()
 {
 	LOG.println("lineBreak: execute command");
 	tree.print();
-	paula.execute(indentation, tree);
+	paula.executeLine(indentation, tree);
 	newLine();
 }
 void ByteAutomata::startBlock()

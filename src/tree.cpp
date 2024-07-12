@@ -295,41 +295,6 @@ const char* Tree::treeTypeName(INT tag)
 	}
 	return "<! ! ! error ! ! !>";
 }
-/*void paula::Tree::printNode(INT index, INT depth)
-{
-	// tarviiko enää?
-
-	if (data[index+2] > 0) printNode(data[index+2], depth);
-	for (int n=0; n<depth; n++) LOG.print("  ");
-
-	// LOG.print("parent="<<(data[index+1])<<" next="<<(data[index+2])<<" data size="<<nodeSize(data[index]));
-	LOG.print("NODE");
-
-	if (maskNodeTag(data[index]) == NODE_TEXT)
-	{
-		LOG.print(" TEXT: ["<<(data[index+3])<<"] "); // print number of characters
-		auto ptr = (data.get() + index + 4);
-		auto chptr = (char *)ptr;
-		LOG.print(chptr);
-		LOG.println("");
-	}
-	else
-	{
-		if (isSubtreeTag(maskNodeTag(data[index])))
-		{
-			LOG.print(treeTypeName(maskNodeTag(data[index])));
-		}
-		LOG.println("");
-		//LOG.println(" data: "<<(data[index+3]));
-	}
-
-	if (isSubtree(index))
-	{
-		INT childIndex = data[index+3];
-		if (childIndex > 0) printNode(childIndex, depth+1);
-	}
-}*/
-
 
 //--------------------------------------------------------------
 // TreeIterator
@@ -429,6 +394,12 @@ bool TreeIterator::hasParent()
 bool TreeIterator::isType(INT nodeType)
 {
 	return tree.getType(index) == nodeType;
+}
+bool TreeIterator::isNextType(INT nodeType)
+{
+	if (!hasNext()) return NODE_UNDEFINED;
+	INT nextIndex = tree.data[index+2];
+	return tree.getType(nextIndex) == nodeType;
 }
 
 bool TreeIterator::isTextType()

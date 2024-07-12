@@ -18,7 +18,7 @@ void paula::Command::execute(Paula& paula, Tree& tree)
 	LOG.println("Command: EXECUTE!");
 	action(paula,tree);
 }
-
+/*
 paula::ArgDef::ArgDef(INT size) : types(size)
 {
 }
@@ -45,3 +45,4 @@ bool paula::ArgDef::match(TreeIterator& _it)
 
 	return i == types.length();
 }
+*/
