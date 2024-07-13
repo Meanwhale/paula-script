@@ -1,8 +1,11 @@
 #pragma once
+
+#include"defs.h"
+
 namespace paula
 {
-	void runErrorCheck(void (* test)(), Error expectedError);
+	void runErrorCheck(const Error* (* test)(), const Error* expectedError);
 
 	void parenthesisTest();
-	void iteratorTest();
+	//const Error* iteratorTest();
 }

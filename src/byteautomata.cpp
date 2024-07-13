@@ -2,6 +2,8 @@
 #include "byteautomata.h"
 #include "paula.h"
 
+#define BA_CHECK(x,e) { if (!(x)) { error = &e; return; } }
+
 namespace paula
 {
 constexpr INT
@@ -29,6 +31,7 @@ const CHAR
 
 ByteAutomata::ByteAutomata(Paula& p) :
 	paula(p),
+	error(NO_ERROR),
 	tree(TREE_ARRAY_SIZE),
 	tr(MAX_STATES * 256),
 	buffer(BA_BUFFER_SIZE),
@@ -36,7 +39,6 @@ ByteAutomata::ByteAutomata(Paula& p) :
 	treeStack(MAX_DEPTH),
 	stateNames(MAX_STATES)
 {
-	ok = true;
 	currentInput = 0;
 	currentState = 0;
 	stateCounter = 0;
@@ -45,7 +47,6 @@ ByteAutomata::ByteAutomata(Paula& p) :
 	index = 0;
 	lineNumber = 0;
 	stayNextStep = false;
-	running = false;
 
 	tr.fill((BYTE)0xff);
 
@@ -54,20 +55,20 @@ ByteAutomata::ByteAutomata(Paula& p) :
 ByteAutomata::~ByteAutomata()
 {
 }
-void ByteAutomata::print ()
-{
-	for (INT i = 0; i <= stateCounter; i++)
-	{
-		//vrbout()<<("state: ")<<(i)<<std::endl;
-		for (INT n = 0; n < 256; n++)
-		{
-			BYTE foo = tr[(i * 256) + n];
-			if (foo == 0xff) std::cout<<(".");
-			else std::cout<<(foo);
-		}
-		std::cout<<("")<<std::endl;
-	}
-}
+//void ByteAutomata::print ()
+//{
+//	for (INT i = 0; i <= stateCounter; i++)
+//	{
+//		//vrbout()<<("state: ")<<(i)<<std::endl;
+//		for (INT n = 0; n < 256; n++)
+//		{
+//			BYTE foo = tr[(i * 256) + n];
+//			if (foo == 0xff) std::cout<<(".");
+//			else std::cout<<(foo);
+//		}
+//		std::cout<<("")<<std::endl;
+//	}
+//}
 
 
 
@@ -121,7 +122,7 @@ void ByteAutomata::next (BYTE nextState)
 	// transition to a next state
 	lastStart = getIndex();
 	currentState = nextState;
-	std::cout<<("Next state: ")<<(stateNames[(INT)currentState])<<std::endl;
+	LOG.print("Next state: ").print(stateNames[(INT)currentState]).endl();
 }
 INT ByteAutomata::getIndex ()
 {
@@ -134,7 +135,7 @@ void ByteAutomata::stay ()
 	stayNextStep = true;
 }
 
-void ByteAutomata::run (IInputStream & input)
+ERROR_STATUS ByteAutomata::run (IInputStream & input)
 {
 	currentState = stateStart;
 
@@ -142,13 +143,12 @@ void ByteAutomata::run (IInputStream & input)
 	index = 0;
 	lineNumber = 1;
 	stayNextStep = false;
-	running = true;
 
 	indentation = 0;
 
 	newLine();
 
-	while ((!input.end() || stayNextStep) && running && ok)
+	while ((!input.end() || stayNextStep) && error == NO_ERROR)
 	{
 		if (!stayNextStep)
 		{
@@ -162,7 +162,7 @@ void ByteAutomata::run (IInputStream & input)
 			stayNextStep = false;
 		}
 		LOG.print("[ ").printCharSymbol(inputByte).print(" ] state: ").print(stateNames[(INT)currentState]).endl();
-		running = step(inputByte);
+		CHECK_CALL(step(inputByte));
 	}
 	printTreeStack();
 	if (treeStackTop != 0)
@@ -170,26 +170,27 @@ void ByteAutomata::run (IInputStream & input)
 		CHECK(false, PARENTHESIS);
 	}
 	if (!stayNextStep)
-	{	index++;
-	running = step('\n');
+	{	
+		index++;
+		CHECK_CALL(step('\n'));
 	}
 
 	LOG.println("end run");
 
 	tree.print();
+
+	return NO_ERROR;
 }
-bool ByteAutomata::step (BYTE input)
+ERROR_STATUS ByteAutomata::step (BYTE input)
 {
 	currentInput = input;
 	INT index = (currentState * 256) + input;
 	BYTE actionIndex = tr[index];
-	if (actionIndex == 0) return true; // stay on same state and do nothing else
+	if (actionIndex == 0) return NO_ERROR; // stay on same state and do nothing else
 	if (actionIndex == 0xff||actionIndex < 0)
 	{
 		ERR.print("unexpected character: ").printCharSymbol(input).endl();
-		CHECK(false, UNEXPECTED_CHARACTER);
-		ok = false;
-		return false; // end
+		return &UNEXPECTED_CHARACTER; // end
 	}
 	void (* act)(ByteAutomata*) = actions[actionIndex];
 	if (act == 0)
@@ -197,12 +198,12 @@ bool ByteAutomata::step (BYTE input)
 		ASSERT(false, "invalid action index");
 	}
 	act(this);
-	return true;
+	return error;
 }
 void ByteAutomata::printError ()
 {
-	std::cout<<("ERROR: parser state [")<<(stateNames[(INT)currentState])<<("]")<<std::endl;
-	std::cout<<("Line ")<<(lineNumber)<<(": \"");
+	ERR.print("ERROR: parser state [").print(stateNames[(INT)currentState]).print("]").endl();
+	ERR.print("Line ").print(lineNumber).print(": \"");
 	// print nearby code
 	INT start = index-1;
 	while (start > 0 && index - start < BA_BUFFER_SIZE && (BYTE)buffer[start % BA_BUFFER_SIZE] != '\n')
@@ -211,9 +212,9 @@ void ByteAutomata::printError ()
 	}
 	while (++start < index)
 	{
-		std::cout<<((BYTE)(buffer[start % BA_BUFFER_SIZE]));
+		ERR.print((BYTE)(buffer[start % BA_BUFFER_SIZE]));
 	}
-	std::cout<<("\"")<<std::endl;
+	ERR.print("\"").endl();
 }
 
 //--------------------------------------------------------------
@@ -226,7 +227,7 @@ INT ByteAutomata::currentParent()
 }
 void ByteAutomata::printTreeStack()
 {
-	if (treeStackTop < 1) LOG.print(" tree stack, top: ").print(treeStackTop);
+	if (treeStackTop < 1) LOG.print(" tree stack, top: ").print(treeStackTop).endl();
 	for(INT i=0; i<=treeStackTop; i++)
 	{
 		//LOG.print(" ["<<treeStack[i]<<":"<<(tree.getTag(treeStack[i]))<<"] ");
@@ -236,7 +237,7 @@ void ByteAutomata::printTreeStack()
 }
 void ByteAutomata::pushTree(INT subtreeType)
 {
-	CHECK(tree.isSubtreeTag(subtreeType), PARSE_ERROR);
+	BA_CHECK(tree.isSubtreeTag(subtreeType), PARSE_ERROR);
 
 	INT newParent = tree.addSubtree(currentParent(), subtreeType);
 	treeStackTop++;
@@ -255,7 +256,7 @@ void ByteAutomata::popTree()
 void ByteAutomata::startAssignment ()
 {
 	LOG.println("startAssignment");
-	CHECK(lineType = LINE_UNDEFINED, PARSE_ERROR);
+	BA_CHECK(lineType == LINE_UNDEFINED, PARSE_ERROR);
 	lineType = LINE_ASSIGNMENT;
 	tree.init(NODE_ASSIGNMENT);
 	treeStack[0] = 0;
@@ -264,7 +265,7 @@ void ByteAutomata::startAssignment ()
 void ByteAutomata::startFunction ()
 {
 	LOG.println("startFunction");
-	CHECK(lineType = LINE_UNDEFINED, PARSE_ERROR);
+	BA_CHECK(lineType == LINE_UNDEFINED, PARSE_ERROR);
 	lineType = LINE_CALL;
 	tree.init(NODE_COMMAND);
 	treeStack[0] = 0;
@@ -287,8 +288,6 @@ INT ByteAutomata::parseInt(Array<BYTE>& src, INT i, INT lastByte)
 }
 void ByteAutomata::prepareAddToken()
 {
-	printTreeStack();
-
 	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_SUBTREE)
 	{
 		// parent is a subtree, start a new expr
@@ -319,7 +318,7 @@ void ByteAutomata::addTextToken()
 }
 void ByteAutomata::addLiteralToken(INT nodeType)
 {
-	LOG.print("addLiteralToken: ").print(nodeType).endl();
+	LOG.print("addLiteralToken: ").printHex(nodeType).endl();
 	prepareAddToken();
 	tree.addText(currentParent(), buffer, lastStart, getIndex(), nodeType);
 }
@@ -338,7 +337,8 @@ void ByteAutomata::lineBreak()
 {
 	LOG.println("lineBreak: execute command");
 	tree.print();
-	paula.executeLine(indentation, tree);
+	error = paula.executeLine(indentation, tree);
+	if (error != NO_ERROR) return;
 	newLine();
 }
 void ByteAutomata::startBlock()

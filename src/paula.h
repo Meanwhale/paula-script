@@ -17,12 +17,13 @@ namespace paula
 	public:
 		static Paula one; // the one Paula object
 
-		void run(IInputStream&, bool handleException);
-		void pushArgList(TreeIterator&);
-		void pushSingleValue(TreeIterator& _it);
-		void pushExprArg(TreeIterator&);
-		INT operate(CHAR op, INT a, INT b);
-		void executeLine(INT indentation, Tree& tree);
+		ERROR_STATUS run(IInputStream&, bool handleException);
+		ERROR_STATUS pushArgList(TreeIterator&);
+		ERROR_STATUS pushAtomicValue(TreeIterator& _it);
+		ERROR_STATUS pushVariable(TreeIterator& name);
+		ERROR_STATUS pushExprArg(TreeIterator&);
+		ERROR_STATUS operate(CHAR op, INT a, INT b, INT& out);
+		ERROR_STATUS executeLine(INT indentation, Tree& tree);
 
 	private:
 

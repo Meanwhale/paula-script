@@ -15,9 +15,9 @@ namespace paula
 		NODE_ASSIGNMENT			= 0x03000000,
 		NODE_COMMAND			= 0x04000000,
 
-		NODE_STACK				= 0x11000000,
-		NODE_MAP				= 0x12000000, // like dictionary. list of KV nodes
-		NODE_KV					= 0x13000000, // key-value pairs for map: text key that has a link to data
+		NODE_STACK				= 0x05000000,
+		NODE_MAP				= 0x06000000, // like dictionary. list of KV nodes
+		NODE_KV					= 0x07000000, // key-value pairs for map: text key that has a link to data
 
 		// data types
 
@@ -50,7 +50,9 @@ namespace paula
 		void addInt(INT parentIndex, INT data);
 		void addOperatorNode(INT parentIndex, CHAR op);
 		void addText(INT parentIndex, Array<BYTE>& src, INT first, INT last, INT nodeType);
+		void addData(INT stackIndex, TreeIterator& src);
 		INT addSubtree(INT parentIndex, INT type);
+		bool hasCapacity(INT size);
 
 		// stack functions
 
@@ -63,6 +65,11 @@ namespace paula
 
 		INT stackSize(INT stackIndex);
 
+		// map functions
+
+
+
+		// accessors
 
 		INT get(INT index);
         INT getType(INT index);
@@ -101,6 +108,7 @@ namespace paula
 	public:
 		TreeIterator(const TreeIterator&);
 		TreeIterator(Tree&);
+		TreeIterator(Tree& _tree, INT _index);
 
 		void printTree(bool compact);
 
@@ -130,6 +138,7 @@ namespace paula
 		const char * getText();
 
 		bool matchTextData(INT*data);
+		INT* getTextData();
 
 		friend class Tree;
 

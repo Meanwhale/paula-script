@@ -80,6 +80,11 @@ INT paula::Tree::addSubtree(INT parentIndex, INT type)
 	return newSubtreeIndex;
 }
 
+bool Tree::hasCapacity(INT size)
+{
+	return top + size < data.length();
+}
+
 // ------------- STACK BEGIN
 
 // STACK NODE: TAG (node type, size), PARENT, NEXT, FIRST CHILD, -1 [not used but there to be same size as subtree node]
@@ -100,6 +105,20 @@ void Tree::pushInt(INT stackIndex, INT value)
 	ASSERT(isStack(stackIndex),"");
 	pushStack(stackIndex, NODE_INTEGER, 3);
 	data[top++] = value;
+}
+
+void Tree::addData(INT parentIndex, TreeIterator& src)
+{
+	ASSERT(isSubtree(parentIndex),"");
+	INT type = src.type();
+	INT size = src.size();
+	insertTree(parentIndex, type, size);
+	// copy actual data
+	for(INT i=3; i<=size; i++)
+	{
+		LOG.print("copy value: ").print(src.tree.data[src.index + i]).endl();
+		data[top++] = src.tree.data[src.index + i];
+	}
 }
 
 void Tree::pushData(INT stackIndex, TreeIterator& src)
@@ -125,7 +144,7 @@ INT Tree::stackTopIndex(INT stackIndex)
 INT Tree::popInt(INT stackIndex)
 {
 	INT stackTop = stackTopIndex(stackIndex);
-	CHECK(maskNodeTag(data[stackTop]) == NODE_INTEGER, TYPE_MISMATCH);
+	ASSERT(maskNodeTag(data[stackTop]) == NODE_INTEGER, "");
 	INT value = data[stackTop + 3];
 	pop(stackIndex);
 	return value;
@@ -286,12 +305,19 @@ void Tree::printCompact(TreeIterator&it)
 }
 const char* Tree::treeTypeName(INT tag)
 {
+	/*
+		NODE_STACK				= 0x05000000,
+		NODE_MAP				= 0x06000000, // like dictionary. list of KV nodes
+		NODE_KV					= 0x07000000,*/
 	switch(tag)
 	{
 	case 0x01000000: return "<subtree>";
 	case 0x02000000: return "<expr>";
 	case 0x03000000: return "<assignment>";
 	case 0x04000000: return "<command>";
+	case 0x05000000: return "<stack>";
+	case 0x06000000: return "<map>";
+	case 0x07000000: return "<key-value>";
 	}
 	return "<! ! ! error ! ! !>";
 }
@@ -313,7 +339,14 @@ TreeIterator::TreeIterator(Tree& _tree) :
 	index(0),
 	depth(0)
 {
-	CHECK(!tree.isClear(), TREE_IS_EMPTY);
+	ASSERT(!tree.isClear(), "");
+}
+TreeIterator::TreeIterator(Tree& _tree, INT _index) :
+	tree(_tree),
+	index(_index),
+	depth(0)
+{
+	ASSERT(!tree.isClear(), "");
 }
 
 void TreeIterator::printTree(bool compact)
@@ -359,14 +392,14 @@ bool TreeIterator::next()
 
 void TreeIterator::toChild()
 {
-	CHECK(hasChild(), ITERATOR_HAS_NO_CHILD_ELEMENT);
+	ASSERT(hasChild(), "");
 	index = tree.data[index+3];
 	depth++;
 }
 
 void TreeIterator::toParent()
 {
-	CHECK(hasParent(), ITERATOR_HAS_NO_PARENT_ELEMENT);
+	ASSERT(hasParent(), "");
 	index = tree.data[index+1];
 	depth--;
 }
@@ -424,19 +457,19 @@ INT TreeIterator::getDepth()
 
 CHAR TreeIterator::getOp()
 {
-	CHECK(isType(NODE_OPERATOR), ITERATOR_WRONG_DATA_TYPE);
+	ASSERT(isType(NODE_OPERATOR), "");
 	return (CHAR)(tree.data[index + 3]);
 }
 
 INT TreeIterator::getInt()
 {
-	CHECK(isType(NODE_INTEGER), ITERATOR_WRONG_DATA_TYPE);
+	ASSERT(isType(NODE_INTEGER), "");
 	return tree.data[index + 3];
 }
 
 const char* TreeIterator::getText()
 {
-	CHECK(isTextType(), ITERATOR_WRONG_DATA_TYPE);
+	ASSERT(isTextType(), "");
 	LOG.print("TEXT [").print(tree.data[index+3]).print("] ");
 	auto ptr = (tree.data.get() + index + 4);
 	return (char *)ptr;
@@ -446,7 +479,7 @@ bool TreeIterator::matchTextData(INT* data)
 {
 	// TEXT NODE:		TAG (node type, size), PARENT, NEXT, CHAR COUNT, TEXT DATA[n]
 
-	CHECK(isTextType(), ITERATOR_WRONG_DATA_TYPE);
+	ASSERT(isTextType(), "");
 
 	//LOG.println("match: "<<getText());
 
@@ -460,6 +493,12 @@ bool TreeIterator::matchTextData(INT* data)
 		if (data[i-3] != tree.data[index+i]) return false;
 	}
 	return true;
+}
+
+INT* TreeIterator::getTextData()
+{
+	ASSERT(isTextType(), "");
+	return tree.data.get() + index + 3;
 }
 
 }

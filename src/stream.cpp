@@ -1,4 +1,5 @@
 #include "stream.h"
+#include "utils.h"
 #include <iostream>
 
 using namespace paula;
@@ -22,7 +23,7 @@ bool paula::CharInputStream::end()
 void paula::CharInputStream::close()
 {
 }
-
+/*
 paula::BufferInputStream::BufferInputStream(Array<CHAR>& _str, INT _start, INT _last) :
 	str(_str.get(), _str.length()),
 	i(_start),
@@ -43,7 +44,7 @@ bool paula::BufferInputStream::end()
 void paula::BufferInputStream::close()
 {
 }
-
+*/
 const POut& paula::POut::print(int x) const
 {
 	return print((long)x);
@@ -58,13 +59,6 @@ const POut& paula::POut::print(bool x) const
 {
 	return print(x ? "true" : "false");
 }
-
-const POut& paula::POut::printCharSymbol(CHAR c) const
-{
-	if (c>=32 && c<127) print(c); // printable
-	else print('#').print(charToInt(c)); // control char: print number
-	return *this;
-}
 const POut& paula::POut::println(const char* x) const
 {
 	return print(x).endl();
@@ -73,6 +67,40 @@ const POut& paula::POut::println(const char* x) const
 const POut& paula::POut::endl() const
 {
 	return print('\n');
+}
+
+// special prints
+
+char hexs[] = 
+{
+		'0','1','2','3',
+		'4','5','6','7',
+		'8','9','a','b',
+		'c','d','e','f'
+};
+const POut& paula::POut::printHex(INT h) const
+{
+	print("0x");
+	for (INT i = 28; i >= 0; i -= 4)
+	{
+		int index = (h >> i);
+		index &= 0x0000000f;
+		print(hexs[index]);
+	}
+	return *this;
+}
+
+const POut& paula::POut::printCharSymbol(CHAR c) const
+{
+	if (c>=32 && c<127) print(c); // printable
+	else print('#').print(charToInt(c)); // control char: print number
+	return *this;
+}
+const POut& paula::POut::print(const Error* a) const
+{
+	if (a == nullptr) print("<no error>");
+	else print(a->name);
+	return *this;
 }
 
 // sdt::cout

@@ -15,11 +15,11 @@ namespace paula
 
 		ByteAutomata(Paula&);
 		~ByteAutomata();
-		void run(IInputStream & input);
+		ERROR_STATUS run(IInputStream & input);
 
 	private:
 
-		bool ok;
+		const Error* error;
 		Array<BYTE> tr;
 		BYTE currentInput;
 		BYTE currentState;
@@ -31,7 +31,6 @@ namespace paula
 		INT index = 0;
 		INT lineNumber = 0;
 		bool stayNextStep = false;
-		bool running = false;
 		Array<BYTE> buffer;
 		Array<BYTE> tmp;
 		Array<INT> treeStack;
@@ -52,13 +51,13 @@ namespace paula
 		void prepareAddToken();
         void addOperatorToken();
 		void next(BYTE nextState);
-		void print();
+		//void print();
 		void printError();
         void printTreeStack();
-        void pushTree(INT parent);
+		void pushTree(INT parent);
 		void popTree();
 		//std::string getString(INT,INT);
-		bool step(BYTE input);
+		ERROR_STATUS step(BYTE input);
 		INT getIndex();
 
 		// state machine functions

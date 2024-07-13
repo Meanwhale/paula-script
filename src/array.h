@@ -1,8 +1,11 @@
 #ifndef _ARRAY_H_
 #define _ARRAY_H_
 #include "utils.h"
+#include "stream.h"
+
 namespace paula
 {
+
 template <class T> class Array
 {
 protected:
@@ -84,12 +87,12 @@ public:
 	}
 	T & get(int i)
 	{
-		CHECK(inRange(i), ARRAY_OUT_OF_RANGE);
+		ASSERT(inRange(i), "ARRAY_OUT_OF_RANGE");
 		return data[i];
 	}
 	T & operator[] (int i)
 	{
-		CHECK(inRange(i), ARRAY_OUT_OF_RANGE);
+		ASSERT(inRange(i), "ARRAY_OUT_OF_RANGE");
 		return get(i);
 	}
 	int length()

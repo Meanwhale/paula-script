@@ -10,7 +10,7 @@
 
 // assert: internal error, check: user error
 
-#define ASSERT(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg, INTERNAL); }}
+#define ASSERT(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg); }}
 //#define EXIT(msg) { ERR.println(msg); }
 
 #define IS_CHAR(c) (c>='a' && c<='z')
@@ -32,10 +32,16 @@ namespace paula
 
 	class Error
 	{
+	private:
+		Error() = delete;
+		Error& operator=(const Error&) = delete;
 	public:
 		const INT id; // unique id only for internal use.
 		const char * name;
 		constexpr explicit Error(int _id, const char * _name) : id(_id), name(_name) { }
+		bool operator==(const Error& other) const { return this->id == other.id; }
+		bool operator!=(const Error& other) const { return this->id != other.id; }
+		static bool equal(const Error* a, const Error* b);
 	};
 
 	ERROR_TYPE (UNDEFINED);
@@ -47,9 +53,11 @@ namespace paula
 	ERROR_TYPE (SYNTAX_ERROR);
 	ERROR_TYPE (UNKNOWN_COMMAND);
 	ERROR_TYPE (UNKNOWN_EXPRESSION);
-	ERROR_TYPE (VALUE_MISSING);
+	ERROR_TYPE (EMPTY_ARGUMENT_VALUE);
 	ERROR_TYPE (TYPE_MISMATCH);
 	ERROR_TYPE (INVALID_OPERATOR);
+	ERROR_TYPE (DIV_ZERO);
+	ERROR_TYPE (VARIABLE_NOT_FOUND);
 
 	// tree + interator
 
@@ -60,8 +68,22 @@ namespace paula
 	ERROR_TYPE (ITERATOR_WRONG_DATA_TYPE);
 }
 
+// return value for error checked functions
+
+#define ERROR_STATUS [[nodiscard]] const Error*
+
+// return error if needed
+
+#define CHECK(x,e) { if (!(x)) { return &e; } }
+
+#define NO_ERROR nullptr
+
+// call ERROR_STATUS function and interrupt if there was an error
+
+#define CHECK_CALL(f) { auto r = f; if (r != NO_ERROR) return r; }
 
 
+/*
 #ifdef PAULA_EXCEPTIONS
 #include <exception>
 namespace paula
@@ -77,3 +99,4 @@ namespace paula
 #else
 #define CHECK(x,msg) { if (!(x)) { ERR.println(msg); ASSERT(false, "CHECK failed"); }}
 #endif
+*/

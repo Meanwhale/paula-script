@@ -1,21 +1,14 @@
 #include "utils.h"
 #include "array.h"
 
-#ifdef PAULA_EXCEPTIONS
-#include <stdexcept>
-#endif
 
 // UTILS
 
-void paula::assert(bool x, const char * msg, const Error& e)
+void paula::assert(bool x, const char * msg)
 {
 	if (!x)
 	{
-#ifdef PAULA_EXCEPTIONS
-		throw PaulaException(msg,e);
-#else
-		std::cout<<msg<<std::endl;
-#endif
+		ERR.println(msg);
 		HALT;
 	}
 }

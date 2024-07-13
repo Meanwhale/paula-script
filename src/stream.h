@@ -1,6 +1,6 @@
 #pragma once
 #include "defs.h"
-#include "array.h"
+//#include "array.h"
 namespace paula
 {
 	// OUTPUT
@@ -30,7 +30,9 @@ namespace paula
 		const POut& print(int x) const;
 		const POut& print(float x) const;
 		const POut& print(bool x) const;
+		const POut& printHex(INT i) const;
 		const POut& printCharSymbol(CHAR c) const;
+		const POut& print(const Error* a) const;
 		const POut& println(const char*) const;
 		const POut& endl() const;
 
@@ -84,15 +86,18 @@ namespace paula
 		const char * str;
 		INT i;
 	};
-	class BufferInputStream : public IInputStream
-	{
-	public:
-		BufferInputStream(Array<CHAR>&, INT start, INT last);
-		CHAR read() override;
-		bool end() override;
-		void close() override;
-	private:
-		Array<CHAR> str;
-		INT i, last;
-	};
+
+	//template <class CHAR> class Array;
+
+	//class BufferInputStream : public IInputStream
+	//{
+	//public:
+	//	BufferInputStream(Array<CHAR>&, INT start, INT last);
+	//	CHAR read() override;
+	//	bool end() override;
+	//	void close() override;
+	//private:
+	//	Array<CHAR> str;
+	//	INT i, last;
+	//};
 }
