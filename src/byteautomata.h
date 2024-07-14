@@ -15,10 +15,20 @@ namespace paula
 
 		ByteAutomata(Paula&);
 		~ByteAutomata();
-		ERROR_STATUS run(IInputStream & input);
+		void init(IInputStream* _input);
+		bool running();
+		void step();
+		void run(IInputStream* input);
+		void clearBuffer();
+		const Error* getError();
 
 	private:
 
+		void step(BYTE);
+		void closeInput();
+		void uninit();
+
+		IInputStream* input;
 		const Error* error;
 		Array<BYTE> tr;
 		BYTE currentInput;
@@ -27,8 +37,7 @@ namespace paula
 		BYTE stateCounter;
 		BYTE actionCounter; // 0 = end
 		// running:
-		BYTE inputByte = 0;
-		INT index = 0;
+		INT bufferIndex = 0;
 		INT lineNumber = 0;
 		bool stayNextStep = false;
 		Array<BYTE> buffer;
@@ -57,11 +66,10 @@ namespace paula
 		void pushTree(INT parent);
 		void popTree();
 		//std::string getString(INT,INT);
-		ERROR_STATUS step(BYTE input);
 		INT getIndex();
 
 		// state machine functions
-		
+
 		void stay();
 		void addLiteralToken(INT tokenType);
 		void addTextToken();

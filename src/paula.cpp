@@ -71,8 +71,8 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 {
 	LOG.println("RUN STRING: ");
 
-	auto error = automata.run(input);
-
+	automata.run(&input);
+	auto error = automata.getError();
 	if (handleErrors && error != NO_ERROR)
 	{
 		ERR
@@ -144,6 +144,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, Tree& tree)
 	{
 		ASSERT(false, "Paula::execute: not an executable tree");
 	}
+	automata.clearBuffer(); // TODO: don't clear if running a loop
 	return NO_ERROR;
 }
 
@@ -223,7 +224,7 @@ ERROR_STATUS paula::Paula::pushVariable(TreeIterator& name)
 		{
 			// found!
 			it.next();
-			pushAtomicValue(it);
+			CHECK_CALL(pushAtomicValue(it));
 			return NO_ERROR;
 		}
 		it.toParent();
