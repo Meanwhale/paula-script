@@ -29,6 +29,11 @@ namespace paula
 	extern const POut& log; // log output
 	extern const POut& err; // error output
 	extern const POut& user; // print output
+	
+	// language keywords
+
+	extern INT* keywords[];
+	void addKeyword(INT*);
 
 	class Error
 	{

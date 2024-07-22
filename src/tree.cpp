@@ -53,8 +53,20 @@ void paula::Tree::addInt(INT parentIndex, INT value)
 	data[top++] = value;
 }
 
+void paula::Tree::addBool(INT parentIndex, bool value)
+{
+	insertTree(parentIndex, NODE_BOOL, 3);
+	data[top++] = value ? 1 : 0;
+}
 
-void Tree::addText(INT parentIndex, Array<BYTE>& src, INT firstByte, INT lastByte, INT nodeType)
+void Tree::addText(INT parentIndex, const char * text)
+{
+	INT numBytes = (INT)strlen(text);
+	addText(parentIndex, (const unsigned char *) text, 0, numBytes, NODE_NAME);
+}
+
+
+void Tree::addText(INT parentIndex, const unsigned char * bytes, INT firstByte, INT lastByte, INT nodeType)
 {
 	// TEXT NODE:		TAG (node type, size), PARENT, NEXT, CHAR COUNT, TEXT DATA[n]
 
@@ -65,7 +77,7 @@ void Tree::addText(INT parentIndex, Array<BYTE>& src, INT firstByte, INT lastByt
 	
 	data[top++] = numBytes;
 
-	bytesToInts(src.get(), firstByte, data, top, numBytes);
+	bytesToInts(bytes, firstByte, data, top, numBytes);
 
 	top += intsSize;
 }
@@ -365,6 +377,10 @@ void TreeIterator::print(bool compact)
 	{
 		LOG.print(getInt());
 	}
+	else if (isType(NODE_BOOL))
+	{
+		LOG.print(getBool() ? "true" : "false");
+	}
 	else if (isType(NODE_OPERATOR))
 	{
 		LOG.print(getOp());
@@ -461,6 +477,11 @@ CHAR TreeIterator::getOp()
 	return (CHAR)(tree.data[index + 3]);
 }
 
+bool TreeIterator::getBool()
+{
+	ASSERT(isType(NODE_BOOL), "");
+	return tree.data[index + 3] != 0;
+}
 INT TreeIterator::getInt()
 {
 	ASSERT(isType(NODE_INTEGER), "");

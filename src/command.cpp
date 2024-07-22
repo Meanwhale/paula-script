@@ -11,6 +11,8 @@ paula::Command::Command(const char* str, void (* _action)(Paula&,Tree&)) :
 	Array<INT> nameData (name, 12);
 	nameData[0] = length;
 	bytesToInts((const unsigned char *)str, 0, nameData, 1, length);
+	
+	addKeyword(name);
 }
 
 void paula::Command::execute(Paula& paula, Tree& tree)

@@ -260,6 +260,7 @@ void ByteAutomata::uninit()
 	{	
 		bufferIndex++;
 		step('\n');
+		if (stayNextStep) step('\n');
 	}
 }
 void ByteAutomata::clearBuffer()
@@ -312,6 +313,9 @@ void ByteAutomata::startAssignment ()
 	tree.init(NODE_ASSIGNMENT);
 	treeStack[0] = 0;
 	treeStackTop = 0;
+
+	addLiteralToken(NODE_NAME);
+	next(stateSpace);
 }
 void ByteAutomata::startFunction ()
 {
@@ -321,6 +325,10 @@ void ByteAutomata::startFunction ()
 	tree.init(NODE_COMMAND);
 	treeStack[0] = 0;
 	treeStackTop = 0;
+
+	addLiteralToken(NODE_NAME);
+	stay();
+	next(stateSpace);
 }
 INT ByteAutomata::parseInt(Array<BYTE>& src, INT i, INT lastByte)
 {
@@ -352,26 +360,34 @@ void ByteAutomata::addOperatorToken()
 	prepareAddToken();
 	tree.addOperatorNode(currentParent(), (char)currentInput);
 }
-void ByteAutomata::addIntegerToken()
+void ByteAutomata::addTokenAndTransitionToSpace()
 {
-	LOG.println("addIntegerToken");
-	INT value = parseInt(buffer, lastStart, getIndex());
-	prepareAddToken();
-	tree.addInt(currentParent(), value);
-}
-void ByteAutomata::addNameToken()
-{
-	addLiteralToken(NODE_NAME);
-}
-void ByteAutomata::addTextToken()
-{
-	addLiteralToken(NODE_TEXT);
+	if (currentState == stateName)
+	{
+		addLiteralToken(NODE_NAME);
+	}
+	else if (currentState == stateText)
+	{
+		addLiteralToken(NODE_TEXT);
+	}
+	else if (currentState == stateNumber)
+	{
+		LOG.println("addIntegerToken");
+		INT value = parseInt(buffer, lastStart, getIndex());
+		prepareAddToken();
+		tree.addInt(currentParent(), value);
+	}
+	
+	// continue at space state
+
+	stay();
+	next(stateSpace);
 }
 void ByteAutomata::addLiteralToken(INT nodeType)
 {
 	LOG.print("addLiteralToken: ").printHex(nodeType).endl();
 	prepareAddToken();
-	tree.addText(currentParent(), buffer, lastStart, getIndex(), nodeType);
+	tree.addText(currentParent(), buffer.get(), lastStart, getIndex(), nodeType);
 }
 void ByteAutomata::comma()
 {
@@ -446,15 +462,16 @@ void ByteAutomata::defineTransitions()
 	statePostName = addState("post name");
 	stateName = addState("name");
 	stateNumber = addState("number");
+	stateText = addState("text"); // TODO
 	
 	transition(stateStart, "\t", [](ByteAutomata*ba)					{ ba->indentation++; });
 	transition(stateStart, letters, [](ByteAutomata*ba)					{ ba->startExpr(ba->stateFirstName); });
 	transition(stateStart, linebreak, [](ByteAutomata*ba)				{ ba->newLine(); });
 
 	transition(stateFirstName, letters, 0);
-	transition(stateFirstName, whiteSpace, [](ByteAutomata*ba)			{ ba->addNameToken(); ba->next(ba->stateSpace); });
-	transition(stateFirstName, ":", [](ByteAutomata*ba)					{ ba->startAssignment(); ba->addNameToken(); ba->next(ba->stateSpace); });
-	transition(stateFirstName, blockStart, [](ByteAutomata*ba)			{ ba->startFunction(); ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
+	transition(stateFirstName, whiteSpace, [](ByteAutomata*ba)			{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateFirstName, ":", [](ByteAutomata*ba)					{ ba->startAssignment(); });
+	transition(stateFirstName, blockStart, [](ByteAutomata*ba)			{ ba->startFunction(); });
 
 	transition(stateSpace, whiteSpace, 0);
 	transition(stateSpace, operators, [](ByteAutomata*ba)				{ ba->addOperatorToken(); });
@@ -466,17 +483,17 @@ void ByteAutomata::defineTransitions()
 	transition(stateSpace, ",", [](ByteAutomata*ba)						{ ba->comma(); });
 
 	transition(stateName, letters, 0);
-	transition(stateName, whiteSpace, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->next(ba->stateSpace); });
-	transition(stateName, operators, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateName, blockStart, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateName, blockEnd, [](ByteAutomata*ba)					{ ba->addNameToken(); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateName, linebreak, [](ByteAutomata*ba)				{ ba->addNameToken(); ba->lineBreak(); });
+	transition(stateName, whiteSpace, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateName, operators, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateName, blockStart, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateName, blockEnd, [](ByteAutomata*ba)					{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateName, linebreak, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
 
 	transition(stateNumber, numbers, 0);
-	transition(stateNumber, whiteSpace, [](ByteAutomata*ba)				{ ba->addIntegerToken(); ba->next(ba->stateSpace); });
-	transition(stateNumber, ",", [](ByteAutomata*ba)					{ ba->addIntegerToken(); ba->comma(); ba->next(ba->stateSpace); });
-	transition(stateNumber, operators, [](ByteAutomata*ba)				{ ba->addIntegerToken(); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateNumber, blockEnd, [](ByteAutomata*ba)				{ ba->addIntegerToken(); ba->stay(); ba->next(ba->stateSpace); });
-	transition(stateNumber, linebreak, [](ByteAutomata*ba)				{ ba->addIntegerToken(); ba->lineBreak(); });
+	transition(stateNumber, whiteSpace, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateNumber, ",", [](ByteAutomata*ba)					{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateNumber, operators, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateNumber, blockEnd, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateNumber, linebreak, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
 }
 }

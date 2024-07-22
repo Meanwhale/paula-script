@@ -27,6 +27,7 @@ namespace paula
 		NODE_INTEGER			= 0x22000000, // e.g. 123
 		NODE_FLOAT				= 0x23000000, // e.g. 1.23
 		NODE_TEXT				= 0x24000000, // string/const char*, e.g. "abc d"
+		NODE_BOOL				= 0x25000000, // true = 1, false = 0
 
 		// controls tokens
 
@@ -48,8 +49,10 @@ namespace paula
 		Tree(INT size);
 
 		void addInt(INT parentIndex, INT data);
+		void addBool(INT parentIndex, bool data);
 		void addOperatorNode(INT parentIndex, CHAR op);
-		void addText(INT parentIndex, Array<BYTE>& src, INT first, INT last, INT nodeType);
+		void addText(INT parentIndex, const char* text);
+		void addText(INT parentIndex, const unsigned char * bytes, INT first, INT last, INT nodeType);
 		void addData(INT stackIndex, TreeIterator& src);
 		INT addSubtree(INT parentIndex, INT type);
 		bool hasCapacity(INT size);
@@ -133,6 +136,7 @@ namespace paula
 		INT getDepth();
 
 
+		bool getBool();
 		INT getInt();
 		CHAR getOp();
 		const char * getText();

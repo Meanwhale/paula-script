@@ -21,6 +21,7 @@ namespace paula
 		ERROR_STATUS pushArgList(TreeIterator&);
 		ERROR_STATUS pushAtomicValue(TreeIterator& _it);
 		ERROR_STATUS pushVariable(TreeIterator& name);
+		bool pushVariable(TreeIterator& name, Tree&tree);
 		ERROR_STATUS pushExprArg(TreeIterator&);
 		ERROR_STATUS operate(CHAR op, INT a, INT b, INT& out);
 		ERROR_STATUS executeLine(INT indentation, Tree& tree);
@@ -31,9 +32,7 @@ namespace paula
 
 		ByteAutomata automata;
 
-		Tree args, vars;
-
-		//ArgDef commandArgDef, singleArgDef, OperatorArgDef;
+		Tree args, vars, constants;
 
 		Command commands[NUM_COMMANDS];
 

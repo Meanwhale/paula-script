@@ -3,8 +3,10 @@
 
 using namespace paula;
 
-constexpr INT ARG_STACK_SIZE = 1024;
-constexpr INT VARS_SIZE = 1024;
+constexpr INT
+	ARG_STACK_SIZE = 1024,
+	VARS_SIZE = 1024,
+	CONSTANTS_SIZE = 128;
 
 // PAULA
 
@@ -38,6 +40,7 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	automata(*this),
 	args(ARG_STACK_SIZE),
 	vars(VARS_SIZE),
+	constants(CONSTANTS_SIZE),
 	commands
 	{
 		Command("print", printAction),
@@ -52,6 +55,15 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 
 	args.init(NODE_STACK);
 	vars.init(NODE_SUBTREE);
+	constants.init(NODE_SUBTREE);
+
+	INT kvIndex = constants.addSubtree(0, NODE_KV);
+	constants.addText(kvIndex, "true");
+	constants.addBool(kvIndex, true);
+	
+	kvIndex = constants.addSubtree(0, NODE_KV);
+	constants.addText(kvIndex, "false");
+	constants.addBool(kvIndex, false);
 
 	//commandArgDef.types[0] = NODE_NAME;
 	//commandArgDef.types[1] = NODE_SUBTREE;
@@ -177,7 +189,7 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 
 	LOG.print("push atomic value: "); it.print(true); LOG.endl();
 
-	if (it.isType(NODE_INTEGER))
+	if (it.isType(NODE_INTEGER) || it.isType(NODE_BOOL))
 	{
 		args.pushData(0,it);
 	}
@@ -197,6 +209,7 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 		CHECK_CALL(pushVariable(it));
 
 	}
+	// TODO: text
 	else
 	{
 		ASSERT(false, "unhandled value node");
@@ -209,8 +222,17 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 
 ERROR_STATUS paula::Paula::pushVariable(TreeIterator& name)
 {
-	// iterate variables and find
-	TreeIterator it(vars);
+	if (pushVariable(name, constants)) return NO_ERROR;
+	if (pushVariable(name, vars)) return NO_ERROR;
+
+	return &VARIABLE_NOT_FOUND;
+}
+
+bool paula::Paula::pushVariable(TreeIterator& name, Tree& tree)
+{
+	// iterate variables and find name. return true if found.
+
+	TreeIterator it(tree);
 	if (!it.hasChild())
 	{
 		return &VARIABLE_NOT_FOUND;
@@ -225,13 +247,12 @@ ERROR_STATUS paula::Paula::pushVariable(TreeIterator& name)
 			// found!
 			it.next();
 			CHECK_CALL(pushAtomicValue(it));
-			return NO_ERROR;
+			return true;
 		}
 		it.toParent();
 	}
 	while(it.next());
-
-	return &VARIABLE_NOT_FOUND;
+	return false; // variable not found in the tree
 }
 
 ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& _it)
