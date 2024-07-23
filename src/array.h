@@ -81,19 +81,19 @@ public:
 
 	// ACCESSORS
 
-	T * get() const
+	T * ptr() const
 	{
 		return data;
 	}
 	T & get(int i)
 	{
-		ASSERT(inRange(i), "ARRAY_OUT_OF_RANGE");
+		ASSERT_MSG(inRange(i), "ARRAY_OUT_OF_RANGE");
 		return data[i];
 	}
 	T & operator[] (int i)
 	{
-		ASSERT(inRange(i), "ARRAY_OUT_OF_RANGE");
-		return get(i);
+		ASSERT_MSG(inRange(i), "ARRAY_OUT_OF_RANGE");
+		return data[i];
 	}
 	int length()
 	{

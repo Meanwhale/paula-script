@@ -10,21 +10,25 @@ namespace paula
 	class IInputStream;
 	class Tree;
 
-	const int NUM_COMMANDS = 2;
+	const int NUM_COMMANDS = 3;
 
 	class Paula
 	{
 	public:
 		static Paula one; // the one Paula object
 
+		Tree vars;
+
 		ERROR_STATUS run(IInputStream&, bool handleException);
 		ERROR_STATUS pushArgList(TreeIterator&);
 		ERROR_STATUS pushAtomicValue(TreeIterator& _it);
 		ERROR_STATUS pushVariable(TreeIterator& name);
-		bool pushVariable(TreeIterator& name, Tree&tree);
-		ERROR_STATUS pushExprArg(TreeIterator&);
+		INT findVariableIndex(TreeIterator& name, Tree& tree);
+		//bool pushVariable(TreeIterator& name, Tree&tree);
+		ERROR_STATUS pushExprArg(TreeIterator& _it);
+		ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
 		ERROR_STATUS operate(CHAR op, INT a, INT b, INT& out);
-		ERROR_STATUS executeLine(INT indentation, Tree& tree);
+		ERROR_STATUS executeLine(INT indentation, INT lineType, Tree& tree);
 
 	private:
 
@@ -32,7 +36,7 @@ namespace paula
 
 		ByteAutomata automata;
 
-		Tree args, vars, constants;
+		Tree args, constants;
 
 		Command commands[NUM_COMMANDS];
 

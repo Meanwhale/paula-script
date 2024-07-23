@@ -4,7 +4,7 @@
 #include"tree.h"
 #include"stream.h"
 
-paula::Command::Command(const char* str, void (* _action)(Paula&,Tree&)) :
+paula::Command::Command(const char* str, const Error * (* _action)(Paula&,Tree&)) :
 	action(_action)
 {
 	INT length = (INT)strlen(str);
@@ -15,10 +15,10 @@ paula::Command::Command(const char* str, void (* _action)(Paula&,Tree&)) :
 	addKeyword(name);
 }
 
-void paula::Command::execute(Paula& paula, Tree& tree)
+const paula::Error * paula::Command::execute(Paula& paula, Tree& tree)
 {
 	LOG.println("Command: EXECUTE!");
-	action(paula,tree);
+	return action(paula,tree);
 }
 /*
 paula::ArgDef::ArgDef(INT size) : types(size)

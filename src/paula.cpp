@@ -3,27 +3,38 @@
 
 using namespace paula;
 
-constexpr INT
-	ARG_STACK_SIZE = 1024,
-	VARS_SIZE = 1024,
-	CONSTANTS_SIZE = 128;
-
 // PAULA
 
-void printAction (Paula&,Tree&args)
+ERROR_STATUS printAction (Paula&,Tree&args)
 {
 	LOG.println("printAction");
 	TreeIterator it(args);
-	if (!it.hasChild()) { LOG.println("<empty>"); return; }
+	if (!it.hasChild()) { LOG.println("<empty>"); return NO_ERROR; }
 	args.printCompact(it);
 	LOG.println("");
+	return NO_ERROR;
 }
-void fooAction (Paula&p,Tree&args)
+ERROR_STATUS notAction (Paula&p,Tree&args)
 {
-	LOG.println("fooAction");
-	args.pop(0);
-	args.pop(0);
-	args.pushInt(0,555);
+	// TODO: check there's exactly one value
+	LOG.println("notAction");
+	INT index = args.stackTopIndex(0);
+	bool value;
+	if (args.getBool(value, index))
+	{
+		args.pop(0);
+		args.pushBool(0,!value);
+	}
+	else
+	{
+		return &TYPE_MISMATCH;
+	}
+	return NO_ERROR;
+}
+ERROR_STATUS whileAction (Paula&p,Tree&args)
+{
+	// TODO
+	return &TYPE_MISMATCH;
 }
 
 Paula Paula::one = Paula();
@@ -44,7 +55,8 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	commands
 	{
 		Command("print", printAction),
-		Command("foo", fooAction),
+		Command("not", notAction),
+		Command("while", whileAction)
 	}
 	//commandArgDef(2),
 	//singleArgDef(1),
@@ -81,7 +93,7 @@ const int
 
 ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 {
-	LOG.println("RUN STRING: ");
+	LOG.println("Paula::run");
 
 	automata.run(&input);
 	auto error = automata.getError();
@@ -104,11 +116,11 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 }
 
 
-ERROR_STATUS paula::Paula::executeLine(INT indentation, Tree& tree)
+ERROR_STATUS paula::Paula::executeLine(INT indentation, INT lineType, Tree& tree)
 {
 	args.init(NODE_STACK);
 
-	if (tree.getType(0) == NODE_ASSIGNMENT)
+	if (lineType == LINE_ASSIGNMENT)
 	{
 		// TRG : SRC
 
@@ -120,14 +132,14 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, Tree& tree)
 		vars.addData(kvIndex, it); // add variable name to KV
 		it.next(); // move to SRC
 		LOG.print("start: "); it.print(true); LOG.endl();
-		CHECK_CALL(pushAtomicValue(it)); // TODO: assign expression
+		CHECK_CALL(pushExprArg(it));
 		auto src = TreeIterator(args, args.stackTopIndex(0));
 		LOG.print("assign value: "); src.print(true); LOG.endl();
 		vars.addData(kvIndex, src); // add value to KV
 		args.pop(0);
 		vars.print();
 	}
-	else if (tree.getType(0) == NODE_COMMAND)
+	else if (lineType == LINE_CALL)
 	{
 		// COMMAND { funcName ( args ) }
 
@@ -145,7 +157,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, Tree& tree)
 
 			CHECK_CALL(pushArgList(it));
 
-			cmd->execute(*this, args);
+			CHECK_CALL(cmd->execute(*this, args));
 		}
 		else
 		{
@@ -154,7 +166,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, Tree& tree)
 	}
 	else
 	{
-		ASSERT(false, "Paula::execute: not an executable tree");
+		ASSERT(false);
 	}
 	automata.clearBuffer(); // TODO: don't clear if running a loop
 	return NO_ERROR;
@@ -172,7 +184,7 @@ ERROR_STATUS paula::Paula::pushArgList(TreeIterator& _it)
 	it.toChild();
 	do
 	{
-		CHECK_CALL(pushExprArg(it));
+		CHECK_CALL(pushExprSubtreeArg(it));
 	}
 	while(it.next());
 
@@ -197,10 +209,10 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 	{
 		// arg. in (), eg. "(2+3)" in "1 + (2+3)"
 		TreeIterator it(_it);
-		ASSERT(it.isType(NODE_SUBTREE), "");
+		ASSERT(it.isType(NODE_SUBTREE));
 		it.toChild(); // 1 + ( to here <EXPR> )
 		CHECK(!it.hasNext(), SYNTAX_ERROR);
-		CHECK_CALL(pushExprArg(it));
+		CHECK_CALL(pushExprSubtreeArg(it));
 	}
 	else if(it.isType(NODE_NAME))
 	{
@@ -212,7 +224,7 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 	// TODO: text
 	else
 	{
-		ASSERT(false, "unhandled value node");
+		ASSERT(false);
 	}
 
 	INT stackSizeAfter = args.stackSize(0);
@@ -222,23 +234,53 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 
 ERROR_STATUS paula::Paula::pushVariable(TreeIterator& name)
 {
-	if (pushVariable(name, constants)) return NO_ERROR;
-	if (pushVariable(name, vars)) return NO_ERROR;
-
+	INT index = findVariableIndex(name, constants);
+	if (index >= 0)
+	{
+		TreeIterator out(constants, index);
+		CHECK_CALL(pushAtomicValue(out));
+		return NO_ERROR;
+	}
+	index = findVariableIndex(name, vars);
+	if (index >= 0)
+	{
+		TreeIterator out(vars, index);
+		CHECK_CALL(pushAtomicValue(out));
+		return NO_ERROR;
+	}
+	
 	return &VARIABLE_NOT_FOUND;
 }
 
-bool paula::Paula::pushVariable(TreeIterator& name, Tree& tree)
+INT paula::Paula::findVariableIndex(TreeIterator& name, Tree& variableMap)
+{
+
+	// iterate variables and find name. return true if found.
+
+	TreeIterator it(variableMap);
+	if (!it.hasChild())	return -1;
+	it.toChild();
+	do
+	{
+		it.toChild(); // first child is the name
+		if (it.matchTextData(name.getTextData()))
+		{
+			it.next(); // found! move to data
+			return it.getIndex();
+		}
+		it.toParent();
+	}
+	while(it.next());
+	return -1; // variable not found in the tree
+}
+
+/*bool paula::Paula::pushVariable(TreeIterator& name, Tree& tree)
 {
 	// iterate variables and find name. return true if found.
 
 	TreeIterator it(tree);
-	if (!it.hasChild())
-	{
-		return &VARIABLE_NOT_FOUND;
-	}
+	if (!it.hasChild())	return false;
 	it.toChild();
-
 	do
 	{
 		it.toChild(); // first child is the name
@@ -253,18 +295,11 @@ bool paula::Paula::pushVariable(TreeIterator& name, Tree& tree)
 	}
 	while(it.next());
 	return false; // variable not found in the tree
-}
+}*/
 
-ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& _it)
+ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
 {
 	INT stackSizeBefore = args.stackSize(0);
-
-	TreeIterator it(_it);
-
-	CHECK(it.isType(NODE_EXPR), SYNTAX_ERROR);
-	CHECK(it.hasChild(), SYNTAX_ERROR);
-	it.toChild();
-
 	// 'it' now points to first element of the expression, eg. "x" in "x + 1"
 
 	if (!it.hasNext())
@@ -297,7 +332,7 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& _it)
 		else if (it.isNextType(NODE_OPERATOR))
 		{
 			LOG.println("int [op] int operator"); // eg. "a + b"
-		
+
 			// get the first value
 
 			CHECK_CALL(pushAtomicValue(it));
@@ -306,7 +341,7 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& _it)
 			// read the operator
 
 			it.next();
-			ASSERT(it.isType(NODE_OPERATOR),"");
+			ASSERT(it.isType(NODE_OPERATOR));
 			CHAR op = it.getOp();
 
 			// get the second value
@@ -330,6 +365,19 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& _it)
 
 	INT stackSizeAfter = args.stackSize(0);
 	CHECK(stackSizeBefore + 1 == stackSizeAfter, EMPTY_ARGUMENT_VALUE);
+	return NO_ERROR;
+}
+
+ERROR_STATUS paula::Paula::pushExprSubtreeArg(TreeIterator& _it)
+{
+
+	TreeIterator it(_it);
+
+	CHECK(it.isType(NODE_EXPR), SYNTAX_ERROR);
+	CHECK(it.hasChild(), SYNTAX_ERROR);
+	it.toChild(); // 'it' now points to first element of the expression, eg. "x" in "x + 1"
+	CHECK_CALL(pushExprArg(it));
+
 	return NO_ERROR;
 }
 ERROR_STATUS paula::Paula::operate(CHAR op, INT a, INT b, INT&out)

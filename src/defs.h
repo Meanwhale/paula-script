@@ -10,7 +10,8 @@
 
 // assert: internal error, check: user error
 
-#define ASSERT(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg); }}
+#define ASSERT_MSG(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg); }}
+#define ASSERT(x) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, ""); }}
 //#define EXIT(msg) { ERR.println(msg); }
 
 #define IS_CHAR(c) (c>='a' && c<='z')
@@ -71,6 +72,17 @@ namespace paula
 	ERROR_TYPE (ITERATOR_HAS_NO_CHILD_ELEMENT);
 	ERROR_TYPE (ITERATOR_HAS_NO_PARENT_ELEMENT);
 	ERROR_TYPE (ITERATOR_WRONG_DATA_TYPE);
+
+	constexpr INT
+		ARG_STACK_SIZE = 1024,
+		VARS_SIZE = 1024,
+		CONSTANTS_SIZE = 128,
+		MAX_VAR_NAME_LENGTH = 128,
+		MAX_VAR_NAME_DATA_LENGTH = 36,
+
+		LINE_UNDEFINED = 10001,
+		LINE_ASSIGNMENT = 10002,
+		LINE_CALL = 10003;
 }
 
 // return value for error checked functions

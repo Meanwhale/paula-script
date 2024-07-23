@@ -11,11 +11,7 @@ constexpr INT
 	MAX_STATES = 32,
 	MAX_DEPTH = 32,
 	BA_BUFFER_SIZE = 1024,
-	CFG_MAX_NAME_LENGTH = 128,
-	
-	LINE_UNDEFINED = 1,
-	LINE_ASSIGNMENT = 2,
-	LINE_CALL = 3;
+	CFG_MAX_NAME_LENGTH = 128;
 
 
 const CHAR
@@ -151,7 +147,7 @@ INT ByteAutomata::getIndex ()
 void ByteAutomata::stay ()
 {
 	// same input byte on next step
-	ASSERT(!stayNextStep, "'stay' is called twice");
+	ASSERT(!stayNextStep);
 	stayNextStep = true;
 }
 void ByteAutomata::init (IInputStream * _input)
@@ -251,11 +247,6 @@ void ByteAutomata::uninit()
 	LOG.println("end run");
 	closeInput();
 	printTreeStack();
-	if (treeStackTop != 0)
-	{
-		error = &PARENTHESIS;
-		return;
-	}
 	if (!stayNextStep)
 	{	
 		bufferIndex++;
@@ -289,7 +280,7 @@ void ByteAutomata::printTreeStack()
 }
 void ByteAutomata::pushTree(INT subtreeType)
 {
-	ASSERT(tree.isSubtreeTag(subtreeType), "");
+	ASSERT(tree.isSubtreeTag(subtreeType));
 
 	INT newParent = tree.addSubtree(currentParent(), subtreeType);
 	treeStackTop++;
@@ -308,37 +299,26 @@ void ByteAutomata::popTree()
 void ByteAutomata::startAssignment ()
 {
 	LOG.println("startAssignment");
-	ASSERT(lineType == LINE_UNDEFINED, "");
+	ASSERT(lineType == LINE_UNDEFINED);
 	lineType = LINE_ASSIGNMENT;
-	tree.init(NODE_ASSIGNMENT);
-	treeStack[0] = 0;
-	treeStackTop = 0;
-
-	addLiteralToken(NODE_NAME);
 	next(stateSpace);
 }
 void ByteAutomata::startFunction ()
 {
 	LOG.println("startFunction");
-	ASSERT(lineType == LINE_UNDEFINED, "");
+	ASSERT(lineType == LINE_UNDEFINED);
 	lineType = LINE_CALL;
-	tree.init(NODE_COMMAND);
-	treeStack[0] = 0;
-	treeStackTop = 0;
-
-	addLiteralToken(NODE_NAME);
 	stay();
 	next(stateSpace);
 }
 INT ByteAutomata::parseInt(Array<BYTE>& src, INT i, INT lastByte)
 {
 	INT value = 0;
-	INT zeros = 0;
 	while(i < lastByte)
 	{
 		// TODO negative
 		BYTE b = src[i];
-		ASSERT(b >= '0' && b <= '9', "");
+		ASSERT(b >= '0' && b <= '9');
 		if (value > 0) value *= 10;
 		value += b - '0';
 		i++;
@@ -349,7 +329,7 @@ void ByteAutomata::prepareAddToken()
 {
 	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_SUBTREE)
 	{
-		// parent is a subtree, start a new expr
+		// parent is a subtree "(...)", start a new expr after "(" or ","
 		LOG.println("addToken: new expr");
 		pushTree(NODE_EXPR);
 	}
@@ -359,6 +339,12 @@ void ByteAutomata::addOperatorToken()
 	LOG.println("addOperatorToken");
 	prepareAddToken();
 	tree.addOperatorNode(currentParent(), (char)currentInput);
+}
+void ByteAutomata::addFirstNameAndTransit()
+{
+	addLiteralToken(NODE_NAME);
+	stay();
+	next(stateAfterFirstName);
 }
 void ByteAutomata::addTokenAndTransitionToSpace()
 {
@@ -387,7 +373,7 @@ void ByteAutomata::addLiteralToken(INT nodeType)
 {
 	LOG.print("addLiteralToken: ").printHex(nodeType).endl();
 	prepareAddToken();
-	tree.addText(currentParent(), buffer.get(), lastStart, getIndex(), nodeType);
+	tree.addText(currentParent(), buffer.ptr(), lastStart, getIndex(), nodeType);
 }
 void ByteAutomata::comma()
 {
@@ -402,10 +388,20 @@ void ByteAutomata::comma()
 }
 void ByteAutomata::lineBreak()
 {
-	ASSERT(error == NO_ERROR, "");
+	ASSERT(error == NO_ERROR);
 	LOG.println("lineBreak: execute command");
 	tree.print();
-	error = paula.executeLine(indentation, tree);
+	if (lineType == LINE_UNDEFINED)
+	{
+		error = &SYNTAX_ERROR;
+		return;
+	}
+	if (treeStackTop != 0)
+	{
+		error = &PARENTHESIS;
+		return;
+	}
+	error = paula.executeLine(indentation, lineType, tree);
 	if (error != NO_ERROR) return;
 	newLine();
 }
@@ -433,12 +429,12 @@ void ByteAutomata::newLine()
 {
 	indentation = 0;
 	lineType = LINE_UNDEFINED;
-	tree.clear();
 	
 	// tree node to the top of the stack
-	
+
+	tree.init(NODE_STATEMENT);
+	treeStack[0] = 0;
 	treeStackTop = 0;
-	tree.clear();
 	next(stateStart);
 }
 void ByteAutomata::startExpr(BYTE firstState)
@@ -459,6 +455,7 @@ void ByteAutomata::defineTransitions()
 	stateSpace = addState("space");
 	stateName = addState("name");
 	stateFirstName = addState("first name");
+	stateAfterFirstName = addState("after first name");
 	statePostName = addState("post name");
 	stateName = addState("name");
 	stateNumber = addState("number");
@@ -469,9 +466,13 @@ void ByteAutomata::defineTransitions()
 	transition(stateStart, linebreak, [](ByteAutomata*ba)				{ ba->newLine(); });
 
 	transition(stateFirstName, letters, 0);
-	transition(stateFirstName, whiteSpace, [](ByteAutomata*ba)			{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateFirstName, ":", [](ByteAutomata*ba)					{ ba->startAssignment(); });
-	transition(stateFirstName, blockStart, [](ByteAutomata*ba)			{ ba->startFunction(); });
+	transition(stateFirstName, whiteSpace, [](ByteAutomata*ba)			{ ba->addFirstNameAndTransit(); });
+	transition(stateFirstName, ":", [](ByteAutomata*ba)					{ ba->addFirstNameAndTransit(); });
+	transition(stateFirstName, blockStart, [](ByteAutomata*ba)			{ ba->addFirstNameAndTransit(); });
+
+	transition(stateAfterFirstName, whiteSpace, 0);
+	transition(stateAfterFirstName, ":", [](ByteAutomata*ba)			{ ba->startAssignment(); });
+	transition(stateAfterFirstName, blockStart, [](ByteAutomata*ba)		{ ba->startFunction(); });
 
 	transition(stateSpace, whiteSpace, 0);
 	transition(stateSpace, operators, [](ByteAutomata*ba)				{ ba->addOperatorToken(); });

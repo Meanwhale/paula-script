@@ -58,6 +58,7 @@ namespace paula
         void addTokenAndTransitionToSpace();
 		void prepareAddToken();
         void addOperatorToken();
+		void addFirstNameAndTransit();
 		void next(BYTE nextState);
 		//void print();
 		void printError();
@@ -82,7 +83,7 @@ namespace paula
 		INT currentParent();
 		Paula& paula;
 		INT lastStart, indentation, lineType, treeStackTop;
-		BYTE stateStart, stateSpace, stateName, stateFirstName, statePostName, stateNumber, stateText;
+		BYTE stateStart, stateSpace, stateName, stateFirstName, stateAfterFirstName, statePostName, stateNumber, stateText;
 		
 		// hide
 		ByteAutomata() = delete;

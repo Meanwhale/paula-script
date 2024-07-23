@@ -12,8 +12,7 @@ namespace paula
 
 		NODE_SUBTREE			= 0x01000000, // parser decides what kind or tree is it
 		NODE_EXPR				= 0x02000000,
-		NODE_ASSIGNMENT			= 0x03000000,
-		NODE_COMMAND			= 0x04000000,
+		NODE_STATEMENT			= 0x03000000,
 
 		NODE_STACK				= 0x05000000,
 		NODE_MAP				= 0x06000000, // like dictionary. list of KV nodes
@@ -60,6 +59,7 @@ namespace paula
 		// stack functions
 
 		void pushInt(INT stackIndex, INT value);
+		void pushBool(INT stackIndex, bool value);
 		void pushData(INT stackIndex, TreeIterator&src);
 		INT stackTopIndex(INT stackIndex);
 		INT popInt(INT stackIndex);
@@ -70,11 +70,18 @@ namespace paula
 
 		// map functions
 
+		bool getBool(bool& out, const char* varName);
+
+		bool getInt(int& out, const char* varName);
+
+		INT getIndexOfData(const char *, INT dataType);
 
 
 		// accessors
 
 		INT get(INT index);
+		bool getInt(int& out, INT nodeIndex);
+		bool getBool(bool& out, INT nodeIndex);
         INT getType(INT index);
 		INT getNodeSize(INT index);
 		bool isSubtree(INT nodeIndex);
@@ -82,6 +89,9 @@ namespace paula
 		bool isSubtreeTag(INT tag);
 		INT maskNodeTag(INT node);
 		INT nodeSize(INT node);
+
+		// utils
+
 		void init(INT parentType);
 		void clear();
 		bool isClear();
@@ -130,6 +140,7 @@ namespace paula
 		bool isTextType();
 		INT type();
 		INT size();
+		INT getIndex();
 
 		// data getters
 
@@ -151,7 +162,7 @@ namespace paula
 		Tree& tree;
 		INT index, depth;
 
-		TreeIterator() = delete;
-		TreeIterator& operator=(const TreeIterator&) = delete;
+		//TreeIterator() = delete;
+		//TreeIterator& operator=(const TreeIterator&) = delete;
 	};
 }

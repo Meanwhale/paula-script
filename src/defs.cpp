@@ -14,7 +14,7 @@ int keywordCount = 0;
 
 void paula::addKeyword(INT* w)
 {
-	ASSERT(keywordCount < MAX_KEYWORDS, "");
+	ASSERT(keywordCount < MAX_KEYWORDS);
 	keywords[keywordCount] = w;
 	keywordCount++;
 }

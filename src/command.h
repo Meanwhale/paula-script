@@ -10,11 +10,11 @@ namespace paula
 	class Command
 	{
 	public:
-		Command(const char* _name, void (* _action)(Paula&,Tree&));
+		Command(const char* _name, const Error * (* _action)(Paula&,Tree&));
 
-		void execute(Paula&,Tree&);
+		const Error *  execute(Paula&,Tree&);
 
-		void (*action) (Paula&,Tree&); // pointer to callback function
+		const Error * (*action) (Paula&,Tree&); // pointer to callback function
 
 		INT name[12];
 

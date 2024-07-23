@@ -13,7 +13,7 @@ void stackTest();
 
 int main()
 {
-	LOG.println("Hello World!\n");
+	LOG.println("Paula!!!\n");
 	
 	//iteratorTest();
 	//parenthesisTest();
@@ -28,10 +28,12 @@ int main()
 	//CharInputStream input("print(123456, 1+2, 45 + (foo(1,2)), foo(3, 4))");
 	//CharInputStream input("a:6\nprint(a*5)");
 	
-	CharInputStream input("foo: false");
+	//CharInputStream input("foo: false\nwhile(foo)\n\t\tprint loop");
+	//auto error = Paula::one.run(input, false);
+	//LOG.print("ERROR: ").print(error).endl();
 
-	auto error = Paula::one.run(input, false);
-	LOG.print("ERROR: ").print(error).endl();
+	//runAll();
+	loopTest();
 }
 
 void stackTest()
