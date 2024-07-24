@@ -20,6 +20,7 @@ namespace paula
 		void step();
 		void run(IInputStream* input);
 		void clearBuffer();
+		void jump(INT address);
 		const Error* getError();
 
 	private:
@@ -37,7 +38,9 @@ namespace paula
 		BYTE stateCounter;
 		BYTE actionCounter; // 0 = end
 		// running:
+		INT readIndex = -1;
 		INT bufferIndex = 0;
+		INT lineStartIndex = 0;
 		INT lineNumber = 0;
 		bool stayNextStep = false;
 		Array<BYTE> buffer;
@@ -65,8 +68,6 @@ namespace paula
         void printTreeStack();
 		void pushTree(INT parent);
 		void popTree();
-		//std::string getString(INT,INT);
-		INT getIndex();
 
 		// state machine functions
 

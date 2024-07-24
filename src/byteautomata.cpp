@@ -40,7 +40,7 @@ ByteAutomata::ByteAutomata(Paula& p) :
 	currentState = 0;
 	stateCounter = 0;
 	actionCounter = 0;
-	bufferIndex = 0;
+	bufferIndex = -1;
 	lineNumber = 0;
 	stayNextStep = false;
 
@@ -136,13 +136,9 @@ void ByteAutomata::printError ()
 void ByteAutomata::next (BYTE nextState)
 {
 	// transition to a next state
-	lastStart = getIndex();
+	lastStart = readIndex;
 	currentState = nextState;
-	LOG.print("Next state: ").print(stateNames[(INT)currentState]).endl();
-}
-INT ByteAutomata::getIndex ()
-{
-	return bufferIndex;
+	VRB(LOG.print("Next state: ").print(stateNames[(INT)currentState]).print(" start: ").print(lastStart).print(" stay: ").print(stayNextStep).endl();)
 }
 void ByteAutomata::stay ()
 {
@@ -154,7 +150,8 @@ void ByteAutomata::init (IInputStream * _input)
 {
 	input = _input;
 	currentState = stateStart;
-	bufferIndex = 0;
+	bufferIndex = -1;
+	readIndex = -1;
 	lineNumber = 1;
 	stayNextStep = false;
 	indentation = 0;
@@ -169,7 +166,7 @@ bool ByteAutomata::running()
 		closeInput();
 		return false;
 	}
-	return input != nullptr;
+	return input != nullptr || readIndex < bufferIndex || stayNextStep;
 }
 void ByteAutomata::closeInput()
 {
@@ -184,27 +181,45 @@ void ByteAutomata::step()
 	// get input byte
 	BYTE inputByte;
 
-	// TODO: read from buffer if loop
 
 	if (!stayNextStep)
 	{
-		// check end here in case input was shut down between steps.
-		if (input->end())
+		if (readIndex < bufferIndex)
 		{
-			input->close();
-			input = nullptr;
-			return;
+			// read from buffer (loop)
+			readIndex++;
+			inputByte = buffer[readIndex];
 		}
-		bufferIndex ++;
-		inputByte = input->read();
-		buffer[bufferIndex] = inputByte;
+		else if (input != nullptr)
+		{
+			ASSERT(readIndex == bufferIndex);
+			// read from input to buffer
+			// check end here in case input was shut down between steps.
+			if (input->end())
+			{
+				LOG.println("input end");
+				input->close();
+				input = nullptr;
+				inputByte = '\n'; // last statement break
+			}
+			else
+			{
+				inputByte = input->read();
+			}
+			bufferIndex ++;
+			readIndex ++;
+			buffer[bufferIndex] = inputByte;
+		}
+		else ASSERT(false);
 	}
 	else
 	{
 		inputByte = currentInput;
 		stayNextStep = false;
 	}
-	LOG.print("[ ").printCharSymbol(inputByte).print(" ] state: ").print(stateNames[(INT)currentState]).endl();
+	VRB(LOG.print("[ ").printCharSymbol(inputByte).print(" ] state: ").print(stateNames[(INT)currentState]));
+	VRB(if (readIndex >= 0) LOG.print(" r: ").print(readIndex).print("/").print(bufferIndex););
+	VRB(LOG.endl(););
 
 	step(inputByte);
 }
@@ -247,17 +262,24 @@ void ByteAutomata::uninit()
 	LOG.println("end run");
 	closeInput();
 	printTreeStack();
-	if (!stayNextStep)
-	{	
-		bufferIndex++;
-		step('\n');
-		if (stayNextStep) step('\n');
-	}
+	ASSERT (!stayNextStep);
+	
+	// empty, closing statement
+
+	bool loop = false;
+	error = paula.lineIndentationInit(0, loop);
+	LOG.print("uninit lineIndentationInit, loop: ").print(loop).endl();
 }
 void ByteAutomata::clearBuffer()
 {
 	LOG.println("clearBuffer");
-	bufferIndex = 0;
+	bufferIndex = -1;
+	readIndex = -1;
+}
+
+void ByteAutomata::jump(INT address)
+{
+	readIndex = address;
 }
 
 //--------------------------------------------------------------
@@ -348,6 +370,7 @@ void ByteAutomata::addFirstNameAndTransit()
 }
 void ByteAutomata::addTokenAndTransitionToSpace()
 {
+
 	if (currentState == stateName)
 	{
 		addLiteralToken(NODE_NAME);
@@ -358,8 +381,9 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 	}
 	else if (currentState == stateNumber)
 	{
+		LOG.print("add token: ").print(lastStart).print(" -> ").print(readIndex).endl();
 		LOG.println("addIntegerToken");
-		INT value = parseInt(buffer, lastStart, getIndex());
+		INT value = parseInt(buffer, lastStart, readIndex);
 		prepareAddToken();
 		tree.addInt(currentParent(), value);
 	}
@@ -371,9 +395,10 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 }
 void ByteAutomata::addLiteralToken(INT nodeType)
 {
+	LOG.print("add token: ").print(lastStart).print(" -> ").print(readIndex).endl();
 	LOG.print("addLiteralToken: ").printHex(nodeType).endl();
 	prepareAddToken();
-	tree.addText(currentParent(), buffer.ptr(), lastStart, getIndex(), nodeType);
+	tree.addText(currentParent(), buffer.ptr(), lastStart, readIndex, nodeType);
 }
 void ByteAutomata::comma()
 {
@@ -401,7 +426,7 @@ void ByteAutomata::lineBreak()
 		error = &PARENTHESIS;
 		return;
 	}
-	error = paula.executeLine(indentation, lineType, tree);
+	error = paula.executeLine(indentation, lineStartIndex, lineType, tree);
 	if (error != NO_ERROR) return;
 	newLine();
 }
@@ -429,6 +454,7 @@ void ByteAutomata::newLine()
 {
 	indentation = 0;
 	lineType = LINE_UNDEFINED;
+	lineStartIndex = readIndex;
 	
 	// tree node to the top of the stack
 

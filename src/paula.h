@@ -10,7 +10,15 @@ namespace paula
 	class IInputStream;
 	class Tree;
 
-	const int NUM_COMMANDS = 3;
+	constexpr int
+		NUM_COMMANDS = 3,
+		MAX_BLOCK_DEPTH = 16;
+
+	struct Block
+	{
+		INT startAddress, indentation;
+		bool loop;
+	};
 
 	class Paula
 	{
@@ -28,13 +36,22 @@ namespace paula
 		ERROR_STATUS pushExprArg(TreeIterator& _it);
 		ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
 		ERROR_STATUS operate(CHAR op, INT a, INT b, INT& out);
-		ERROR_STATUS executeLine(INT indentation, INT lineType, Tree& tree);
+        ERROR_STATUS lineIndentationInit(INT indentation, bool& outLoop);
+        ERROR_STATUS executeLine(INT indentation, INT lineStartIndex, INT lineType, Tree& tree);
+
+		void startLoop();
+
+		void skipBlock();
 
 	private:
 
 		Paula();
 
+		INT currentIndentation, loopIndentation, blockStackSize, lineStartIndex;
+
 		ByteAutomata automata;
+
+		Block blockStack[MAX_BLOCK_DEPTH];
 
 		Tree args, constants;
 

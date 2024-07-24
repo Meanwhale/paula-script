@@ -142,6 +142,8 @@ namespace paula
 		INT size();
 		INT getIndex();
 
+		void overwrite(TreeIterator& src);
+
 		// data getters
 
 		INT getDepth();

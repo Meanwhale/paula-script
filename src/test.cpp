@@ -28,8 +28,8 @@ void paula::variableTest()
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
-	ASSERT(Paula::one.vars.getInt(a, "a"))
-		ASSERT(a == 5);
+	ASSERT(Paula::one.vars.getInt(a, "a"));
+	ASSERT(a == 5);
 }
 void paula::functionTest()
 {
@@ -45,7 +45,7 @@ void paula::functionTest()
 
 void paula::loopTest()
 {
-	CharInputStream input("b:true\nwhile (b)\n\tb:not(b)");
+	CharInputStream input("b:true\nwhile (b)\n\tb:not(b)\nprint (loppu)\nprint (b)\nprint (b)");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 }

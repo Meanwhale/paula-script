@@ -135,10 +135,11 @@ void Tree::addData(INT parentIndex, TreeIterator& src)
 	// copy actual data
 	for(INT i=3; i<=size; i++)
 	{
-		LOG.print("copy value: ").print(src.tree.data[src.index + i]).endl();
+		VRB(LOG.print("copy value: ").print(src.tree.data[src.index + i]).endl();)
 		data[top++] = src.tree.data[src.index + i];
 	}
 }
+
 
 void Tree::pushData(INT stackIndex, TreeIterator& src)
 {
@@ -149,7 +150,7 @@ void Tree::pushData(INT stackIndex, TreeIterator& src)
 	// copy actual data
 	for(INT i=3; i<=size; i++)
 	{
-		LOG.print("copy value: ").print(src.tree.data[src.index + i]).endl();
+		VRB(LOG.print("copy value: ").print(src.tree.data[src.index + i]).endl();)
 		data[top++] = src.tree.data[src.index + i];
 	}
 }
@@ -538,6 +539,18 @@ INT TreeIterator::size()
 INT TreeIterator::getIndex()
 {
 	return index;
+}
+
+void TreeIterator::overwrite(TreeIterator& src)
+{
+	ASSERT(type() == src.type() && size() == src.size());
+
+	// copy actual data
+	for(INT i=3; i<=size(); i++)
+	{
+		VRB(LOG.print("overwrite value: ").print(src.tree.data[src.index + i]).endl();)
+		tree.data[index + i] = src.tree.data[src.index + i];
+	}
 }
 
 INT TreeIterator::getDepth()

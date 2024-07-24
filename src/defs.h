@@ -8,6 +8,13 @@
 #define HALT std::exit(0) 
 #define STR(x) #x
 
+#ifdef VERBOSE
+#define VRB(x) x
+#else
+#define VRB(x)
+#endif
+
+
 // assert: internal error, check: user error
 
 #define ASSERT_MSG(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg); }}
@@ -64,6 +71,7 @@ namespace paula
 	ERROR_TYPE (INVALID_OPERATOR);
 	ERROR_TYPE (DIV_ZERO);
 	ERROR_TYPE (VARIABLE_NOT_FOUND);
+	ERROR_TYPE (INDENTATION_ERROR);
 
 	// tree + interator
 

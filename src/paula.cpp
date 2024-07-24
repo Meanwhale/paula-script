@@ -7,7 +7,7 @@ using namespace paula;
 
 ERROR_STATUS printAction (Paula&,Tree&args)
 {
-	LOG.println("printAction");
+	LOG.println("-------- PRINT ACTION --------");
 	TreeIterator it(args);
 	if (!it.hasChild()) { LOG.println("<empty>"); return NO_ERROR; }
 	args.printCompact(it);
@@ -17,7 +17,7 @@ ERROR_STATUS printAction (Paula&,Tree&args)
 ERROR_STATUS notAction (Paula&p,Tree&args)
 {
 	// TODO: check there's exactly one value
-	LOG.println("notAction");
+	LOG.println("-------- NOT ACTION --------");
 	INT index = args.stackTopIndex(0);
 	bool value;
 	if (args.getBool(value, index))
@@ -33,8 +33,20 @@ ERROR_STATUS notAction (Paula&p,Tree&args)
 }
 ERROR_STATUS whileAction (Paula&p,Tree&args)
 {
-	// TODO
-	return &TYPE_MISMATCH;
+	LOG.println("-------- WHILE ACTION --------");
+
+	INT index = args.stackTopIndex(0);
+	bool value;
+	if (args.getBool(value, index))
+	{
+		if (value) p.startLoop();
+		else p.skipBlock();
+	}
+	else
+	{
+		return &TYPE_MISMATCH;
+	}
+	return NO_ERROR;
 }
 
 Paula Paula::one = Paula();
@@ -48,6 +60,10 @@ const POut& paula::err = stdErr;
 const POut& paula::user = stdPrint;
 
 Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
+	currentIndentation(0),
+	loopIndentation(0),
+	blockStackSize(0),
+	lineStartIndex(0),
 	automata(*this),
 	args(ARG_STACK_SIZE),
 	vars(VARS_SIZE),
@@ -94,6 +110,10 @@ const int
 ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 {
 	LOG.println("Paula::run");
+	
+	currentIndentation = 0;
+	loopIndentation = 0;
+	blockStackSize = 0;
 
 	automata.run(&input);
 	auto error = automata.getError();
@@ -116,8 +136,51 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 }
 
 
-ERROR_STATUS paula::Paula::executeLine(INT indentation, INT lineType, Tree& tree)
+ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& outLoop)
 {
+	outLoop = false;
+	if (blockStackSize == 0)
+	{
+		CHECK(indentation == blockStackSize, INDENTATION_ERROR);
+	}
+	else
+	{
+		Block& block = blockStack[blockStackSize-1];
+		if (indentation == block.indentation)
+		{
+			LOG.println("stay inside the block");
+		}
+		else if (indentation == block.indentation -1)
+		{
+			LOG.println("end of the block");
+			if (block.loop)
+			{
+				LOG.println("-------- JUMP BACK --------");
+				automata.jump(block.startAddress);
+				blockStackSize--;
+				LOG.print("jump back, pop stack, stack size: ").print(blockStackSize).endl();
+
+				outLoop = true;
+			}
+			else
+			{
+				LOG.println("-------- END BLOCK --------");
+			}
+		}
+		else return &INDENTATION_ERROR;
+	}
+	return NO_ERROR;
+}
+
+ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT lineType, Tree& tree)
+{
+	bool loop = false;
+	CHECK_CALL(lineIndentationInit(indentation, loop));
+
+	if (loop) return NO_ERROR;
+
+	lineStartIndex = _lineStartIndex;
+
 	args.init(NODE_STACK);
 
 	if (lineType == LINE_ASSIGNMENT)
@@ -125,18 +188,44 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT lineType, Tree& tree
 		// TRG : SRC
 
 		LOG.print("execute ASSIGNMENT: indentation=").print(indentation).endl();
-		INT kvIndex = vars.addSubtree(0, NODE_KV);
 		TreeIterator it(tree);
 		it.toChild(); // points to variable name
 		LOG.print("variable name: "); it.print(true); LOG.endl();
-		vars.addData(kvIndex, it); // add variable name to KV
-		it.next(); // move to SRC
-		LOG.print("start: "); it.print(true); LOG.endl();
-		CHECK_CALL(pushExprArg(it));
-		auto src = TreeIterator(args, args.stackTopIndex(0));
-		LOG.print("assign value: "); src.print(true); LOG.endl();
-		vars.addData(kvIndex, src); // add value to KV
-		args.pop(0);
+
+		// new or override?
+
+		vars.print();
+
+		INT index = findVariableIndex(it, vars);
+
+		if (index >= 0)
+		{
+			LOG.println("-------- OVERWRITE VAR --------");
+			// variable already exists
+			TreeIterator data(vars, index); // points to the data
+			LOG.print("old value: "); data.print(true); LOG.endl();
+
+			it.next(); // move to SRC
+			CHECK_CALL(pushExprArg(it));
+			TreeIterator src(args, args.stackTopIndex(0));
+			LOG.print("overwrite value: "); src.print(true); LOG.endl();
+
+			data.overwrite(src);
+		}
+		else
+		{
+			LOG.println("-------- NEW VAR --------");
+			INT kvIndex = vars.addSubtree(0, NODE_KV);
+			// new
+			vars.addData(kvIndex, it); // add variable name to KV
+			it.next(); // move to SRC
+			CHECK_CALL(pushExprArg(it));
+			TreeIterator src(args, args.stackTopIndex(0));
+			LOG.print("assign value: "); src.print(true); LOG.endl();
+			vars.addData(kvIndex, src); // add value to KV
+			args.pop(0);
+		}
+
 		vars.print();
 	}
 	else if (lineType == LINE_CALL)
@@ -168,8 +257,26 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT lineType, Tree& tree
 	{
 		ASSERT(false);
 	}
-	automata.clearBuffer(); // TODO: don't clear if running a loop
+	if (blockStackSize == 0)
+	{
+		automata.clearBuffer();
+	}
 	return NO_ERROR;
+}
+
+void paula::Paula::startLoop()
+{
+	LOG.println("-------- START LOOP --------");
+	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
+	blockStack[blockStackSize].startAddress = lineStartIndex;
+	blockStack[blockStackSize].indentation = currentIndentation+1;
+	blockStack[blockStackSize].loop = true;
+	blockStackSize++;
+}
+
+void paula::Paula::skipBlock()
+{
+	LOG.println("-------- SKIP BLOCK (TODO) --------");
 }
 
 ERROR_STATUS paula::Paula::pushArgList(TreeIterator& _it)
@@ -262,6 +369,7 @@ INT paula::Paula::findVariableIndex(TreeIterator& name, Tree& variableMap)
 	it.toChild();
 	do
 	{
+		it.print(false);
 		it.toChild(); // first child is the name
 		if (it.matchTextData(name.getTextData()))
 		{
