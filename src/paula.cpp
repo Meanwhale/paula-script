@@ -165,6 +165,7 @@ ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& outLoop)
 			else
 			{
 				LOG.println("-------- END BLOCK --------");
+				ASSERT(false); // TODO: if. ei pitäisi tulla tänne muuten.
 			}
 		}
 		else return &INDENTATION_ERROR;

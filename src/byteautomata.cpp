@@ -198,8 +198,7 @@ void ByteAutomata::step()
 			if (input->end())
 			{
 				LOG.println("input end");
-				input->close();
-				input = nullptr;
+				closeInput();
 				inputByte = '\n'; // last statement break
 			}
 			else

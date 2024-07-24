@@ -4,14 +4,19 @@
 
 // UTILS
 
-void paula::assert(bool x, const char * msg)
+void paula::trap(const char* expr, const char* file, int line, const char* msg)
 {
-	if (!x)
-	{
-		ERR.println(msg);
-		HALT;
-	}
+	paula::err.print("\nFAIL: \"").print(expr).print("\"\nFILE: ").print(file).print("\nLINE: ").print(line).print("\nMSG:  ").print(msg).endl(); 
+	HALT;
 }
+
+//void paula::assert(bool x, const char * msg)
+//{
+//	if (!x)
+//	{
+//		//TODO
+//	}
+//}
 
 
 paula::INT paula::charToInt(CHAR c)

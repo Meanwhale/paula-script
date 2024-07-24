@@ -17,8 +17,12 @@
 
 // assert: internal error, check: user error
 
-#define ASSERT_MSG(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg); }}
-#define ASSERT(x) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, ""); }}
+//#define ASSERT_MSG(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg); }}
+//#define ASSERT(x) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, ""); }}
+#define ASSERT_MSG(x,msg) { if (!(x)) { trap(STR(x), __FILE__, __LINE__, msg); }}
+#define ASSERT(x)         { if (!(x)) { trap(STR(x), __FILE__, __LINE__, ""); }}
+
+
 //#define EXIT(msg) { ERR.println(msg); }
 
 #define IS_CHAR(c) (c>='a' && c<='z')
