@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "array.h"
 
+using namespace paula;
 
 // UTILS
 
@@ -18,6 +19,28 @@ void paula::trap(const char* expr, const char* file, int line, const char* msg)
 //	}
 //}
 
+LONG paula::doubleToLongFormat(double value)
+{
+	return ((LONG&)(*(&value)));
+}
+DOUBLE paula::longToDoubleFormat(LONG value)
+{
+	return ((DOUBLE&)(*(&value)));
+}
+INT paula::longHighBits(LONG x)
+{
+	return (INT)(x>>32);
+}
+INT paula::longLowBits(LONG x)
+{
+	return (INT)x;
+}
+LONG paula::intsToLong(INT high, INT low)
+{
+	LONG x = ((LONG)high) << 32;
+	x |= ((LONG)low) & 0x00000000ffffffffL;
+	return x;
+}
 
 paula::INT paula::charToInt(CHAR c)
 {

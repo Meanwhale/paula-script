@@ -47,6 +47,17 @@ void paula::Tree::addOperatorNode(INT parentIndex, CHAR op)
 	data[top++] = charToInt(op);
 }
 
+void paula::Tree::addDouble(INT parentIndex, double value)
+{
+	insertTree(parentIndex, NODE_DOUBLE, 4);
+
+	LONG number = doubleToLongFormat(value);
+	INT hi =  longHighBits(number);
+	INT low = longLowBits(number);
+	data[top++] = hi;
+	data[top++] = low;
+}
+
 void paula::Tree::addInt(INT parentIndex, INT value)
 {
 	insertTree(parentIndex, NODE_INTEGER, 3);
@@ -208,6 +219,17 @@ bool Tree::getBool(bool& out, const char* varName)
 	return getBool(out, index);
 }
 
+bool Tree::getDouble(double& out, const char* varName)
+{
+	INT index = getIndexOfData(varName, NODE_DOUBLE);
+	if (index < 0) return false;
+	INT a = get(index + 3);
+	INT b = get(index + 4);
+	LONG bits = intsToLong(a, b);
+	out = longToDoubleFormat(bits);
+	return true;
+}
+
 bool Tree::getInt(int& out, const char* varName)
 {
 	INT index = getIndexOfData(varName, NODE_INTEGER);
@@ -358,6 +380,8 @@ void Tree::printSubtree(TreeIterator& it)
 
 	do
 	{
+		// print index
+		LOG.print(it.index).print(": ");
 		for (int n=0; n<it.getDepth(); n++) LOG.print("  ");
 		it.print(false);
 		LOG.println("");
@@ -436,9 +460,6 @@ void TreeIterator::printTree(bool compact)
 
 void TreeIterator::print(bool compact)
 {
-	// print index
-	LOG.print(index).print(": ");
-
 	if (isType(NODE_TEXT) || isType(NODE_NAME))
 	{
 		LOG.print(getText());

@@ -22,6 +22,24 @@ void paula::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 	}
 }
 
+void paula::doubleTest()
+{
+	// conversion test
+
+	LONG tmp = doubleToLongFormat(123.456);
+	DOUBLE d = longToDoubleFormat(tmp);
+	ASSERT(123.456 == d);
+
+	// script test
+
+	CharInputStream input("a:123.456");
+	auto err = Paula::one.run(input, false);
+	ASSERT(err == NO_ERROR);
+	DOUBLE a;
+	ASSERT(Paula::one.vars.getDouble(a, "a"));
+	ASSERT(a == 123.456);
+}
+
 void paula::variableTest()
 {
 	CharInputStream input("a:5");
@@ -45,7 +63,7 @@ void paula::functionTest()
 
 void paula::loopTest()
 {
-	CharInputStream input("b:true\nwhile (b)\n\tb:not(b)\nprint (loppu)\nprint (b)\nprint (b)");
+	CharInputStream input("b:true\nwhile (b)\n\tb:not(b)\nprint (b)\nprint (b)\nprint (b)");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 }

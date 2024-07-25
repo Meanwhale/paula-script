@@ -140,6 +140,12 @@ void ByteAutomata::next (BYTE nextState)
 	currentState = nextState;
 	VRB(LOG.print("Next state: ").print(stateNames[(INT)currentState]).print(" start: ").print(lastStart).print(" stay: ").print(stayNextStep).endl();)
 }
+void ByteAutomata::nextCont (BYTE nextState)
+{
+	// continue with same token, so don't reset the start index
+	currentState = nextState;
+	VRB(LOG.print("Next cont.: ").print(stateNames[(INT)currentState]).print(" start: ").print(lastStart).print(" stay: ").print(stayNextStep).endl();)
+}
 void ByteAutomata::stay ()
 {
 	// same input byte on next step
@@ -346,6 +352,17 @@ INT ByteAutomata::parseInt(Array<BYTE>& src, INT i, INT lastByte)
 	}
 	return value;
 }
+double ByteAutomata::parseDouble(Array<BYTE>& src, INT i, INT lastByte)
+{
+	double value;
+	int numBytes = lastByte - i;
+	if (sscanf_s((const char *)src.ptr(i), "%lf%n", &value, &numBytes) == 1)
+	{
+		return value;
+	}
+	ASSERT(false);
+	return 0.0;
+}
 void ByteAutomata::prepareAddToken()
 {
 	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_SUBTREE)
@@ -380,12 +397,19 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 	}
 	else if (currentState == stateNumber)
 	{
-		LOG.print("add token: ").print(lastStart).print(" -> ").print(readIndex).endl();
-		LOG.println("addIntegerToken");
+		LOG.print("add integer token: ").print(lastStart).print(" -> ").print(readIndex).endl();
 		INT value = parseInt(buffer, lastStart, readIndex);
 		prepareAddToken();
 		tree.addInt(currentParent(), value);
 	}
+	else if (currentState == stateDecimal)
+	{
+		LOG.print("add decimal token: ").print(lastStart).print(" -> ").print(readIndex).endl();
+		double value = parseDouble(buffer, lastStart, readIndex);
+		prepareAddToken();
+		tree.addDouble(currentParent(), value);
+	}
+	else ASSERT(false);
 	
 	// continue at space state
 
@@ -484,6 +508,7 @@ void ByteAutomata::defineTransitions()
 	statePostName = addState("post name");
 	stateName = addState("name");
 	stateNumber = addState("number");
+	stateDecimal = addState("decimal");
 	stateText = addState("text"); // TODO
 	
 	transition(stateStart, "\t", [](ByteAutomata*ba)					{ ba->indentation++; });
@@ -521,5 +546,9 @@ void ByteAutomata::defineTransitions()
 	transition(stateNumber, operators, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
 	transition(stateNumber, blockEnd, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
 	transition(stateNumber, linebreak, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateNumber, ".",  [](ByteAutomata*ba)					{ ba->nextCont(ba->stateDecimal); });
+
+	transition(stateDecimal, numbers, 0);
+	transition(stateDecimal, linebreak, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
 }
 }

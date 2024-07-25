@@ -33,6 +33,8 @@
 namespace paula
 {
 	typedef int32_t INT;
+	typedef int64_t LONG;
+	typedef double DOUBLE;
 	typedef char CHAR;
 	typedef uint8_t BYTE;
 

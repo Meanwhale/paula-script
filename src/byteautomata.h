@@ -58,11 +58,13 @@ namespace paula
 		void startAssignment();
 		void startFunction();
 		INT parseInt(Array<BYTE>& src, INT firstByte, INT lastByte);
+		double parseDouble(Array<BYTE>& src, INT i, INT lastByte);
         void addTokenAndTransitionToSpace();
 		void prepareAddToken();
         void addOperatorToken();
 		void addFirstNameAndTransit();
 		void next(BYTE nextState);
+        void nextCont(BYTE nextState);
 		//void print();
 		void printError();
         void printTreeStack();
@@ -84,7 +86,16 @@ namespace paula
 		INT currentParent();
 		Paula& paula;
 		INT lastStart, indentation, lineType, treeStackTop;
-		BYTE stateStart, stateSpace, stateName, stateFirstName, stateAfterFirstName, statePostName, stateNumber, stateText;
+		BYTE
+			stateStart,
+			stateSpace,
+			stateName,
+			stateFirstName,
+			stateAfterFirstName,
+			statePostName,
+			stateNumber,
+			stateDecimal,
+			stateText;
 		
 		// hide
 		ByteAutomata() = delete;

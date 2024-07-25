@@ -47,7 +47,7 @@ namespace paula
 
 		Paula();
 
-		INT currentIndentation, loopIndentation, blockStackSize, lineStartIndex;
+		INT currentIndentation, skipIndentation, blockStackSize, lineStartIndex;
 
 		ByteAutomata automata;
 

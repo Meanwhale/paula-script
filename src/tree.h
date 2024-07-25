@@ -24,7 +24,7 @@ namespace paula
 
 		NODE_NAME				= 0x21000000, // variable, constant, or function name
 		NODE_INTEGER			= 0x22000000, // e.g. 123
-		NODE_FLOAT				= 0x23000000, // e.g. 1.23
+		NODE_DOUBLE				= 0x23000000, // e.g. 1.23
 		NODE_TEXT				= 0x24000000, // string/const char*, e.g. "abc d"
 		NODE_BOOL				= 0x25000000, // true = 1, false = 0
 
@@ -50,6 +50,7 @@ namespace paula
 		void addInt(INT parentIndex, INT data);
 		void addBool(INT parentIndex, bool data);
 		void addOperatorNode(INT parentIndex, CHAR op);
+		void addDouble(INT parentIndex, double value);
 		void addText(INT parentIndex, const char* text);
 		void addText(INT parentIndex, const unsigned char * bytes, INT first, INT last, INT nodeType);
 		void addData(INT stackIndex, TreeIterator& src);
@@ -71,6 +72,8 @@ namespace paula
 		// map functions
 
 		bool getBool(bool& out, const char* varName);
+
+        bool getDouble(double& out, const char* varName);
 
 		bool getInt(int& out, const char* varName);
 

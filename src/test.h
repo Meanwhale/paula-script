@@ -6,6 +6,9 @@ namespace paula
 {
 	void runErrorCheck(const Error* (* test)(), const Error* expectedError);
 
+	void doubleTest();
+
+
 	void variableTest();
 
 	void functionTest();

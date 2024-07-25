@@ -61,7 +61,7 @@ const POut& paula::user = stdPrint;
 
 Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	currentIndentation(0),
-	loopIndentation(0),
+	skipIndentation(-1),
 	blockStackSize(0),
 	lineStartIndex(0),
 	automata(*this),
@@ -112,7 +112,7 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 	LOG.println("Paula::run");
 	
 	currentIndentation = 0;
-	loopIndentation = 0;
+	skipIndentation = -1;
 	blockStackSize = 0;
 
 	automata.run(&input);
@@ -136,9 +136,24 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 }
 
 
-ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& outLoop)
+ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& dontExecuteLine)
 {
-	outLoop = false;
+	dontExecuteLine = false;
+
+	if (skipIndentation > 0)
+	{
+		LOG.println("-------- SKIP INDENTATION --------");
+		if (indentation >= skipIndentation)
+		{
+			LOG.println("-------- SKIP LINE --------");
+			// inside a block
+			dontExecuteLine = true;
+			return NO_ERROR;
+		}
+		LOG.println("-------- END SKIP --------");
+		skipIndentation = -1;
+	}
+
 	if (blockStackSize == 0)
 	{
 		CHECK(indentation == blockStackSize, INDENTATION_ERROR);
@@ -160,7 +175,7 @@ ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& outLoop)
 				blockStackSize--;
 				LOG.print("jump back, pop stack, stack size: ").print(blockStackSize).endl();
 
-				outLoop = true;
+				dontExecuteLine = true;
 			}
 			else
 			{
@@ -175,10 +190,10 @@ ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& outLoop)
 
 ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT lineType, Tree& tree)
 {
-	bool loop = false;
-	CHECK_CALL(lineIndentationInit(indentation, loop));
+	bool dontExecuteLine = false;
+	CHECK_CALL(lineIndentationInit(indentation, dontExecuteLine));
 
-	if (loop) return NO_ERROR;
+	if (dontExecuteLine) return NO_ERROR;
 
 	lineStartIndex = _lineStartIndex;
 
@@ -258,7 +273,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 	{
 		ASSERT(false);
 	}
-	if (blockStackSize == 0)
+	if (blockStackSize == 0 && skipIndentation <= 0)
 	{
 		automata.clearBuffer();
 	}
@@ -278,6 +293,11 @@ void paula::Paula::startLoop()
 void paula::Paula::skipBlock()
 {
 	LOG.println("-------- SKIP BLOCK (TODO) --------");
+	
+	// skip lines with indentation equal or greater than skipIndentation
+	// eg. code in 'if' block.
+
+	skipIndentation = currentIndentation + 1;
 }
 
 ERROR_STATUS paula::Paula::pushArgList(TreeIterator& _it)
@@ -309,7 +329,7 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 
 	LOG.print("push atomic value: "); it.print(true); LOG.endl();
 
-	if (it.isType(NODE_INTEGER) || it.isType(NODE_BOOL))
+	if (it.isType(NODE_INTEGER) || it.isType(NODE_DOUBLE) || it.isType(NODE_BOOL))
 	{
 		args.pushData(0,it);
 	}
@@ -370,7 +390,6 @@ INT paula::Paula::findVariableIndex(TreeIterator& name, Tree& variableMap)
 	it.toChild();
 	do
 	{
-		it.print(false);
 		it.toChild(); // first child is the name
 		if (it.matchTextData(name.getTextData()))
 		{

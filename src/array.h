@@ -67,7 +67,7 @@ public:
 		size = s;
 		destructorClear = true;
 	}
-	bool inRange(int i)
+	bool inRange(int i) const
 	{
 		return i >= 0 && i < size;
 	}
@@ -84,6 +84,11 @@ public:
 	T * ptr() const
 	{
 		return data;
+	}
+	T * ptr(int i) const
+	{
+		ASSERT_MSG(inRange(i), "ARRAY_OUT_OF_RANGE");
+		return data + i;
 	}
 	T & get(int i)
 	{
