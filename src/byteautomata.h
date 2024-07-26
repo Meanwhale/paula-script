@@ -79,6 +79,7 @@ namespace paula
 		void comma();
 		void startBlock();
 		void endBlock();
+        void eof();
 		void newLine();
 		void startExpr(BYTE firstState);
 		void defineTransitions();

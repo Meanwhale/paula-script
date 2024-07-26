@@ -48,6 +48,23 @@ ERROR_STATUS whileAction (Paula&p,Tree&args)
 	}
 	return NO_ERROR;
 }
+ERROR_STATUS ifAction (Paula&p,Tree&args)
+{
+	LOG.println("-------- IF ACTION --------");
+
+	INT index = args.stackTopIndex(0);
+	bool value;
+	if (args.getBool(value, index))
+	{
+		if (value) p.startIf();
+		else p.skipBlock();
+	}
+	else
+	{
+		return &TYPE_MISMATCH;
+	}
+	return NO_ERROR;
+}
 
 Paula Paula::one = Paula();
 
@@ -72,7 +89,8 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	{
 		Command("print", printAction),
 		Command("not", notAction),
-		Command("while", whileAction)
+		Command("while", whileAction),
+		Command("if", ifAction)
 	}
 	//commandArgDef(2),
 	//singleArgDef(1),
@@ -81,8 +99,6 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	LOG.println("---------------- NEW PAULA ----------------");
 	log.print("toimii!").endl();
 
-	args.init(NODE_STACK);
-	vars.init(NODE_SUBTREE);
 	constants.init(NODE_SUBTREE);
 
 	INT kvIndex = constants.addSubtree(0, NODE_KV);
@@ -110,7 +126,10 @@ const int
 ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 {
 	LOG.println("Paula::run");
-	
+
+	args.init(NODE_STACK);
+	vars.init(NODE_SUBTREE);
+
 	currentIndentation = 0;
 	skipIndentation = -1;
 	blockStackSize = 0;
@@ -136,9 +155,10 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 }
 
 
-ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& dontExecuteLine)
+ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& executeLine)
 {
-	dontExecuteLine = false;
+	executeLine = true;
+	currentIndentation = indentation;
 
 	if (skipIndentation > 0)
 	{
@@ -147,7 +167,7 @@ ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& dontExecut
 		{
 			LOG.println("-------- SKIP LINE --------");
 			// inside a block
-			dontExecuteLine = true;
+			executeLine = false;
 			return NO_ERROR;
 		}
 		LOG.println("-------- END SKIP --------");
@@ -165,35 +185,44 @@ ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& dontExecut
 		{
 			LOG.println("stay inside the block");
 		}
-		else if (indentation == block.indentation -1)
+		else while (indentation < block.indentation)
 		{
 			LOG.println("end of the block");
 			if (block.loop)
 			{
 				LOG.println("-------- JUMP BACK --------");
+				LOG.print("address: ").print(block.startAddress).endl();
 				automata.jump(block.startAddress);
 				blockStackSize--;
 				LOG.print("jump back, pop stack, stack size: ").print(blockStackSize).endl();
-
-				dontExecuteLine = true;
+				executeLine = false;
+				return NO_ERROR;
 			}
 			else
 			{
-				LOG.println("-------- END BLOCK --------");
-				ASSERT(false); // TODO: if. ei pitäisi tulla tänne muuten.
+				LOG.println("-------- END IF BLOCK --------");
+				blockStackSize--;
+				if (blockStackSize > 0)
+				{
+					// continue as several blocks might have ended
+					block = blockStack[blockStackSize-1];
+				}
+				else
+				{
+					return NO_ERROR;
+				}
 			}
 		}
-		else return &INDENTATION_ERROR;
 	}
 	return NO_ERROR;
 }
 
 ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT lineType, Tree& tree)
 {
-	bool dontExecuteLine = false;
-	CHECK_CALL(lineIndentationInit(indentation, dontExecuteLine));
+	bool executeLine = false;
+	CHECK_CALL(lineIndentationInit(indentation, executeLine));
 
-	if (dontExecuteLine) return NO_ERROR;
+	if (!executeLine) return NO_ERROR;
 
 	lineStartIndex = _lineStartIndex;
 
@@ -259,8 +288,13 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 			CHECK(!it.hasNext(), SYNTAX_ERROR); // extra tokens after ()
 
 			// read command arguments
+			
+			INT argsStart = args.stackTopIndex(0);
+			INT argsCount = args.stackSize(0);
 
 			CHECK_CALL(pushArgList(it));
+
+			argsCount = args.stackSize(0) - argsCount;
 
 			CHECK_CALL(cmd->execute(*this, args));
 		}
@@ -287,6 +321,15 @@ void paula::Paula::startLoop()
 	blockStack[blockStackSize].startAddress = lineStartIndex;
 	blockStack[blockStackSize].indentation = currentIndentation+1;
 	blockStack[blockStackSize].loop = true;
+	blockStackSize++;
+}
+void paula::Paula::startIf()
+{
+	LOG.println("-------- START IF --------");
+	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
+	blockStack[blockStackSize].startAddress = -123456; // not needed
+	blockStack[blockStackSize].indentation = currentIndentation+1;
+	blockStack[blockStackSize].loop = false;
 	blockStackSize++;
 }
 
@@ -469,16 +512,16 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
 			// read the operator
 
 			it.next();
-			ASSERT(it.isType(NODE_OPERATOR));
 			CHAR op = it.getOp();
 
 			// get the second value
 
 			it.next();
+			CHECK(!it.hasNext(), SYNTAX_ERROR);
 			CHECK_CALL(pushAtomicValue(it));
 			INT b = args.popInt(0);
 
-			LOG.print("a=").print(a).print(" b=").print(b).endl();
+			LOG.print("a=").print(a).print(" ").print(op).print(" b=").print(b).endl();
 			CHECK_CALL(operatorPush(op, a, b));
 		}
 		else
@@ -496,6 +539,7 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
 
 ERROR_STATUS paula::Paula::pushExprSubtreeArg(TreeIterator& _it)
 {
+	// push an argument that is wrapped in an expression
 
 	TreeIterator it(_it);
 

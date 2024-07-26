@@ -187,7 +187,6 @@ void ByteAutomata::step()
 	// get input byte
 	BYTE inputByte;
 
-
 	if (!stayNextStep)
 	{
 		if (readIndex < bufferIndex)
@@ -205,15 +204,33 @@ void ByteAutomata::step()
 			{
 				LOG.println("input end");
 				closeInput();
-				inputByte = '\n'; // last statement break
+
+				// handle eof: add expr (line) break and end char to close open code blocks
+
+				//                                  read|bufferIndex
+				//						            |
+				//              ... 'e'  'x'  'p'  'r'  ~ ~ ~ ~ ~ ~ ~ ~
+				//
+				//              ... 'e'  'x'  'p'  'r'  '\n' '\0' ~ ~ ~
+				//                                       |    |  
+				//                                       |    bufferIndex
+				//                                       |
+				//                                       readIndex
+
+				bufferIndex++;
+				buffer[bufferIndex] = '\n';
+				bufferIndex++;
+				buffer[bufferIndex] = '\x4'; // end of transmission
+				readIndex++;
+				inputByte = '\n';
 			}
 			else
 			{
 				inputByte = input->read();
+				bufferIndex ++;
+				readIndex ++;
+				buffer[bufferIndex] = inputByte;
 			}
-			bufferIndex ++;
-			readIndex ++;
-			buffer[bufferIndex] = inputByte;
 		}
 		else ASSERT(false);
 	}
@@ -268,12 +285,6 @@ void ByteAutomata::uninit()
 	closeInput();
 	printTreeStack();
 	ASSERT (!stayNextStep);
-	
-	// empty, closing statement
-
-	bool loop = false;
-	error = paula.lineIndentationInit(0, loop);
-	LOG.print("uninit lineIndentationInit, loop: ").print(loop).endl();
 }
 void ByteAutomata::clearBuffer()
 {
@@ -284,7 +295,7 @@ void ByteAutomata::clearBuffer()
 
 void ByteAutomata::jump(INT address)
 {
-	readIndex = address;
+	lineStartIndex = readIndex = address;
 }
 
 //--------------------------------------------------------------
@@ -473,6 +484,12 @@ void ByteAutomata::endBlock()
 	
 	popTree();
 }
+void ByteAutomata::eof()
+{
+	LOG.println("---------------- EOF ----------------");
+	bool executeLine = false;
+	error = paula.lineIndentationInit(0, executeLine);
+}
 void ByteAutomata::newLine()
 {
 	indentation = 0;
@@ -510,7 +527,8 @@ void ByteAutomata::defineTransitions()
 	stateNumber = addState("number");
 	stateDecimal = addState("decimal");
 	stateText = addState("text"); // TODO
-	
+
+	transition(stateStart, "\x4", [](ByteAutomata*ba)					{ ba->eof(); });
 	transition(stateStart, "\t", [](ByteAutomata*ba)					{ ba->indentation++; });
 	transition(stateStart, letters, [](ByteAutomata*ba)					{ ba->startExpr(ba->stateFirstName); });
 	transition(stateStart, linebreak, [](ByteAutomata*ba)				{ ba->newLine(); });

@@ -41,8 +41,8 @@ void paula::doubleTest()
 	ASSERT(a == 123.456);
 }
 
-#define TEST_INT(name,value) a = -123456; ASSERT(Paula::one.vars.getInt(a, name)); ASSERT(a == value);
-#define TEST_BOOL(name,value) b = false; ASSERT(Paula::one.vars.getBool(b, name)); ASSERT(b == value);
+#define TEST_INT(name,value) a = -123456; ASSERT(Paula::one.vars.getInt(a, name)); LOG.print("a:").print(a).endl(); ASSERT(a == value);
+#define TEST_BOOL(name,value) b = false; ASSERT(Paula::one.vars.getBool(b, name)); LOG.print("b:").print(b).endl(); ASSERT(b == value);
 
 void paula::operatorTest()
 {
@@ -84,12 +84,23 @@ void paula::functionTest()
 
 void paula::loopTest()
 {
-	CharInputStream input("b:true\nwhile (b)\n\tb:not(b)\nprint (b)\nprint (b)\nprint (b)");
+	CharInputStream input("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
+	INT a;
+	TEST_INT("a", 5);
+}
+void paula::ifTest()
+{
+	CharInputStream input("a:1\nb:1\nwhile(a<5)\n\ta:a+1\n\tif(a>4)\n\t\tb:b+10\n\t\tif(a>4)\n\t\t\tb:b+10");
+	auto err = Paula::one.run(input, false);
+	ASSERT(err == NO_ERROR);
+	INT a;
+	TEST_INT("a", 5);
+	TEST_INT("b", 21);
 }
 
-void paula::parenthesisTest()
+void paula::parenthesisErrorTest()
 {
 	runErrorCheck([]() {
 		CharInputStream input("foo (12, (34, 56)");
@@ -97,12 +108,20 @@ void paula::parenthesisTest()
 	}, &PARENTHESIS);
 }
 
+void paula::callbackTest()
+{
+	//Paula::one.addCallback("testCallback");
+}
+
 void paula::runAll()
 {
-	parenthesisTest();
 	variableTest();
+	parenthesisErrorTest();
 	functionTest();
 	loopTest();
+	ifTest();
+	operatorTest();
+	doubleTest();
 }
 
 //

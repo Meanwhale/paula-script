@@ -11,7 +11,7 @@ namespace paula
 	class Tree;
 
 	constexpr int
-		NUM_COMMANDS = 3,
+		NUM_COMMANDS = 4,
 		MAX_BLOCK_DEPTH = 16;
 
 	struct Block
@@ -36,10 +36,12 @@ namespace paula
 		ERROR_STATUS pushExprArg(TreeIterator& _it);
 		ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
 		ERROR_STATUS operatorPush(CHAR op, INT a, INT b);
-        ERROR_STATUS lineIndentationInit(INT indentation, bool& outLoop);
+        ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
         ERROR_STATUS executeLine(INT indentation, INT lineStartIndex, INT lineType, Tree& tree);
 
 		void startLoop();
+
+		void startIf();
 
 		void skipBlock();
 
