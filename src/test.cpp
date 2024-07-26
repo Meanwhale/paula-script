@@ -1,6 +1,7 @@
 #include "defs.h"
 #include "paula.h"
 #include "test.h"
+#include <iostream>
 
 void paula::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 {
@@ -38,6 +39,26 @@ void paula::doubleTest()
 	DOUBLE a;
 	ASSERT(Paula::one.vars.getDouble(a, "a"));
 	ASSERT(a == 123.456);
+}
+
+#define TEST_INT(name,value) a = -123456; ASSERT(Paula::one.vars.getInt(a, name)); ASSERT(a == value);
+#define TEST_BOOL(name,value) b = false; ASSERT(Paula::one.vars.getBool(b, name)); ASSERT(b == value);
+
+void paula::operatorTest()
+{
+	CharInputStream input("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
+	auto err = Paula::one.run(input, false);
+	ASSERT(err == NO_ERROR);
+	INT a;
+	bool b;
+	TEST_INT("a", 10);
+	TEST_INT("b", 20);
+	TEST_INT("c", 4);
+	TEST_INT("d", 3);
+	TEST_BOOL("vale", false);
+	TEST_BOOL("tosi", true);
+	TEST_BOOL("sama", true);
+	TEST_BOOL("eisama", false);
 }
 
 void paula::variableTest()

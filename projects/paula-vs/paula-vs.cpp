@@ -33,7 +33,7 @@ int main()
 	//LOG.print("ERROR: ").print(error).endl();
 
 	//runAll();
-	doubleTest();
+	operatorTest();
 }
 
 void stackTest()

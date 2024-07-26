@@ -17,7 +17,7 @@ constexpr INT
 const CHAR
 	*letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	*numbers = "1234567890",
-	*operators = "+-*/",
+	*operators = "+-*/<>=",
 	*whiteSpace = " \t", // "\n\r",
 	*linebreak = "\n\r",
 	//*expressionBreak = ",;",

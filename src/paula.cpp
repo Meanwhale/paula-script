@@ -479,9 +479,7 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
 			INT b = args.popInt(0);
 
 			LOG.print("a=").print(a).print(" b=").print(b).endl();
-			INT result;
-			CHECK_CALL(operate(op, a, b, result));
-			args.pushInt(0, result);
+			CHECK_CALL(operatorPush(op, a, b));
 		}
 		else
 		{
@@ -508,14 +506,18 @@ ERROR_STATUS paula::Paula::pushExprSubtreeArg(TreeIterator& _it)
 
 	return NO_ERROR;
 }
-ERROR_STATUS paula::Paula::operate(CHAR op, INT a, INT b, INT&out)
+ERROR_STATUS paula::Paula::operatorPush(CHAR op, INT a, INT b)
 {
 	switch(op)
 	{
-	case '+': out = a + b; return NO_ERROR;
-	case '-': out = a - b; return NO_ERROR;
-	case '*': out = a * b; return NO_ERROR;
-	case '/': CHECK(b!=0, DIV_ZERO); out = a / b; return NO_ERROR;
+	case '<': args.pushBool(0, a <  b); return NO_ERROR;
+	case '>': args.pushBool(0, a >  b); return NO_ERROR;
+	case '=': args.pushBool(0, a == b); return NO_ERROR;
+
+	case '+': args.pushInt (0, a +  b); return NO_ERROR;
+	case '-': args.pushInt (0, a -  b); return NO_ERROR;
+	case '*': args.pushInt (0, a *  b); return NO_ERROR;
+	case '/': CHECK(b!=0, DIV_ZERO); args.pushInt(0, a / b); return NO_ERROR;
 	}
 	ERR.printCharSymbol(op);
 	return &INVALID_OPERATOR;

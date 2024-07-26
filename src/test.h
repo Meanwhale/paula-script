@@ -8,6 +8,8 @@ namespace paula
 
 	void doubleTest();
 
+    void operatorTest();
+
 
 	void variableTest();
 

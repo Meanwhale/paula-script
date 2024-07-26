@@ -35,7 +35,7 @@ namespace paula
 		//bool pushVariable(TreeIterator& name, Tree&tree);
 		ERROR_STATUS pushExprArg(TreeIterator& _it);
 		ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
-		ERROR_STATUS operate(CHAR op, INT a, INT b, INT& out);
+		ERROR_STATUS operatorPush(CHAR op, INT a, INT b);
         ERROR_STATUS lineIndentationInit(INT indentation, bool& outLoop);
         ERROR_STATUS executeLine(INT indentation, INT lineStartIndex, INT lineType, Tree& tree);
 
