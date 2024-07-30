@@ -109,9 +109,6 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	//OperatorArgDef.types[2] = NODE_ANY_DATA;
 }
 
-const int
-	STATE_INDENTATION = 0,
-	STATE_EXPRESSION = 1;
 
 ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 {
@@ -369,8 +366,6 @@ ERROR_STATUS paula::Paula::pushArgListAndExecute(TreeIterator& _it, Command * cm
 	}
 	else LOG.println("empty stack");
 
-
-	INT stackTop = stack.stackTopIndex(0);
 	args.reset(numArgs);
 
 	CHECK_CALL(cmd->execute(*this, args));
@@ -468,29 +463,6 @@ INT paula::Paula::findVariableIndex(TreeIterator& name, Tree& variableMap)
 	while(it.next());
 	return -1; // variable not found in the tree
 }
-
-/*bool paula::Paula::pushVariable(TreeIterator& name, Tree& tree)
-{
-	// iterate variables and find name. return true if found.
-
-	TreeIterator it(tree);
-	if (!it.hasChild())	return false;
-	it.toChild();
-	do
-	{
-		it.toChild(); // first child is the name
-		if (it.matchTextData(name.getTextData()))
-		{
-			// found!
-			it.next();
-			CHECK_CALL(pushAtomicValue(it));
-			return true;
-		}
-		it.toParent();
-	}
-	while(it.next());
-	return false; // variable not found in the tree
-}*/
 
 ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
 {

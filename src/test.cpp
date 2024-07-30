@@ -1,3 +1,4 @@
+#ifndef PAULA_RELEASE
 #include "defs.h"
 #include "paula.h"
 #include "test.h"
@@ -170,3 +171,4 @@ void paula::runAll()
 //{
 //	// TODO
 //}
+#endif

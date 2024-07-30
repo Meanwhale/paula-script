@@ -1,3 +1,4 @@
+#ifndef PAULA_RELEASE
 #pragma once
 
 #include"defs.h"
@@ -25,3 +26,4 @@ namespace paula
     void runAll();
 	//const Error* iteratorTest();
 }
+#endif

@@ -10,8 +10,7 @@ constexpr INT
 	TREE_ARRAY_SIZE = 1024,
 	MAX_STATES = 32,
 	MAX_DEPTH = 32,
-	BA_BUFFER_SIZE = 1024,
-	CFG_MAX_NAME_LENGTH = 128;
+	BA_BUFFER_SIZE = 1024;
 
 
 const CHAR
@@ -234,7 +233,11 @@ void ByteAutomata::step()
 				buffer[bufferIndex] = inputByte;
 			}
 		}
-		else ASSERT(false);
+		else
+		{
+			ASSERT(false);
+			return;
+		}
 	}
 	else
 	{
@@ -440,6 +443,16 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 }
 void ByteAutomata::addLiteralToken(INT nodeType)
 {
+	if (nodeType == NODE_NAME && readIndex - lastStart <= MAX_VAR_NAME_LENGTH)
+	{
+		error = &VARIABLE_NAME_TOO_LONG;
+		return;
+	}
+	if (nodeType == NODE_TEXT && readIndex - lastStart <= MAX_TEXT_SIZE)
+	{
+		error = &TEXT_TOO_LONG;
+		return;
+	}
 	LOG.print("add token: ").print(lastStart).print(" -> ").print(readIndex).endl();
 	LOG.print("addLiteralToken: ").printHex(nodeType).endl();
 	prepareAddToken();

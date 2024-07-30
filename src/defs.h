@@ -19,11 +19,11 @@
 
 
 #if PAULA_RELEASE
-#define ASSERT_MSG(x,msg) { if (!(x)) { trap(STR(x), __FILE__, __LINE__, msg); }}
-#define ASSERT(x)         { if (!(x)) { trap(STR(x), __FILE__, __LINE__, ""); }}
-#else
 #define ASSERT_MSG(x,msg)
 #define ASSERT(x)
+#else
+#define ASSERT_MSG(x,msg) { if (!(x)) { trap(STR(x), __FILE__, __LINE__, msg); }}
+#define ASSERT(x)         { if (!(x)) { trap(STR(x), __FILE__, __LINE__, ""); }}
 #endif
 
 #define IS_CHAR(c) (c>='a' && c<='z')
@@ -76,6 +76,8 @@ namespace paula
 	ERROR_TYPE (UNEXPECTED_CHARACTER);
 	ERROR_TYPE (PARSE_ERROR);
 	ERROR_TYPE (SYNTAX_ERROR);
+	ERROR_TYPE (VARIABLE_NAME_TOO_LONG);
+	ERROR_TYPE (TEXT_TOO_LONG);
 	ERROR_TYPE (UNKNOWN_COMMAND);
 	ERROR_TYPE (UNKNOWN_EXPRESSION);
 	ERROR_TYPE (EMPTY_ARGUMENT_VALUE);

@@ -259,7 +259,7 @@ bool Tree::getChars(char*&out, const char* varName)
 INT Tree::getIndexOfData(const char* varName, INT dataType)
 {
 	ASSERT(getType(0) == NODE_SUBTREE);
-	INT length = strlen(varName);
+	INT length = (INT)strlen(varName);
 	TreeIterator it(*this);
 	if (!it.hasChild()) return -1;
 	it.toChild();
