@@ -4,7 +4,14 @@
 
 namespace paula
 {
+	class Args;
+	class Paula;
+
 	void runErrorCheck(const Error* (* test)(), const Error* expectedError);
+	
+	const Error* testCallback (Paula&p,Args&args);
+
+	void textTest();
 
 	void doubleTest();
     void operatorTest();

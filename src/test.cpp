@@ -3,6 +3,7 @@
 #include "test.h"
 #include <iostream>
 
+
 void paula::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 {
 	auto error = test();
@@ -43,6 +44,7 @@ void paula::doubleTest()
 
 #define TEST_INT(name,value) a = -123456; ASSERT(Paula::one.vars.getInt(a, name)); LOG.print("a:").print(a).endl(); ASSERT(a == value);
 #define TEST_BOOL(name,value) b = false; ASSERT(Paula::one.vars.getBool(b, name)); LOG.print("b:").print(b).endl(); ASSERT(b == value);
+#define TEST_TEXT(name,value) t = nullptr; ASSERT(Paula::one.vars.getChars(t, name)); LOG.print("t:").print(t).endl(); ASSERT(strcmp(t, value) == 0);
 
 void paula::operatorTest()
 {
@@ -108,20 +110,59 @@ void paula::parenthesisErrorTest()
 	}, &PARENTHESIS);
 }
 
+const paula::Error* paula::testCallback (Paula&p,Args&args)
+{
+	LOG.println("-------- TEST ACTION --------");
+	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	Data data;
+	args.get(0, data);
+	INT value = false;
+	if(data.getInt(value))
+	{
+		args.returnInt(2*value);
+		return NO_ERROR;
+	}
+	return &TYPE_MISMATCH;
+}
+
+void paula::textTest()
+{
+	CharInputStream input("t:\"hello!\"");
+	auto error = Paula::one.run(input, false);
+	ASSERT(error == NO_ERROR);
+	char * t;
+	TEST_TEXT("t", "hello!");
+
+	runErrorCheck([]() {
+		CharInputStream input2("t:\"hello!\"\nt:\"a\"");
+		return Paula::one.run(input2, false);
+	}, &TEXT_VARIABLE_OVERWRITE);
+}
+
 void paula::callbackTest()
 {
-	//Paula::one.addCallback("testCallback");
+	auto error = Paula::one.addCallback("testCallback", testCallback);
+	ASSERT(error == NO_ERROR);
+	CharInputStream input("a:3\na:testCallback(3)");
+	auto err = Paula::one.run(input, false);
+	ASSERT(error == NO_ERROR);
+	INT a;
+	TEST_INT("a", 6);
 }
 
 void paula::runAll()
 {
 	variableTest();
-	parenthesisErrorTest();
+	textTest();
+	doubleTest();
+
 	functionTest();
+	parenthesisErrorTest();
 	loopTest();
 	ifTest();
 	operatorTest();
-	doubleTest();
+
+	callbackTest();
 }
 
 //

@@ -32,6 +32,7 @@ ByteAutomata::ByteAutomata(Paula& p) :
 	tree(TREE_ARRAY_SIZE),
 	tr(MAX_STATES * 256),
 	buffer(BA_BUFFER_SIZE),
+	quoteBuffer(MAX_TEXT_SIZE),
 	tmp(BA_BUFFER_SIZE),
 	treeStack(MAX_DEPTH),
 	stateNames(MAX_STATES)
@@ -41,6 +42,7 @@ ByteAutomata::ByteAutomata(Paula& p) :
 	stateCounter = 0;
 	actionCounter = 0;
 	bufferIndex = -1;
+	quoteIndex = -1;
 	lineNumber = 0;
 	stayNextStep = false;
 
@@ -374,6 +376,15 @@ double ByteAutomata::parseDouble(Array<BYTE>& src, INT i, INT lastByte)
 	ASSERT(false);
 	return 0.0;
 }
+void ByteAutomata::addQuoteByte(BYTE b)
+{
+	quoteBuffer[quoteIndex++] = b; // TODO: check bounds
+}
+void ByteAutomata::addQuote()
+{
+	prepareAddToken();
+	tree.addText(currentParent(), quoteBuffer.ptr(), 0, quoteIndex, NODE_TEXT);
+}
 void ByteAutomata::prepareAddToken()
 {
 	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_SUBTREE)
@@ -402,7 +413,7 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 	{
 		addLiteralToken(NODE_NAME);
 	}
-	else if (currentState == stateText)
+	else if (currentState == stateQuote)
 	{
 		addLiteralToken(NODE_TEXT);
 	}
@@ -526,7 +537,7 @@ void ByteAutomata::defineTransitions()
 	stateName = addState("name");
 	stateNumber = addState("number");
 	stateDecimal = addState("decimal");
-	stateText = addState("text"); // TODO
+	stateQuote = addState("quote"); // TODO
 
 	transition(stateStart, "\x4", [](ByteAutomata*ba)					{ ba->eof(); });
 	transition(stateStart, "\t", [](ByteAutomata*ba)					{ ba->indentation++; });
@@ -550,6 +561,13 @@ void ByteAutomata::defineTransitions()
 	transition(stateSpace, blockStart, [](ByteAutomata*ba)				{ ba->startBlock(); });
 	transition(stateSpace, blockEnd, [](ByteAutomata*ba)				{ ba->endBlock(); });
 	transition(stateSpace, ",", [](ByteAutomata*ba)						{ ba->comma(); });
+	transition(stateSpace, "\"", [](ByteAutomata*ba)					{ ba->next(ba->stateQuote); ba->quoteIndex = 0; });
+
+
+	fillTransition(stateQuote, [](ByteAutomata*ba)						{ ba->addQuoteByte(ba->currentInput); });
+	transition(stateQuote, linebreak, [](ByteAutomata*ba)				{ ba->error = &UNEXPECTED_CHARACTER; });
+	transition(stateQuote, "\"", [](ByteAutomata*ba)					{ ba->lastStart++; ba->addQuote(); ba->next(ba->stateSpace); });
+	transition(stateQuote, "\\", [](ByteAutomata*ba)					{ ba->error = &UNEXPECTED_CHARACTER; });
 
 	transition(stateName, letters, 0);
 	transition(stateName, whiteSpace, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });

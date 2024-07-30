@@ -37,11 +37,28 @@ namespace paula
 		const POut& endl() const;
 
 		// TODO
-		// printHex(x)
-		// printCharSymbol(x)
 		// printIntsToText(x*)
 	};
 
+	class NullPrint
+	{
+	public:
+		// Inherited via POut
+		void close();
+		bool closed();
+		const NullPrint& print(char) const;
+		const NullPrint& print(const char*) const;
+		const NullPrint& print(long) const;
+		const NullPrint& print(double) const;
+		const NullPrint& print(int x) const;
+		const NullPrint& print(float x) const;
+		const NullPrint& print(bool x) const;
+		const NullPrint& printHex(INT i) const;
+		const NullPrint& printCharSymbol(CHAR c) const;
+		const NullPrint& print(const Error* a) const;
+		const NullPrint& println(const char*) const;
+		const NullPrint& endl() const;
+	};
 	class STDOut : public POut
 	{
 	public:

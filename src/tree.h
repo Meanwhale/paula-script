@@ -28,6 +28,8 @@ namespace paula
 		NODE_TEXT				= 0x24000000, // string/const char*, e.g. "abc d"
 		NODE_BOOL				= 0x25000000, // true = 1, false = 0
 
+		NODE_VOID				= 0x2f000000,
+
 		// controls tokens
 
 		NODE_OPERATOR			= 0x31000000,
@@ -41,6 +43,7 @@ namespace paula
 		SIZE_MASK	= 0x00ffffff;
 
 	class TreeIterator;
+	class Args;
 
 	class Tree
 	{
@@ -54,6 +57,7 @@ namespace paula
 		void addText(INT parentIndex, const char* text);
 		void addText(INT parentIndex, const unsigned char * bytes, INT first, INT last, INT nodeType);
 		void addData(INT stackIndex, TreeIterator& src);
+        void pushData(INT stackIndex, INT* src);
 		INT addSubtree(INT parentIndex, INT type);
 		bool hasCapacity(INT size);
 
@@ -76,6 +80,8 @@ namespace paula
         bool getDouble(double& out, const char* varName);
 
 		bool getInt(int& out, const char* varName);
+
+        bool getChars(char*& out, const char* varName);
 
 		INT getIndexOfData(const char *, INT dataType);
 
@@ -105,6 +111,7 @@ namespace paula
 		const char * treeTypeName(INT tag); 
 
 		friend class TreeIterator;
+		friend class Args;
 
 	private:
 		Array<INT> data;
@@ -161,6 +168,7 @@ namespace paula
 		INT* getTextData();
 
 		friend class Tree;
+		friend class Args;
 
 	private:
 

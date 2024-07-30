@@ -150,8 +150,21 @@ void Tree::addData(INT parentIndex, TreeIterator& src)
 		data[top++] = src.tree.data[src.index + i];
 	}
 }
+void Tree::pushData(INT stackIndex, INT* src)
+{
+	// NOTE: almost same as below
 
-
+	ASSERT(isStack(stackIndex));
+	INT type = (*src) & TAG_MASK;
+	INT size = (*src) & SIZE_MASK;
+	pushStack(stackIndex, type, size);
+	// copy actual data
+	for(INT i=3; i<=size; i++)
+	{
+		VRB(LOG.print("copy RAW value: ").print(*(src + i)).endl();)
+		data[top++] = *(src + i);
+	}
+}
 void Tree::pushData(INT stackIndex, TreeIterator& src)
 {
 	ASSERT(isStack(stackIndex));
@@ -218,7 +231,6 @@ bool Tree::getBool(bool& out, const char* varName)
 	if (index < 0) return false;
 	return getBool(out, index);
 }
-
 bool Tree::getDouble(double& out, const char* varName)
 {
 	INT index = getIndexOfData(varName, NODE_DOUBLE);
@@ -229,12 +241,18 @@ bool Tree::getDouble(double& out, const char* varName)
 	out = longToDoubleFormat(bits);
 	return true;
 }
-
 bool Tree::getInt(int& out, const char* varName)
 {
 	INT index = getIndexOfData(varName, NODE_INTEGER);
 	if (index < 0) return false;
 	out = get(index + 3);
+	return true;
+}
+bool Tree::getChars(char*&out, const char* varName)
+{
+	INT index = getIndexOfData(varName, NODE_TEXT);
+	if (index < 0) return false;
+	out = (char*)(data.ptr(index) + 4);
 	return true;
 }
 
@@ -442,7 +460,7 @@ TreeIterator::TreeIterator(Tree& _tree) :
 	index(0),
 	depth(0)
 {
-	ASSERT(!tree.isClear());
+	//ASSERT(!tree.isClear());
 }
 TreeIterator::TreeIterator(Tree& _tree, INT _index) :
 	tree(_tree),

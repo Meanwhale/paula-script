@@ -43,6 +43,7 @@ namespace paula
 		INT lineStartIndex = 0;
 		INT lineNumber = 0;
 		bool stayNextStep = false;
+		Array<BYTE> quoteBuffer;
 		Array<BYTE> buffer;
 		Array<BYTE> tmp;
 		Array<INT> treeStack;
@@ -59,6 +60,8 @@ namespace paula
 		void startFunction();
 		INT parseInt(Array<BYTE>& src, INT firstByte, INT lastByte);
 		double parseDouble(Array<BYTE>& src, INT i, INT lastByte);
+		void addQuoteByte(BYTE);
+		void addQuote();
         void addTokenAndTransitionToSpace();
 		void prepareAddToken();
         void addOperatorToken();
@@ -86,7 +89,7 @@ namespace paula
 
 		INT currentParent();
 		Paula& paula;
-		INT lastStart, indentation, lineType, treeStackTop;
+		INT lastStart, indentation, lineType, treeStackTop, quoteIndex;
 		BYTE
 			stateStart,
 			stateSpace,
@@ -96,7 +99,7 @@ namespace paula
 			statePostName,
 			stateNumber,
 			stateDecimal,
-			stateText;
+			stateQuote;
 		
 		// hide
 		ByteAutomata() = delete;

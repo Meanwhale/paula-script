@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="paula-vs.cpp">
+    <ClCompile Include="paula-cli.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

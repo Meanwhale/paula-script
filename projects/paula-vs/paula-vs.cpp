@@ -33,9 +33,9 @@ int main()
 	//LOG.print("ERROR: ").print(error).endl();
 
 	//runAll();
-	ifTest();
+	textTest();
 }
-
+/*
 void stackTest()
 {
 	Tree stack(1024);
@@ -67,4 +67,22 @@ void treeTest()
 	tree.addInt(parent, 400);
 	tree.addInt(parent, 500);
 	tree.print();
+
+	Args args(tree);
+	TreeIterator it(tree,parent);
+	it.toChild();
+	args.reset(2);
+	Data d;
+	if (args.get(0, d))
+	{
+		INT data;
+		if (d.getInt(data))
+		{
+			LOG.println("yes");
+			LOG.print("int: ").print(data).endl();
+		} else LOG.println("not int");
+	}
+	if (args.get(1, d)) LOG.println("yes");
+	else LOG.println("no");
 }
+*/

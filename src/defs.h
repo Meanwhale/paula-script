@@ -17,13 +17,14 @@
 
 // assert: internal error, check: user error
 
-//#define ASSERT_MSG(x,msg) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, msg); }}
-//#define ASSERT(x) { if (!(x)) { paula::err.print("FAIL: (").print(STR(x)).print("), file ").print(__FILE__).print(", line ").print(__LINE__).endl(); assert(false, ""); }}
+
+#if PAULA_RELEASE
 #define ASSERT_MSG(x,msg) { if (!(x)) { trap(STR(x), __FILE__, __LINE__, msg); }}
 #define ASSERT(x)         { if (!(x)) { trap(STR(x), __FILE__, __LINE__, ""); }}
-
-
-//#define EXIT(msg) { ERR.println(msg); }
+#else
+#define ASSERT_MSG(x,msg)
+#define ASSERT(x)
+#endif
 
 #define IS_CHAR(c) (c>='a' && c<='z')
 
@@ -39,8 +40,13 @@ namespace paula
 	typedef uint8_t BYTE;
 
 	class POut;
+	class NullPrint;
 
-	extern const POut& log; // log output
+#if PAULA_RELEASE
+	extern const NullPrint log; // optimize debug print away
+#else
+	extern const POut& log;
+#endif
 	extern const POut& err; // error output
 	extern const POut& user; // print output
 	
@@ -78,6 +84,9 @@ namespace paula
 	ERROR_TYPE (DIV_ZERO);
 	ERROR_TYPE (VARIABLE_NOT_FOUND);
 	ERROR_TYPE (INDENTATION_ERROR);
+	ERROR_TYPE (WRONG_NUMBER_OF_ARGUMENTS);
+	ERROR_TYPE (CALLBACK_ERROR);
+	ERROR_TYPE (TEXT_VARIABLE_OVERWRITE);
 
 	// tree + interator
 
@@ -93,6 +102,8 @@ namespace paula
 		CONSTANTS_SIZE = 128,
 		MAX_VAR_NAME_LENGTH = 128,
 		MAX_VAR_NAME_DATA_LENGTH = 36,
+		MAX_RETURN_VALUE_SIZE = 1024,
+		MAX_TEXT_SIZE = 1024,
 
 		LINE_UNDEFINED = 10001,
 		LINE_ASSIGNMENT = 10002,

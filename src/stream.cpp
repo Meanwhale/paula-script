@@ -61,7 +61,8 @@ const POut& paula::POut::print(bool x) const
 }
 const POut& paula::POut::println(const char* x) const
 {
-	return print(x).endl();
+	if (x) return print(x).endl();
+	return print("null").endl();
 }
 
 const POut& paula::POut::endl() const
@@ -121,3 +122,74 @@ const POut& paula::STDErr::print(char x) const { std::cerr<<x; return *this; }
 const POut& paula::STDErr::print(const char* x) const { std::cerr<<x; return *this; }
 const POut& paula::STDErr::print(long x) const { std::cerr<<x; return *this; }
 const POut& paula::STDErr::print(double x) const { std::cerr<<x; return *this; }
+
+// null printer
+
+void paula::NullPrint::close()
+{
+}
+
+bool paula::NullPrint::closed()
+{
+	return false;
+}
+
+const NullPrint& paula::NullPrint::print(char) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::print(const char*) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::print(long) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::print(double) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::print(int x) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::print(float x) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::print(bool x) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::printHex(INT i) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::printCharSymbol(CHAR c) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::print(const Error* a) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::println(const char*) const
+{
+	return *this;
+}
+
+const NullPrint& paula::NullPrint::endl() const
+{
+	return *this;
+}
