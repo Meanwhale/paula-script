@@ -1,5 +1,7 @@
 #include "stream.h"
 #include "utils.h"
+#include "tree.h"
+#include "args.h"
 #include <iostream>
 
 using namespace paula;
@@ -72,6 +74,42 @@ const POut& paula::POut::endl() const
 
 // special prints
 
+const POut& paula::POut::print(const TreeIterator& it) const
+{
+	print(it.var());
+	return *this;
+}
+const POut& paula::POut::print(const Var& x) const
+{
+	INT t = x.type();
+
+	if (t == NODE_TEXT || t == NODE_NAME)
+	{
+		char * s; if (x.readChars(s)) print(s);
+	}
+	else if (t == NODE_INTEGER)
+	{
+		INT i; if (x.getInt(i)) print(i);
+	}
+	else if (t == NODE_BOOL)
+	{
+		bool b; if (x.getBool(b)) print(b ? "true" : "false");
+	}
+	else if (t == NODE_OPERATOR)
+	{
+		char op; if (x.getOp(op)) print(op);
+	}
+	else if (x.isSubtree())
+	{
+		print(treeTypeName(t));
+	}
+	else
+	{
+		LOG.print("<! ! ! TreeIterator::print: unknown node ! ! !>");
+	}
+	return *this;
+}
+
 char hexs[] = 
 {
 		'0','1','2','3',
@@ -125,71 +163,10 @@ const POut& paula::STDErr::print(double x) const { std::cerr<<x; return *this; }
 
 // null printer
 
-void paula::NullPrint::close()
-{
-}
-
-bool paula::NullPrint::closed()
-{
-	return false;
-}
-
-const NullPrint& paula::NullPrint::print(char) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::print(const char*) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::print(long) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::print(double) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::print(int x) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::print(float x) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::print(bool x) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::printHex(INT i) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::printCharSymbol(CHAR c) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::print(const Error* a) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::println(const char*) const
-{
-	return *this;
-}
-
-const NullPrint& paula::NullPrint::endl() const
-{
-	return *this;
-}
+const NullPrint& paula::NullPrint::print(const char*) const { return *this; }
+const NullPrint& paula::NullPrint::print(double) const { return *this; }
+const NullPrint& paula::NullPrint::printHex(INT i) const { return *this; }
+const NullPrint& paula::NullPrint::printCharSymbol(CHAR c) const { return *this; }
+const NullPrint& paula::NullPrint::print(const Error* a) const { return *this; }
+const NullPrint& paula::NullPrint::println(const char*) const { return *this; }
+const NullPrint& paula::NullPrint::endl() const { return *this; }

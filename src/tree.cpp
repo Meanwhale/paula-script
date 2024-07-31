@@ -1,5 +1,6 @@
 #include "tree.h"
 #include "stream.h"
+#include "args.h"
 
 namespace paula
 {
@@ -134,7 +135,7 @@ void Tree::pushBool(INT stackIndex, bool value)
 {
 	ASSERT(isStack(stackIndex));
 	pushStack(stackIndex, NODE_BOOL, 3);
-	data[top++] = value ? 1 : 0;;
+	data[top++] = value ? 1 : 0;
 }
 
 void Tree::addData(INT parentIndex, TreeIterator& src)
@@ -188,7 +189,7 @@ INT Tree::stackTopIndex(INT stackIndex)
 INT Tree::popInt(INT stackIndex)
 {
 	INT stackTop = stackTopIndex(stackIndex);
-	ASSERT(maskNodeTag(data[stackTop]) == NODE_INTEGER);
+	ASSERT(getType(stackTop) == NODE_INTEGER);
 	INT value = data[stackTop + 3];
 	pop(stackIndex);
 	return value;
@@ -229,31 +230,25 @@ bool Tree::getBool(bool& out, const char* varName)
 {
 	INT index = getIndexOfData(varName, NODE_BOOL);
 	if (index < 0) return false;
-	return getBool(out, index);
+	return readBool(out, data.ptr(index));
 }
 bool Tree::getDouble(double& out, const char* varName)
 {
 	INT index = getIndexOfData(varName, NODE_DOUBLE);
 	if (index < 0) return false;
-	INT a = get(index + 3);
-	INT b = get(index + 4);
-	LONG bits = intsToLong(a, b);
-	out = longToDoubleFormat(bits);
-	return true;
+	return readDouble(out, data.ptr(index));
 }
 bool Tree::getInt(int& out, const char* varName)
 {
 	INT index = getIndexOfData(varName, NODE_INTEGER);
 	if (index < 0) return false;
-	out = get(index + 3);
-	return true;
+	return readInt(out, data.ptr(index));
 }
 bool Tree::getChars(char*&out, const char* varName)
 {
 	INT index = getIndexOfData(varName, NODE_TEXT);
 	if (index < 0) return false;
-	out = (char*)(data.ptr(index) + 4);
-	return true;
+	return readChars(out, data.ptr(index));
 }
 
 INT Tree::getIndexOfData(const char* varName, INT dataType)
@@ -286,27 +281,10 @@ INT Tree::getIndexOfData(const char* varName, INT dataType)
 
 // ------------- MAP END
 
-INT Tree::get(INT index)
-{
-	return data[index];
-}
-bool Tree::getInt(int& out, INT nodeIndex)
-{
-	if (getType(nodeIndex) != NODE_INTEGER) return false;
-	out = data[nodeIndex + 3];
-	return true;
-}
-bool Tree::getBool(bool& out, INT nodeIndex)
-{
-	if (getType(nodeIndex) != NODE_BOOL) return false;
-	INT value = data[nodeIndex + 3];
-	ASSERT(value == 1 || value == 0);
-	out = value != 0;
-	return true;
-}
+
 INT Tree::getType(INT index)
 {
-	return maskNodeTag(data[index]);
+	return data[index] & TAG_MASK;
 }
 INT Tree::getNodeSize(INT index)
 {
@@ -314,21 +292,17 @@ INT Tree::getNodeSize(INT index)
 }
 bool paula::Tree::isSubtree(INT nodeIndex)
 {
-	return isSubtreeTag(maskNodeTag(data[nodeIndex]));
+	return isSubtreeTag(getType(nodeIndex));
 }
-bool paula::Tree::isStack(INT nodeIndex)
+
+bool Tree::isStack(INT nodeIndex)
 {
-	return maskNodeTag(data[nodeIndex]) == NODE_STACK;
+	return getType(nodeIndex) == NODE_STACK;
 }
 
 bool paula::Tree::isSubtreeTag(INT tag)
 {
 	return (tag & 0xf0ffffff) == 0;
-}
-
-int paula::Tree::maskNodeTag(INT node)
-{
-	return node & TAG_MASK;
 }
 
 int paula::Tree::nodeSize(INT node)
@@ -384,8 +358,7 @@ void paula::Tree::print()
 		return;
 	}
 	TreeIterator it(*this);
-	it.print(false);
-	LOG.println("");
+	LOG.print(it).endl();
 	printSubtree(it);
 	//printNode(0, 0);
 
@@ -395,22 +368,13 @@ void Tree::printSubtree(TreeIterator& it)
 {
 	if (!it.hasChild()) return;
 	it.toChild();
-
 	do
-	{
-		// print index
+	{	// print index
 		LOG.print(it.index).print(": ");
 		for (int n=0; n<it.getDepth(); n++) LOG.print("  ");
-		it.print(false);
-		LOG.println("");
-
-		if (it.hasChild())
-		{
-			printSubtree(it);
-		}
-
+		LOG.print(it).endl();
+		if (it.hasChild()) printSubtree(it);
 	} while(it.next());
-
 	it.toParent();
 }
 void Tree::printCompact(TreeIterator&it)
@@ -420,26 +384,12 @@ void Tree::printCompact(TreeIterator&it)
 	LOG.print("(");
 	do
 	{
-		it.print(true);
+		LOG.print(it).endl();
 		if (it.hasChild()) printCompact(it);
 		if (it.hasNext()) LOG.print(" ");
 	} while(it.next());
 	LOG.print(")");
 	it.toParent();
-}
-const char* Tree::treeTypeName(INT tag)
-{
-	switch(tag)
-	{
-	case NODE_SUBTREE: return "<subtree>";
-	case NODE_EXPR: return "<expr>";
-	case NODE_STATEMENT: return "<statement>";
-
-	case NODE_STACK: return "<stack>";
-	case NODE_MAP: return "<map>";
-	case NODE_KV: return "<key-value>";
-	}
-	return "<! ! ! error ! ! !>";
 }
 
 //--------------------------------------------------------------
@@ -470,42 +420,15 @@ TreeIterator::TreeIterator(Tree& _tree, INT _index) :
 	ASSERT(!tree.isClear());
 }
 
+Var TreeIterator::var() const
+{
+	return Var(tree.data.ptr(index));
+}
+
 void TreeIterator::printTree(bool compact)
 {
 	if (compact) tree.printCompact(*this);
 	else tree.printSubtree(*this);
-}
-
-void TreeIterator::print(bool compact)
-{
-	if (isType(NODE_TEXT) || isType(NODE_NAME))
-	{
-		LOG.print(getText());
-	}
-	else if (isType(NODE_INTEGER))
-	{
-		LOG.print(getInt());
-	}
-	else if (isType(NODE_BOOL))
-	{
-		LOG.print(getBool() ? "true" : "false");
-	}
-	else if (isType(NODE_OPERATOR))
-	{
-		LOG.print(getOp());
-	}
-	else if (tree.isSubtree(index))
-	{
-		if (!compact) LOG.print(tree.treeTypeName(tree.getType(index)));
-	}
-	else if (tree.isStack(index))
-	{
-		if (!compact) LOG.print("<stack>");
-	}
-	else
-	{
-		LOG.print("<! ! ! TreeIterator::print: unknown node ! ! !>");
-	}
 }
 
 bool TreeIterator::next()
@@ -528,6 +451,12 @@ void TreeIterator::toParent()
 	index = tree.data[index+1];
 	depth--;
 }
+
+INT TreeIterator::getDepth()
+{
+	return depth;
+}
+
 
 bool TreeIterator::hasNext()
 {
@@ -572,12 +501,7 @@ INT TreeIterator::type()
 
 INT TreeIterator::size()
 {
-	return tree.getNodeSize(index);;
-}
-
-INT TreeIterator::getIndex()
-{
-	return index;
+	return tree.getNodeSize(index);
 }
 
 void TreeIterator::overwrite(TreeIterator& src)
@@ -591,12 +515,6 @@ void TreeIterator::overwrite(TreeIterator& src)
 		tree.data[index + i] = src.tree.data[src.index + i];
 	}
 }
-
-INT TreeIterator::getDepth()
-{
-	return depth;
-}
-
 CHAR TreeIterator::getOp()
 {
 	ASSERT(isType(NODE_OPERATOR));
@@ -610,8 +528,12 @@ bool TreeIterator::getBool()
 }
 INT TreeIterator::getInt()
 {
-	ASSERT(isType(NODE_INTEGER));
-	return tree.data[index + 3];
+	INT out;
+	bool found = readInt(out, tree.data.ptr(index));
+	ASSERT(found);
+	return out;
+//	ASSERT(isType(NODE_INTEGER));
+//	return tree.data[index + 3];
 }
 
 const char* TreeIterator::getText()

@@ -17,4 +17,14 @@ namespace paula
 	INT charToInt(CHAR c);
     INT textDataSize(INT numBytes);
     void bytesToInts(const unsigned char *  bytes, int bytesOffset, Array<INT>& ints, int intsOffset, int bytesLength);
+
+	const char* treeTypeName(INT tag);
+
+	// data access
+	bool match(const INT* ptr, INT tag);
+	bool readInt(INT& out, const INT* node);
+	bool readDouble(DOUBLE& out, const INT* node);
+	bool readBool(bool& out, const INT* node);
+	bool readOp(char& out, const INT* node);
+	bool readChars(char*&out, const INT* node);
 }

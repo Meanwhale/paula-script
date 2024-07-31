@@ -1,5 +1,6 @@
 #include "paula.h"
 #include "stream.h"
+#include "args.h"
 
 using namespace paula;
 
@@ -18,10 +19,8 @@ ERROR_STATUS notAction (Paula&p,Args&args)
 {
 	LOG.println("-------- NOT ACTION --------");
 	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
-	Data data;
-	args.get(0, data);
 	bool value = false;
-	if(data.getBool(value))
+	if(args.get(0).getBool(value))
 	{
 		args.returnBool(!value);
 		return NO_ERROR;
@@ -32,10 +31,8 @@ ERROR_STATUS whileAction (Paula&p,Args&args)
 {
 	LOG.println("-------- WHILE ACTION --------");
 	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
-	Data data;
-	args.get(0, data);
 	bool value = false;
-	if(data.getBool(value))
+	if(args.get(0).getBool(value))
 	{
 		if (value) p.startLoop();
 		else p.skipBlock();
@@ -48,10 +45,8 @@ ERROR_STATUS ifAction (Paula&p,Args&args)
 	LOG.println("-------- IF ACTION --------");
 
 	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
-	Data data;
-	args.get(0, data);
 	bool value = false;
-	if(data.getBool(value))
+	if(args.get(0).getBool(value))
 	{
 		if (value) p.startIf();
 		else p.skipBlock();
@@ -229,7 +224,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 		LOG.print("execute ASSIGNMENT: indentation=").print(indentation).endl();
 		TreeIterator it(tree);
 		it.toChild(); // points to variable name
-		LOG.print("variable name: "); it.print(true); LOG.endl();
+		LOG.print("variable name: ").print(it).endl();
 
 		// new or override?
 
@@ -242,12 +237,12 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 			LOG.println("-------- OVERWRITE VAR --------");
 			// variable already exists
 			TreeIterator data(vars, index); // points to the data
-			LOG.print("old value: "); data.print(true); LOG.endl();
+			LOG.print("old value: ").print(data).endl();
 
 			it.next(); // move to SRC
 			CHECK_CALL(pushExprArg(it));
 			TreeIterator src(stack, stack.stackTopIndex(0));
-			LOG.print("overwrite value: "); src.print(true); LOG.endl();
+			LOG.print("overwrite value: ").print(src).endl();
 			if (src.type() == NODE_TEXT || data.type() == NODE_TEXT) return &TEXT_VARIABLE_OVERWRITE;
 			data.overwrite(src);
 		}
@@ -260,7 +255,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 			it.next(); // move to SRC
 			CHECK_CALL(pushExprArg(it));
 			TreeIterator src(stack, stack.stackTopIndex(0));
-			LOG.print("assign value: "); src.print(true); LOG.endl();
+			LOG.print("assign value: ").print(src).endl();
 			vars.addData(kvIndex, src); // add value to KV
 			stack.pop(0);
 		}
@@ -358,8 +353,7 @@ ERROR_STATUS paula::Paula::pushArgListAndExecute(TreeIterator& _it, Command * cm
 		LOG.print("args stack");
 		do
 		{
-			LOG.print("\n - ");
-			argIt.print(true);
+			LOG.print("\n - ").print(argIt);
 		}
 		while(argIt.next());
 		LOG.endl();
@@ -390,7 +384,7 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 	INT stackSizeBefore = stack.stackSize(0);
 	TreeIterator it(_it);
 
-	LOG.print("push atomic value: "); it.print(true); LOG.endl();
+	LOG.print("push atomic value: ").print(it).endl();
 
 	if (it.isType(NODE_INTEGER) || it.isType(NODE_DOUBLE) || it.isType(NODE_BOOL) || it.isType(NODE_TEXT))
 	{
@@ -407,7 +401,7 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 	}
 	else if(it.isType(NODE_NAME))
 	{
-		LOG.print("find variable: "); it.print(true); LOG.endl();
+		LOG.print("find variable: ").print(it).endl();
 
 		CHECK_CALL(pushVariable(it));
 
@@ -456,7 +450,7 @@ INT paula::Paula::findVariableIndex(TreeIterator& name, Tree& variableMap)
 		if (it.matchTextData(name.getTextData()))
 		{
 			it.next(); // found! move to data
-			return it.getIndex();
+			return it.index;
 		}
 		it.toParent();
 	}

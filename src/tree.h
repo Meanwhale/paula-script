@@ -2,8 +2,6 @@
 #include "array.h"
 namespace paula
 {
-	// tags
-
 	constexpr INT
 
 		NODE_UNDEFINED			= 0xff000000,
@@ -23,8 +21,8 @@ namespace paula
 		NODE_ANY_DATA			= 0x20000000,
 
 		NODE_NAME				= 0x21000000, // variable, constant, or function name
-		NODE_INTEGER			= 0x22000000, // e.g. 123
-		NODE_DOUBLE				= 0x23000000, // e.g. 1.23
+		NODE_INTEGER			= 0x22000000, // 32-bit, e.g. 123
+		NODE_DOUBLE				= 0x23000000, // 64-bit, e.g. 1.23
 		NODE_TEXT				= 0x24000000, // string/const char*, e.g. "abc d"
 		NODE_BOOL				= 0x25000000, // true = 1, false = 0
 
@@ -44,6 +42,7 @@ namespace paula
 
 	class TreeIterator;
 	class Args;
+	class Var;
 
 	class Tree
 	{
@@ -88,15 +87,11 @@ namespace paula
 
 		// accessors
 
-		INT get(INT index);
-		bool getInt(int& out, INT nodeIndex);
-		bool getBool(bool& out, INT nodeIndex);
         INT getType(INT index);
 		INT getNodeSize(INT index);
 		bool isSubtree(INT nodeIndex);
 		bool isStack(INT nodeIndex);
 		bool isSubtreeTag(INT tag);
-		INT maskNodeTag(INT node);
 		INT nodeSize(INT node);
 
 		// utils
@@ -108,7 +103,6 @@ namespace paula
 		void print();
 		void printSubtree(TreeIterator&);
 		void printCompact(TreeIterator&);
-		const char * treeTypeName(INT tag); 
 
 		friend class TreeIterator;
 		friend class Args;
@@ -133,9 +127,9 @@ namespace paula
 		TreeIterator(Tree&);
 		TreeIterator(Tree& _tree, INT _index);
 
-		void printTree(bool compact);
+		Var var() const;
 
-		void print(bool compact);
+		void printTree(bool compact);
 
 		bool next(); // goes to next sibling. returns true if there's a sibling.
 
@@ -150,7 +144,6 @@ namespace paula
 		bool isTextType();
 		INT type();
 		INT size();
-		INT getIndex();
 
 		void overwrite(TreeIterator& src);
 
@@ -169,6 +162,7 @@ namespace paula
 
 		friend class Tree;
 		friend class Args;
+		friend class Paula;
 
 	private:
 

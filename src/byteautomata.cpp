@@ -317,7 +317,7 @@ void ByteAutomata::printTreeStack()
 	for(INT i=0; i<=treeStackTop; i++)
 	{
 		//LOG.print(" ["<<treeStack[i]<<":"<<(tree.getTag(treeStack[i]))<<"] ");
-		LOG.print(tree.treeTypeName(tree.getType(treeStack[i]))).print(" > ");
+		LOG.print(treeTypeName(tree.getType(treeStack[i]))).print(" > ");
 	}
 	LOG.println("");
 }
@@ -390,7 +390,7 @@ void ByteAutomata::addQuote()
 }
 void ByteAutomata::prepareAddToken()
 {
-	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_SUBTREE)
+	if (tree.getType(currentParent()) == NODE_SUBTREE)
 	{
 		// parent is a subtree "(...)", start a new expr after "(" or ","
 		LOG.println("addToken: new expr");
@@ -443,12 +443,12 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 }
 void ByteAutomata::addLiteralToken(INT nodeType)
 {
-	if (nodeType == NODE_NAME && readIndex - lastStart <= MAX_VAR_NAME_LENGTH)
+	if (nodeType == NODE_NAME && readIndex - lastStart >= MAX_VAR_NAME_LENGTH)
 	{
 		error = &VARIABLE_NAME_TOO_LONG;
 		return;
 	}
-	if (nodeType == NODE_TEXT && readIndex - lastStart <= MAX_TEXT_SIZE)
+	if (nodeType == NODE_TEXT && readIndex - lastStart >= MAX_TEXT_SIZE)
 	{
 		error = &TEXT_TOO_LONG;
 		return;
@@ -462,7 +462,7 @@ void ByteAutomata::comma()
 {
 	printTreeStack();
 	LOG.println("comma");
-	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_EXPR)
+	if (tree.getType(currentParent()) == NODE_EXPR)
 	{
 		// pop from expr first
 
@@ -498,7 +498,7 @@ void ByteAutomata::endBlock()
 	LOG.println("endBlock");
 	tree.print();
 	
-	if (tree.maskNodeTag(tree.get(currentParent())) == NODE_EXPR)
+	if (tree.getType(currentParent()) == NODE_EXPR)
 	{
 		// pop from expr first
 		LOG.println("pop expr");

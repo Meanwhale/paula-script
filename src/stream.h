@@ -3,6 +3,9 @@
 //#include "array.h"
 namespace paula
 {
+	class TreeIterator;
+	class Var;
+
 	// OUTPUT
 
 	class IOutputStream
@@ -36,23 +39,21 @@ namespace paula
 		const POut& println(const char*) const;
 		const POut& endl() const;
 
+		const POut& print(const TreeIterator& x) const;
+
+		const POut& print(const Var& x) const;
+
 		// TODO
 		// printIntsToText(x*)
 	};
 
 	class NullPrint
 	{
+		// dummy printer that does nothing.
+		// use to get debug prints optimized away on release.
 	public:
-		// Inherited via POut
-		void close();
-		bool closed();
-		const NullPrint& print(char) const;
 		const NullPrint& print(const char*) const;
-		const NullPrint& print(long) const;
-		const NullPrint& print(double) const;
-		const NullPrint& print(int x) const;
-		const NullPrint& print(float x) const;
-		const NullPrint& print(bool x) const;
+		const NullPrint& print(double) const; // take care of all numbers and bool
 		const NullPrint& printHex(INT i) const;
 		const NullPrint& printCharSymbol(CHAR c) const;
 		const NullPrint& print(const Error* a) const;

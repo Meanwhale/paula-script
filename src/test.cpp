@@ -115,10 +115,8 @@ const paula::Error* paula::testCallback (Paula&p,Args&args)
 {
 	LOG.println("-------- TEST ACTION --------");
 	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
-	Data data;
-	args.get(0, data);
-	INT value = false;
-	if(data.getInt(value))
+	INT value = -1;
+	if(args.get(0).getInt(value))
 	{
 		args.returnInt(2*value);
 		return NO_ERROR;

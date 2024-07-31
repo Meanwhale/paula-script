@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "array.h"
+#include "tree.h"
 
 using namespace paula;
 
@@ -76,4 +77,62 @@ void paula::bytesToInts(const unsigned char * bytes, int bytesOffset, Array<INT>
 		}
 		else shift += 8;
 	}
+}
+const char* paula::treeTypeName(INT tag)
+{
+	switch(tag)
+	{
+	case NODE_SUBTREE: return "<subtree>";
+	case NODE_EXPR: return "<expr>";
+	case NODE_STATEMENT: return "<statement>";
+
+	case NODE_STACK: return "<stack>";
+	case NODE_MAP: return "<map>";
+	case NODE_KV: return "<key-value>";
+	}
+	return "<! ! ! error ! ! !>";
+}
+
+// data access
+
+bool paula::match(const INT* ptr, INT tag)
+{
+	// check data type match
+	return (tag & TAG_MASK) == (*ptr & TAG_MASK);
+}
+bool paula::readInt(INT& out, const INT* node)
+{
+	if (!match(node, NODE_INTEGER)) return false;
+	out = *(node + 3);
+	return true;
+}
+
+bool paula::readDouble(DOUBLE& out, const INT* node)
+{
+	if (!match(node, NODE_DOUBLE)) return false;
+	INT a = *(node + 3);
+	INT b = *(node + 4);
+	LONG bits = intsToLong(a, b);
+	out = longToDoubleFormat(bits);
+	return true;
+}
+
+bool paula::readBool(bool& out, const INT* node)
+{
+	if (!match(node, NODE_BOOL)) return false;
+	out = (*(node + 3)) != 0;
+	return true;
+}
+bool paula::readOp(char& out, const INT* node)
+{
+	if (!match(node, NODE_OPERATOR)) return false;
+	out = (char)(*(node + 3));
+	return true;
+}
+
+bool paula::readChars(char*& out, const INT* node)
+{
+	if (!match(node, NODE_TEXT)) return false;
+	out = (char*)(node + 4);
+	return true;
 }

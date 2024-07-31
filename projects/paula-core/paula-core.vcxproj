@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\args.h" />
     <ClInclude Include="..\..\src\array.h" />
     <ClInclude Include="..\..\src\byteautomata.h" />
     <ClInclude Include="..\..\src\command.h" />
@@ -30,6 +31,7 @@
     <ClInclude Include="..\..\src\utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\args.cpp" />
     <ClCompile Include="..\..\src\byteautomata.cpp" />
     <ClCompile Include="..\..\src\command.cpp" />
     <ClCompile Include="..\..\src\defs.cpp" />
