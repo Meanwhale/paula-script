@@ -59,6 +59,7 @@ Paula Paula::one = Paula();
 
 
 Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
+	vars(VARS_SIZE),
 	currentIndentation(0),
 	skipIndentation(-1),
 	blockStackSize(0),
@@ -66,19 +67,15 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	numCallbacks(0),
 	automata(*this),
 	stack(ARG_STACK_SIZE),
-	vars(VARS_SIZE),
 	constants(CONSTANTS_SIZE),
+	args(stack),
 	commands
 	{
 		Command("print", printAction),
 		Command("not", notAction),
 		Command("while", whileAction),
 		Command("if", ifAction)
-	},
-	args(stack)
-	//commandArgDef(2),
-	//singleArgDef(1),
-	//OperatorArgDef(3)
+	}
 {
 	constants.init(NODE_SUBTREE);
 
@@ -120,6 +117,7 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 	auto error = automata.getError();
 	if (handleErrors && error != NO_ERROR)
 	{
+#ifndef PAULA_MINI
 		ERR
 			.print("Caught an exception: ")
 			.print(error->name)
@@ -127,7 +125,7 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 			.print(error->id)
 			.print(")")
 			.endl();
-
+#endif
 		return NO_ERROR;
 	}
 	else
@@ -501,7 +499,8 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
 			// read the operator
 
 			it.next();
-			CHAR op = it.getOp();
+			CHAR op = '\0';
+			it.var().getOp(op);
 
 			// get the second value
 

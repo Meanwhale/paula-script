@@ -152,10 +152,10 @@ namespace paula
 		INT getDepth();
 
 
-		bool getBool();
-		INT getInt();
-		CHAR getOp();
-		const char * getText();
+		//bool getBool();
+		//INT getInt();
+		//CHAR getOp();
+		//const char * getText();
 
 		bool matchTextData(INT*data);
 		INT* getTextData();

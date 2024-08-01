@@ -8,12 +8,19 @@ using namespace paula;
 STDOut stdOut = STDOut();
 STDErr stdErr = STDErr();
 STDOut stdPrint = STDOut();
+
 #if PAULA_RELEASE
 const NullPrint paula::log = NullPrint();
 #else
 const POut& paula::log = stdOut;
 #endif
+
+#if PAULA_MINI
+const NullPrint paula::err = NullPrint();
+#else
 const POut& paula::err = stdErr;
+#endif
+
 const POut& paula::pout = stdOut;
 
 bool paula::Error::equal(const Error* a, const Error* b)

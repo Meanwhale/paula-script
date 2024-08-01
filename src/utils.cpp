@@ -12,16 +12,10 @@ void paula::trap(const char* expr, const char* file, int line, const char* msg)
 	HALT;
 }
 
-//void paula::assert(bool x, const char * msg)
-//{
-//	if (!x)
-//	{
-//		//TODO
-//	}
-//}
-
 LONG paula::doubleToLongFormat(double value)
 {
+	// NOTE: these conversions give 'strict-aliasing' warnings. Not even reinterpret_cast help...
+
 	return ((LONG&)(*(&value)));
 }
 DOUBLE paula::longToDoubleFormat(LONG value)

@@ -29,9 +29,17 @@ namespace paula
 		void closeInput();
 		void uninit();
 
+		Paula& paula;
 		IInputStream* input;
 		const Error* error;
+		Tree tree;
+		
 		Array<BYTE> tr;
+		Array<BYTE> buffer;
+		Array<BYTE> quoteBuffer;
+		Array<INT> treeStack;
+		Array<const CHAR *> stateNames;
+
 		BYTE currentInput;
 		BYTE currentState;
 		void (*actions[64])(ByteAutomata*);
@@ -43,12 +51,6 @@ namespace paula
 		INT lineStartIndex = 0;
 		INT lineNumber = 0;
 		bool stayNextStep = false;
-		Array<BYTE> quoteBuffer;
-		Array<BYTE> buffer;
-		Array<BYTE> tmp;
-		Array<INT> treeStack;
-		Array<const CHAR *> stateNames;
-		Tree tree;
 
 		// declarations
 		
@@ -88,7 +90,6 @@ namespace paula
 		void defineTransitions();
 
 		INT currentParent();
-		Paula& paula;
 		INT lastStart, indentation, lineType, treeStackTop, quoteIndex;
 		BYTE
 			stateStart,

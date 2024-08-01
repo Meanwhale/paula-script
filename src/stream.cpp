@@ -121,7 +121,11 @@ const POut& paula::POut::printCharSymbol(CHAR c) const
 const POut& paula::POut::print(const Error* a) const
 {
 	if (a == nullptr) print("<no error>");
+#ifdef PAULA_MINI
+	else print(a->id);
+#else
 	else print(a->name);
+#endif
 	return *this;
 }
 
@@ -173,7 +177,19 @@ bool paula::CharInput::read(BYTE&c)
 void paula::CharInput::close()
 {
 }
+// standard input
 
+bool paula::StandardInput::read(BYTE&c)
+{ 
+	if (std::cin.get((char&)c)) return true;
+	return false;
+}
+
+void paula::StandardInput::close()
+{
+}
+
+#ifndef PAULA_MINI
 // file input
 
 bool paula::FileInput::exists(const std::string& name)
@@ -205,3 +221,4 @@ void paula::FileInput::close()
 {
 	if (file.is_open()) file.close();
 }
+#endif

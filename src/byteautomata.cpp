@@ -1,5 +1,4 @@
-﻿#pragma once
-#include "byteautomata.h"
+﻿#include "byteautomata.h"
 #include "paula.h"
 
 #define BA_CHECK(x,e) { if (!(x)) { error = &e; return; } }
@@ -32,7 +31,6 @@ ByteAutomata::ByteAutomata(Paula& p) :
 	tr(MAX_STATES * 256),
 	buffer(BA_BUFFER_SIZE),
 	quoteBuffer(MAX_TEXT_SIZE),
-	tmp(BA_BUFFER_SIZE),
 	treeStack(MAX_DEPTH),
 	stateNames(MAX_STATES)
 {
@@ -598,5 +596,6 @@ void ByteAutomata::defineTransitions()
 
 	transition(stateDecimal, numbers, 0);
 	transition(stateDecimal, linebreak, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+
 }
 }

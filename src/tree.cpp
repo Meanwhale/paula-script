@@ -516,6 +516,7 @@ void TreeIterator::overwrite(TreeIterator& src)
 		tree.data[index + i] = src.tree.data[src.index + i];
 	}
 }
+/*
 CHAR TreeIterator::getOp()
 {
 	ASSERT(isType(NODE_OPERATOR));
@@ -544,7 +545,7 @@ const char* TreeIterator::getText()
 	auto ptr = (tree.data.ptr() + index + 4);
 	return (char *)ptr;
 }
-
+*/
 bool TreeIterator::matchTextData(INT* data)
 {
 	// TEXT NODE:		TAG (node type, size), PARENT, NEXT, CHAR COUNT, TEXT DATA[n]

@@ -29,10 +29,8 @@ int fileNotFound()
 	err.println("file not found.");
 	return -1;
 }
-int run (const string & filename)
+int run (IInputStream&input)
 {
-	pout.print("read file: ").print(filename.c_str()).endl();
-	FileInput input(filename.c_str());
 	auto error = Paula::one.run(input, false);
 	if (error != NO_ERROR)
 	{
@@ -47,8 +45,19 @@ int main(int argc, char* argv[])
 	{
 		info(); return 0;
 	}
+	else if (argc == 2)
+	{
+		if (strcmp(argv[1], "-i") == 0)
+		{
+			// read from standard input
+
+			StandardInput input;
+			return run(input);
+		}
+	}
 	else if (argc == 3)
 	{
+#ifndef PAULA_MINI
 		if (strcmp(argv[1], "-f") == 0)
 		{   
 			// read and run script from a file
@@ -64,8 +73,11 @@ int main(int argc, char* argv[])
 					if (!FileInput::exists(fn)) return fileNotFound();
 				} else return fileNotFound();
 			}
-			return run(fn);
+			pout.print("read file: ").print(fn.c_str()).endl();
+			FileInput input(fn.c_str());
+			return run(input);
 		}
+#endif
 	}
 	error();
 	return -1;

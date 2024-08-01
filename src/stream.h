@@ -1,7 +1,9 @@
 #pragma once
 #include "defs.h"
+#ifndef PAULA_MINI
 #include <fstream>
-//#include "array.h"
+#endif
+
 namespace paula
 {
 	class TreeIterator;
@@ -94,6 +96,27 @@ namespace paula
 		virtual void close() = 0;
 	};
 
+	class CharInput : public IInputStream
+	{
+	public:
+		CharInput(const char *);
+		bool read(BYTE&) override;
+		void close() override;
+	private:
+		const char * str;
+		INT i;
+	};
+
+	class StandardInput : public IInputStream
+	{
+	public:
+		StandardInput() {};
+		// Inherited via IInputStream
+		bool read(BYTE&) override;
+		void close() override;
+	};
+
+#ifndef PAULA_MINI
 	class FileInput : public IInputStream
 	{
 	private:
@@ -109,18 +132,7 @@ namespace paula
 		void close() override;
 		const bool found;
 	};
-
-	class CharInput : public IInputStream
-	{
-	public:
-		CharInput(const char *);
-		bool read(BYTE&) override;
-		void close() override;
-	private:
-		const char * str;
-		INT i;
-	};
-
+#endif
 	//template <class CHAR> class Array;
 
 	//class BufferInputStream : public IInputStream

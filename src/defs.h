@@ -29,7 +29,11 @@
 #define IS_CHAR(c) (c>='a' && c<='z')
 
 // error id is its definition line number
+#ifdef PAULA_MINI
+#define ERROR_TYPE(x) constexpr Error x (__LINE__)
+#else
 #define ERROR_TYPE(x) constexpr Error x (__LINE__,STR(x))
+#endif
 
 namespace paula
 {
@@ -47,7 +51,11 @@ namespace paula
 #else
 	extern const POut& log;
 #endif
+#if PAULA_MINI
+	extern const NullPrint err; // optimize debug print away
+#else
 	extern const POut& err; // error output
+#endif
 	extern const POut& pout; // print output
 	
 	// language keywords
@@ -62,8 +70,12 @@ namespace paula
 		Error& operator=(const Error&) = delete;
 	public:
 		const INT id; // unique id only for internal use.
+#ifdef PAULA_MINI
+		constexpr explicit Error(int _id) : id(_id) { }
+#else
 		const char * name;
 		constexpr explicit Error(int _id, const char * _name) : id(_id), name(_name) { }
+#endif
 		bool operator==(const Error& other) const { return this->id == other.id; }
 		bool operator!=(const Error& other) const { return this->id != other.id; }
 		static bool equal(const Error* a, const Error* b);
@@ -125,22 +137,3 @@ namespace paula
 // call ERROR_STATUS function and interrupt if there was an error
 
 #define CHECK_CALL(f) { auto r = f; if (r != NO_ERROR) return r; }
-
-
-/*
-#ifdef PAULA_EXCEPTIONS
-#include <exception>
-namespace paula
-{
-	class PaulaException : public std::exception {
-	public:
-		const Error error;
-		PaulaException(Error _error) : std::exception(), error(_error) {}
-		PaulaException(const char* msg, Error _id) : std::exception(msg), error(_id) {}
-	};
-}
-#define CHECK(x,e) { if (!(x)) { throw PaulaException(e); }}
-#else
-#define CHECK(x,msg) { if (!(x)) { ERR.println(msg); ASSERT(false, "CHECK failed"); }}
-#endif
-*/
