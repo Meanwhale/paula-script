@@ -3,6 +3,7 @@
 #include "paula.h"
 #include "test.h"
 #include <iostream>
+#include <cstring>
 
 
 void paula::runErrorCheck(const Error* (*test)(), const Error* expectedError)

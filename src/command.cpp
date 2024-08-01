@@ -4,6 +4,7 @@
 #include"tree.h"
 #include"stream.h"
 #include"paula.h"
+#include <cstring> 
 
 using namespace paula;
 

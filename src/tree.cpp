@@ -1,6 +1,7 @@
 #include "tree.h"
 #include "stream.h"
 #include "args.h"
+#include <cstring> 
 
 namespace paula
 {

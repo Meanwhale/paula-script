@@ -1,0 +1,22 @@
+SRC_DIR = src
+OUT_DIR = bin
+
+SRC += $(wildcard $(SRC_DIR)/*.cpp)
+
+CC = g++
+FLAGS = -std=c++14 -Isrc
+RELEASE_FLAGS = -Os -s -DPAULA_RELEASE
+DEBUG_FLAGS = -fsanitize=leak -fsanitize=address -DPAULA_DEBUG
+
+all:
+	@echo Define target: release or debug
+
+release: $(SRC) $(CMD_SRC)
+	@echo --- Paula CLI RELEASE ---
+	@mkdir -p $(OUT_DIR)   # Create the output directory if it doesn't exist
+	$(CC) $(FLAGS) $(RELEASE_FLAGS) $(SRC) projects/paula-cli/paula-cli.cpp -o $(OUT_DIR)/paula -Wall
+	
+debug: $(SRC) $(CMD_SRC)
+	@echo --- Paula DEBUG ---
+	@mkdir -p $(OUT_DIR)   # Create the output directory if it doesn't exist
+	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(SRC) projects/paula-vs/paula-vs.cpp -o $(OUT_DIR)/pauladbg 

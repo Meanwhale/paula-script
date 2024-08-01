@@ -1,12 +1,8 @@
-#include <filesystem> 
-#include <fstream> 
-#include <iostream> 
-
 #include "paula.h"
+#include <string.h>
 
 using namespace paula;
 using namespace std;
-using namespace std::experimental::filesystem; 
 
 constexpr const char * PAULA_VERSION = "0.1";
 

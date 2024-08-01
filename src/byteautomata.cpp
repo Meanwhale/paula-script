@@ -371,7 +371,7 @@ double ByteAutomata::parseDouble(Array<BYTE>& src, INT i, INT lastByte)
 {
 	double value;
 	int numBytes = lastByte - i;
-	if (sscanf_s((const char *)src.ptr(i), "%lf%n", &value, &numBytes) == 1)
+	if (sscanf((const char *)src.ptr(i), "%lf%n", &value, &numBytes) == 1)
 	{
 		return value;
 	}
