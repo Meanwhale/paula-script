@@ -9,10 +9,10 @@ using namespace paula;
 ERROR_STATUS printAction (Paula&,Args&args)
 {
 	LOG.println("-------- PRINT ACTION --------");
-	//TreeIterator it(args);
-	//if (!it.hasChild()) { LOG.println("<empty>"); return NO_ERROR; }
-	//args.printCompact(it);
-	//LOG.println("");
+	for(INT i=0; i<args.argCount(); i++)
+	{
+		pout.print(args.get(i));
+	}
 	return NO_ERROR;
 }
 ERROR_STATUS notAction (Paula&p,Args&args)

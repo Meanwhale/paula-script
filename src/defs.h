@@ -48,7 +48,7 @@ namespace paula
 	extern const POut& log;
 #endif
 	extern const POut& err; // error output
-	extern const POut& user; // print output
+	extern const POut& pout; // print output
 	
 	// language keywords
 

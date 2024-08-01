@@ -28,7 +28,7 @@ namespace paula
 
 		Tree vars;
 
-		ERROR_STATUS run(IInputStream&, bool handleException);
+		ERROR_STATUS run(IInputStream&, bool handleError);
 		ERROR_STATUS pushArgListAndExecute(TreeIterator&, Command * cmd);
 		ERROR_STATUS pushAtomicValue(TreeIterator& _it);
 		ERROR_STATUS pushVariable(TreeIterator& name);

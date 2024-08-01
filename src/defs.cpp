@@ -14,7 +14,7 @@ const NullPrint paula::log = NullPrint();
 const POut& paula::log = stdOut;
 #endif
 const POut& paula::err = stdErr;
-const POut& paula::user = stdOut;
+const POut& paula::pout = stdOut;
 
 bool paula::Error::equal(const Error* a, const Error* b)
 {

@@ -35,7 +35,7 @@ void paula::doubleTest()
 
 	// script test
 
-	CharInputStream input("a:123.456");
+	CharInput input("a:123.456");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	DOUBLE a;
@@ -49,7 +49,7 @@ void paula::doubleTest()
 
 void paula::operatorTest()
 {
-	CharInputStream input("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
+	CharInput input("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
@@ -66,7 +66,7 @@ void paula::operatorTest()
 
 void paula::variableTest()
 {
-	CharInputStream input("a:5");
+	CharInput input("a:5");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
@@ -75,7 +75,7 @@ void paula::variableTest()
 }
 void paula::functionTest()
 {
-	CharInputStream input("b:true\ntmp:not(b)");
+	CharInput input("b:true\ntmp:not(b)");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	bool value;
@@ -87,7 +87,7 @@ void paula::functionTest()
 
 void paula::loopTest()
 {
-	CharInputStream input("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
+	CharInput input("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
@@ -95,7 +95,7 @@ void paula::loopTest()
 }
 void paula::ifTest()
 {
-	CharInputStream input("a:1\nb:1\nwhile(a<5)\n\ta:a+1\n\tif(a>4)\n\t\tb:b+10\n\t\tif(a>4)\n\t\t\tb:b+10");
+	CharInput input("a:1\nb:1\nwhile(a<5)\n\ta:a+1\n\tif(a>4)\n\t\tb:b+10\n\t\tif(a>4)\n\t\t\tb:b+10");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
@@ -106,7 +106,7 @@ void paula::ifTest()
 void paula::parenthesisErrorTest()
 {
 	runErrorCheck([]() {
-		CharInputStream input("foo (12, (34, 56)");
+		CharInput input("foo (12, (34, 56)");
 		return Paula::one.run(input, false);
 	}, &PARENTHESIS);
 }
@@ -126,14 +126,14 @@ const paula::Error* paula::testCallback (Paula&p,Args&args)
 
 void paula::textTest()
 {
-	CharInputStream input("t:\"hello!\"");
+	CharInput input("t:\"hello!\"");
 	auto error = Paula::one.run(input, false);
 	ASSERT(error == NO_ERROR);
 	char * t;
 	TEST_TEXT("t", "hello!");
 
 	runErrorCheck([]() {
-		CharInputStream input2("t:\"hello!\"\nt:\"a\"");
+		CharInput input2("t:\"hello!\"\nt:\"a\"");
 		return Paula::one.run(input2, false);
 	}, &TEXT_VARIABLE_OVERWRITE);
 }
@@ -142,7 +142,7 @@ void paula::callbackTest()
 {
 	auto error = Paula::one.addCallback("testCallback", testCallback);
 	ASSERT(error == NO_ERROR);
-	CharInputStream input("a:3\na:testCallback(3)");
+	CharInput input("a:3\na:testCallback(3)");
 	auto err = Paula::one.run(input, false);
 	ASSERT(error == NO_ERROR);
 	INT a;

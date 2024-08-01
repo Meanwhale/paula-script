@@ -201,7 +201,7 @@ void ByteAutomata::step()
 			ASSERT(readIndex == bufferIndex);
 			// read from input to buffer
 			// check end here in case input was shut down between steps.
-			if (input->end())
+			if (!input->read(inputByte))
 			{
 				LOG.println("input end");
 				closeInput();
@@ -227,7 +227,6 @@ void ByteAutomata::step()
 			}
 			else
 			{
-				inputByte = input->read();
 				bufferIndex ++;
 				readIndex ++;
 				buffer[bufferIndex] = inputByte;

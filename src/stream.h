@@ -1,5 +1,6 @@
 #pragma once
 #include "defs.h"
+#include <fstream>
 //#include "array.h"
 namespace paula
 {
@@ -58,6 +59,7 @@ namespace paula
 		const NullPrint& printCharSymbol(CHAR c) const;
 		const NullPrint& print(const Error* a) const;
 		const NullPrint& println(const char*) const;
+		const NullPrint& print(const TreeIterator& x) const;
 		const NullPrint& endl() const;
 	};
 	class STDOut : public POut
@@ -88,17 +90,31 @@ namespace paula
 	class IInputStream
 	{
 	public:
-		virtual CHAR read() = 0;
-		virtual bool end() = 0;
+		virtual bool read(BYTE&) = 0; // we don't know we're at end before reaching it
 		virtual void close() = 0;
 	};
 
-	class CharInputStream : public IInputStream
+	class FileInput : public IInputStream
+	{
+	private:
+		std::ifstream file; // The internal ifstream object
+		FileInput() = delete;
+	public:
+		static bool exists(const std::string& name);
+
+		explicit FileInput(const char *);
+		~FileInput();
+		// Inherited via IInputStream
+		bool read(BYTE&) override;
+		void close() override;
+		const bool found;
+	};
+
+	class CharInput : public IInputStream
 	{
 	public:
-		CharInputStream(const char *);
-		CHAR read() override;
-		bool end() override;
+		CharInput(const char *);
+		bool read(BYTE&) override;
 		void close() override;
 	private:
 		const char * str;

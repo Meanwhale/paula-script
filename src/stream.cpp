@@ -3,28 +3,11 @@
 #include "tree.h"
 #include "args.h"
 #include <iostream>
+#include <fstream>
 
 using namespace paula;
+using namespace std;
 
-paula::CharInputStream::CharInputStream(const char * _str) :
-	str(_str),
-	i(0)
-{
-}
-
-CHAR paula::CharInputStream::read()
-{
-    return str[i++];
-}
-
-bool paula::CharInputStream::end()
-{
-    return str[i] == '\0';
-}
-
-void paula::CharInputStream::close()
-{
-}
 /*
 paula::BufferInputStream::BufferInputStream(Array<CHAR>& _str, INT _start, INT _last) :
 	str(_str.get(), _str.length()),
@@ -169,4 +152,56 @@ const NullPrint& paula::NullPrint::printHex(INT i) const { return *this; }
 const NullPrint& paula::NullPrint::printCharSymbol(CHAR c) const { return *this; }
 const NullPrint& paula::NullPrint::print(const Error* a) const { return *this; }
 const NullPrint& paula::NullPrint::println(const char*) const { return *this; }
+const NullPrint& paula::NullPrint::print(const TreeIterator& x) const{ return *this; }
 const NullPrint& paula::NullPrint::endl() const { return *this; }
+
+
+// const char * input
+
+paula::CharInput::CharInput(const char * _str) :
+	str(_str),
+	i(0)
+{
+}
+
+bool paula::CharInput::read(BYTE&c)
+{
+	c = str[i++];
+	return c != '\0';
+}
+
+void paula::CharInput::close()
+{
+}
+
+// file input
+
+bool paula::FileInput::exists(const std::string& name)
+{
+	ifstream f(name.c_str());
+	bool x = f.good();
+	f.close();
+	return x;
+}
+paula::FileInput::FileInput(const char*fn) :
+	file(fn),
+	found(file.is_open())
+{
+	if (!found) err.print("FileInput: can't open file: ").print(fn).endl();
+}
+
+paula::FileInput::~FileInput()
+{
+	close();
+}
+
+bool paula::FileInput::read(BYTE&c)
+{
+	if (file.get((char&)c)) return true;
+	return false; // Return null character on error
+}
+
+void paula::FileInput::close()
+{
+	if (file.is_open()) file.close();
+}
