@@ -22,6 +22,9 @@ namespace paula
 	void ifTest();
 	void parenthesisErrorTest();
 	void callbackTest();
+	void treeTest();
+	void stackTest();
+	void reservedNameTest();
 
     void runAll();
 	//const Error* iteratorTest();

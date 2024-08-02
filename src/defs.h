@@ -60,8 +60,8 @@ namespace paula
 	
 	// language keywords
 
-	extern INT* keywords[];
-	void addKeyword(INT*);
+	//extern INT* keywords[];
+	//void addKeyword(INT*);
 
 	class Error
 	{
@@ -101,6 +101,7 @@ namespace paula
 	ERROR_TYPE (WRONG_NUMBER_OF_ARGUMENTS);
 	ERROR_TYPE (CALLBACK_ERROR);
 	ERROR_TYPE (TEXT_VARIABLE_OVERWRITE);
+	ERROR_TYPE (RESERVED_NAME);
 
 	// tree + interator
 

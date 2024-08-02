@@ -30,13 +30,13 @@ bool paula::Error::equal(const Error* a, const Error* b)
 	return a->id == b->id;
 }
 
-constexpr int MAX_KEYWORDS = 32;
-paula::INT* paula::keywords[MAX_KEYWORDS];
-int keywordCount = 0;
-
-void paula::addKeyword(INT* w)
-{
-	ASSERT(keywordCount < MAX_KEYWORDS);
-	keywords[keywordCount] = w;
-	keywordCount++;
-}
+// constexpr int MAX_KEYWORDS = 32;
+// paula::INT* paula::keywords[MAX_KEYWORDS];
+// int keywordCount = 0;
+// 
+// void paula::addKeyword(INT* w)
+// {
+// 	ASSERT(keywordCount < MAX_KEYWORDS);
+// 	keywords[keywordCount] = w;
+// 	keywordCount++;
+// }

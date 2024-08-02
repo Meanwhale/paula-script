@@ -64,7 +64,7 @@ namespace paula
 		Command commands[NUM_COMMANDS];
 		Command callbacks[MAX_USER_CALLBACKS];
 
-		Command* findCommand(TreeIterator& it);
+		Command* findCommand(INT* textData);
 
 		// hide
 		Paula& operator=(const Paula&) = delete;

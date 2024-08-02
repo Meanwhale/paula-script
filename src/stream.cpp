@@ -8,28 +8,7 @@
 using namespace paula;
 using namespace std;
 
-/*
-paula::BufferInputStream::BufferInputStream(Array<CHAR>& _str, INT _start, INT _last) :
-	str(_str.get(), _str.length()),
-	i(_start),
-	last(_last)
-{
-}
 
-CHAR paula::BufferInputStream::read()
-{
-	return str[i++];
-}
-
-bool paula::BufferInputStream::end()
-{
-	return i > last;
-}
-
-void paula::BufferInputStream::close()
-{
-}
-*/
 const POut& paula::POut::print(int x) const
 {
 	return print((long)x);

@@ -150,8 +150,50 @@ void paula::callbackTest()
 	TEST_INT("a", 6);
 }
 
+void paula::treeTest()
+{
+	Tree tree(1024);
+	tree.init(NODE_SUBTREE);
+	tree.addInt(0, 100);
+	tree.addInt(0, 200);
+	tree.addInt(0, 300);
+	INT parent = tree.addSubtree(0, NODE_SUBTREE);
+	tree.addInt(parent, 400);
+	tree.addInt(parent, 500);
+
+	TreeIterator it(tree,parent);
+	it.toChild();
+	INT a;
+	ASSERT(it.var().getInt(a));
+	ASSERT(a == 400);
+}
+void paula::stackTest()
+{
+	Tree stack(1024);
+	stack.init(NODE_STACK);
+	stack.pushInt(0, 123);
+	stack.pushInt(0, 456);
+	stack.pop(0);
+	stack.pushInt(0, 789);
+	stack.pop(0);
+	stack.pop(0);
+	ASSERT(stack.stackSize(0) == 0);
+}
+void paula::reservedNameTest()
+{
+	runErrorCheck([]() {
+		CharInput input("if:1");
+		return Paula::one.run(input, false);
+		}, &RESERVED_NAME);
+
+	auto error = Paula::one.addCallback("while", testCallback);
+	ASSERT(Error::equal(error, &RESERVED_NAME));
+}
 void paula::runAll()
 {
+	stackTest();
+	treeTest();
+
 	variableTest();
 	textTest();
 	doubleTest();
@@ -161,6 +203,7 @@ void paula::runAll()
 	loopTest();
 	ifTest();
 	operatorTest();
+	reservedNameTest();
 
 	callbackTest();
 }

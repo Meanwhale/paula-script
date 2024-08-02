@@ -6,10 +6,11 @@ SRC += $(wildcard $(SRC_DIR)/*.cpp)
 CC = g++
 FLAGS = -std=c++14 -Isrc
 RELEASE_FLAGS = -Os -s -DPAULA_RELEASE
+MINI_FLAGS = -Os -s -DPAULA_RELEASE -DPAULA_MINI
 DEBUG_FLAGS = -fsanitize=leak -fsanitize=address -DPAULA_DEBUG
 
 all:
-	@echo Define target: release or debug
+	@echo Define target: \'release\', \'debug\', or \'mini\'
 
 release: $(SRC) $(CMD_SRC)
 	@echo --- Paula CLI RELEASE ---
@@ -20,3 +21,9 @@ debug: $(SRC) $(CMD_SRC)
 	@echo --- Paula DEBUG ---
 	@mkdir -p $(OUT_DIR)   # Create the output directory if it doesn't exist
 	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(SRC) projects/paula-vs/paula-vs.cpp -o $(OUT_DIR)/pauladbg 
+	
+mini: $(SRC) $(CMD_SRC)
+	@echo --- Paula MINI ---
+	@mkdir -p $(OUT_DIR)   # Create the output directory if it doesn't exist
+	$(CC) $(FLAGS) $(MINI_FLAGS) $(SRC) projects/paula-cli/paula-cli.cpp -o $(OUT_DIR)/paulamini -Wall
+	

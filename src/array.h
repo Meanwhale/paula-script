@@ -51,13 +51,14 @@ public:
 		}
 	}
 
-	void clone(T * a, int s)
+	void copyFrom(const Array<T>& src)
 	{
-		delete[] data;
-		data = new T[s];
-		size = s;
-		for (int i=0; i<s; i++) data[i] = a[i];
-		destructorClear = true;
+		if (src.size != size)
+		{
+			ASSERT(false);
+			return;
+		}
+		for (int i=0; i<size; i++) data[i] = src.data[i];
 	}
 
 	void reset(int s)

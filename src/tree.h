@@ -32,10 +32,6 @@ namespace paula
 
 		NODE_OPERATOR			= 0x31000000,
 
-		//NODE_PARENTHESIS		= 0x00000000,
-		//NODE_SQUARE_BRACKETS	= 0x00000000,
-		//NODE_CURLY_BRACKETS	= 0x00000000,
-
 		// masks
 		TAG_MASK	= 0xff000000,
 		SIZE_MASK	= 0x00ffffff;
@@ -151,13 +147,6 @@ namespace paula
 
 		INT getDepth();
 
-
-		//bool getBool();
-		//INT getInt();
-		//CHAR getOp();
-		//const char * getText();
-
-		bool matchTextData(INT*data);
 		INT* getTextData();
 
 		friend class Tree;

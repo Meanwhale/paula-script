@@ -11,13 +11,13 @@ namespace paula
 	public:
 		Command(const char* _name, const Error * (* _action)(Paula&,Args&));
 
-		void setup(const char* callbackName, const Error* (*_action)(Paula&, Args&));
+		void setup(Array<INT>& _nameData, const Error* (*_action)(Paula&, Args&));
 
 		const Error *  execute(Paula&,Args&);
 
 		const Error * (*action) (Paula&,Args&); // pointer to callback function
 
-		INT name[12];
+		INT name[MAX_VAR_NAME_DATA_LENGTH];
 
 		// TODO: callback
 		// TODO: arg & return types

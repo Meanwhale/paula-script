@@ -13,75 +13,8 @@ void stackTest();
 
 int main()
 {
-	LOG.println("Paula!!!\n");
+	LOG.println("Paula unit tests\n");
 	
-	//iteratorTest();
-	//parenthesisTest();
-	
-	//stackTest();
-
-	//treeTest();
-	//CharInputStream input("f(5,5)");
-	//CharInputStream input("x:5\nx:f(5)\nfoo(12, (34, 56))");
-	//CharInputStream input("x:5\nx:f(5)");
-	
-	//CharInputStream input("print(123456, 1+2, 45 + (foo(1,2)), foo(3, 4))");
-	//CharInputStream input("a:6\nprint(a*5)");
-	
-	//CharInputStream input("foo: false\nwhile(foo)\n\t\tprint loop");
-	//auto error = Paula::one.run(input, false);
-	//LOG.print("ERROR: ").print(error).endl();
-	//treeTest();
 	runAll();
-	//textTest();
 }
 
-void stackTest()
-{
-	Tree stack(1024);
-	stack.init(NODE_STACK);
-	stack.pushInt(0, 123);
-	LOG.print(stack.stackSize(0)).endl();
-	stack.pushInt(0, 456);
-	LOG.print(stack.stackSize(0)).endl();
-	stack.print();
-	stack.pop(0);
-	stack.print();
-	stack.pushInt(0, 789);
-	stack.print();
-	stack.pop(0);
-	stack.print();
-	stack.pop(0);
-	LOG.print(stack.stackSize(0)).endl();
-	LOG.print(stack.stackEmpty(0)).endl();
-}
-
-void treeTest()
-{
-	Tree tree(1024);
-	tree.init(NODE_SUBTREE);
-	tree.addInt(0, 100);
-	tree.addInt(0, 200);
-	tree.addInt(0, 300);
-	INT parent = tree.addSubtree(0, NODE_SUBTREE);
-	tree.addInt(parent, 400);
-	tree.addInt(parent, 500);
-	tree.print();
-
-	//Args args(tree);
-	//TreeIterator it(tree,parent);
-	//it.toChild();
-	//args.reset(2);
-	//Data d;
-	//if (args.get(0, d))
-	//{
-	//	INT data;
-	//	if (d.getInt(data))
-	//	{
-	//		LOG.println("yes");
-	//		LOG.print("int: ").print(data).endl();
-	//	} else LOG.println("not int");
-	//}
-	//if (args.get(1, d)) LOG.println("yes");
-	//else LOG.println("no");
-}

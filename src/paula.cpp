@@ -90,15 +90,6 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 	kvIndex = constants.addSubtree(0, NODE_KV);
 	constants.addText(kvIndex, "false");
 	constants.addBool(kvIndex, false);
-
-	//commandArgDef.types[0] = NODE_NAME;
-	//commandArgDef.types[1] = NODE_SUBTREE;
-
-	//singleArgDef.types[0] = NODE_ANY_DATA;
-
-	//OperatorArgDef.types[0] = NODE_ANY_DATA;
-	//OperatorArgDef.types[1] = NODE_OPERATOR;
-	//OperatorArgDef.types[2] = NODE_ANY_DATA;
 }
 
 
@@ -136,8 +127,14 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 
 ERROR_STATUS paula::Paula::addCallback(const char* callbackName, const Error * (* _action)(Paula&,Args&))
 {
+	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
+	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
+	charsToNameData(callbackName, nameData);
+
+	if (findCommand(nameData.ptr()) != nullptr) return &RESERVED_NAME;
+	
 	if (numCallbacks >= MAX_USER_CALLBACKS) return &CALLBACK_ERROR;
-	callbacks[numCallbacks].setup(callbackName, _action);
+	callbacks[numCallbacks].setup(nameData, _action);
 	numCallbacks++;
 	return NO_ERROR;
 }
@@ -249,6 +246,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 			LOG.println("-------- NEW VAR --------");
 			INT kvIndex = vars.addSubtree(0, NODE_KV);
 			// new
+			if (findCommand(it.getTextData()) != nullptr) return &RESERVED_NAME;
 			vars.addData(kvIndex, it); // add variable name to KV
 			it.next(); // move to SRC
 			CHECK_CALL(pushExprArg(it));
@@ -268,7 +266,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 		TreeIterator it(tree);
 		it.toChild(); // points to command name
 
-		auto cmd = findCommand(it);
+		auto cmd = findCommand(it.getTextData());
 		if (cmd)
 		{
 			it.next();
@@ -445,7 +443,7 @@ INT paula::Paula::findVariableIndex(TreeIterator& name, Tree& variableMap)
 	do
 	{
 		it.toChild(); // first child is the name
-		if (it.matchTextData(name.getTextData()))
+		if (matchTextData(it.getTextData(), name.getTextData()))
 		{
 			it.next(); // found! move to data
 			return it.index;
@@ -475,7 +473,7 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
 		if (it.isNextType(NODE_SUBTREE))
 		{
 			LOG.println("push function return value");
-			auto cmd = findCommand(it);
+			auto cmd = findCommand(it.getTextData());
 			if (cmd)
 			{
 				it.next(); // it points to "(...)" in "f(...)"
@@ -554,17 +552,17 @@ ERROR_STATUS paula::Paula::operatorPush(CHAR op, INT a, INT b)
 	ERR.printCharSymbol(op);
 	return &INVALID_OPERATOR;
 }
-Command * paula::Paula::findCommand(TreeIterator& it)
+Command * paula::Paula::findCommand(INT * textData)
 {
 	// 'it' points to command name
 	INT i;
 	for (i=0; i<NUM_COMMANDS; i++)
 	{
-		if (it.matchTextData(commands[i].name)) return &commands[i];
+		if (matchTextData(textData, commands[i].name)) return &commands[i];
 	}
 	for (i=0; i<numCallbacks; i++)
 	{
-		if (it.matchTextData(callbacks[i].name)) return &callbacks[i];
+		if (matchTextData(textData, callbacks[i].name)) return &callbacks[i];
 	}
 	return 0;
 }

@@ -14,9 +14,14 @@ namespace paula
 	INT longLowBits(LONG value);
 	LONG intsToLong(INT high, INT low);
     //void assert(bool, const char *);
+
+	// text functions
+
 	INT charToInt(CHAR c);
     INT textDataSize(INT numBytes);
     void bytesToInts(const unsigned char *  bytes, int bytesOffset, Array<INT>& ints, int intsOffset, int bytesLength);
+    bool matchTextData(INT* a, INT* b);
+	void charsToNameData(const char* str, Array<INT>& trg);
 
 	const char* treeTypeName(INT tag);
 

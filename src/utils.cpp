@@ -41,7 +41,6 @@ paula::INT paula::charToInt(CHAR c)
 {
 	return static_cast<unsigned int>(static_cast<unsigned char>(c));
 }
-
 paula::INT paula::textDataSize(INT numBytes)
 {
 	return (numBytes / 4) + 2; // size int + ints with 4 char in one int and \0 at the end
@@ -71,6 +70,29 @@ void paula::bytesToInts(const unsigned char * bytes, int bytesOffset, Array<INT>
 		}
 		else shift += 8;
 	}
+}
+bool paula::matchTextData(INT* a, INT* b)
+{
+	// data pointer starts from char count, followed by characters (4 chars per int)
+
+	if (*a != *b) return false; // compare char counts
+
+	INT size = textDataSize(*a);
+
+	// compare char data
+
+	for (INT i=1; i<size; i++)
+	{
+		if (a[i] != b[i]) return false;
+	}
+	return true;
+}
+void paula::charsToNameData(const char* str, Array<INT>& trg)
+{
+	ASSERT(trg.length() == MAX_VAR_NAME_DATA_LENGTH);
+	INT length = (INT)strlen(str);
+	trg[0] = length;
+	bytesToInts((const unsigned char *)str, 0, trg, 1, length);
 }
 const char* paula::treeTypeName(INT tag)
 {

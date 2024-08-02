@@ -255,11 +255,11 @@ bool Tree::getChars(char*&out, const char* varName)
 INT Tree::getIndexOfData(const char* varName, INT dataType)
 {
 	ASSERT(getType(0) == NODE_SUBTREE);
-	INT length = (INT)strlen(varName);
 	TreeIterator it(*this);
 	if (!it.hasChild()) return -1;
 	it.toChild();
 
+	INT length = (INT)strlen(varName);
 	int tmp[MAX_VAR_NAME_DATA_LENGTH]; // avoid "new"
 	Array<INT>varNameData(tmp, MAX_VAR_NAME_DATA_LENGTH);
 	varNameData[0] = length;
@@ -268,7 +268,7 @@ INT Tree::getIndexOfData(const char* varName, INT dataType)
 	do
 	{
 		it.toChild(); // first child is the name
-		if (it.matchTextData(varNameData.ptr()))
+		if (matchTextData(it.getTextData(), varNameData.ptr()))
 		{
 			it.next(); // found! move forward to data
 			if (getType(it.index) != dataType) return -1;
@@ -516,55 +516,6 @@ void TreeIterator::overwrite(TreeIterator& src)
 		tree.data[index + i] = src.tree.data[src.index + i];
 	}
 }
-/*
-CHAR TreeIterator::getOp()
-{
-	ASSERT(isType(NODE_OPERATOR));
-	return (CHAR)(tree.data[index + 3]);
-}
-
-bool TreeIterator::getBool()
-{
-	ASSERT(isType(NODE_BOOL));
-	return tree.data[index + 3] != 0;
-}
-INT TreeIterator::getInt()
-{
-	INT out;
-	bool found = readInt(out, tree.data.ptr(index));
-	ASSERT(found);
-	return out;
-//	ASSERT(isType(NODE_INTEGER));
-//	return tree.data[index + 3];
-}
-
-const char* TreeIterator::getText()
-{
-	ASSERT(isTextType());
-	LOG.print("TEXT [").print(tree.data[index+3]).print("] ");
-	auto ptr = (tree.data.ptr() + index + 4);
-	return (char *)ptr;
-}
-*/
-bool TreeIterator::matchTextData(INT* data)
-{
-	// TEXT NODE:		TAG (node type, size), PARENT, NEXT, CHAR COUNT, TEXT DATA[n]
-
-	ASSERT(isTextType());
-
-	//LOG.println("match: "<<getText());
-
-	int size = tree.getNodeSize(index);
-	
-	// compare, starting from char count
-
-	for (INT i=3; i<size; i++)
-	{
-		//LOG.println("matchTextData: compare "<<data[i-3]<<" vs "<<tree.data[index+i]);
-		if (data[i-3] != tree.data[index+i]) return false;
-	}
-	return true;
-}
 
 
 INT* TreeIterator::getTextData()
@@ -572,5 +523,4 @@ INT* TreeIterator::getTextData()
 	ASSERT(isTextType());
 	return tree.data.ptr() + index + 3;
 }
-
 }

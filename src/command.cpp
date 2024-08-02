@@ -14,16 +14,15 @@ paula::Command::Command() :
 }
 paula::Command::Command(const char* str, const Error * (* _action)(Paula&,Args&))
 {
-	setup(str, _action);
-}
-void paula::Command::setup(const char* str, const Error * (* _action)(Paula&,Args&))
-{
+	Array<INT> nameData (name, MAX_VAR_NAME_DATA_LENGTH);
+	charsToNameData(str, nameData);
 	action = _action;
-	INT length = (INT)strlen(str);
-	Array<INT> nameData (name, 12);
-	nameData[0] = length;
-	bytesToInts((const unsigned char *)str, 0, nameData, 1, length);
-	addKeyword(name);
+}
+void paula::Command::setup(Array<INT>& _nameData, const Error * (* _action)(Paula&,Args&))
+{
+	Array<INT> nameData (name, MAX_VAR_NAME_DATA_LENGTH);
+	nameData.copyFrom(_nameData);
+	action = _action;
 }
 const paula::Error * paula::Command::execute(Paula& paula, Args& args)
 {
