@@ -542,11 +542,6 @@ void ByteAutomata::startExpr(BYTE firstState)
 	next(firstState);
 }
 
-//#define TRANSITION_DEF(state,chars,trFunction,callback) \
-//	if (ai > 0) { \
-//		LOG.print("trans[").print(ai).print("]=[](ByteAutomata*ba)"); \
-//		LOG.print(#callback).endl(); \
-//	}
 #define TRANSITION(state,chars,callback) ai = transition(state, chars, [](ByteAutomata*ba) callback);
 #define SAME_TRANS(state,chars) fillTransition(state, chars, ai);
 #define FILL_TRANSITION(state,callback) ai = fillTransition(state, [](ByteAutomata*ba) callback);

@@ -1,7 +1,6 @@
-SRC_DIR = src
 OUT_DIR = bin
 
-SRC += $(wildcard $(SRC_DIR)/*.cpp)
+SRC = src/*.cpp
 
 CC = g++
 FLAGS = -std=c++14 -Isrc

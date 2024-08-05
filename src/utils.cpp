@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "array.h"
 #include "tree.h"
+#include <cstring>
 
 using namespace paula;
 

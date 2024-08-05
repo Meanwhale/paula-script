@@ -41,7 +41,7 @@ namespace paula
 
 	public:
 		Args(Tree&_tree);
-		INT argCount();
+		INT count();
 		void returnInt(INT);
 		bool hasReturnValue();
 		void returnBool(bool value);

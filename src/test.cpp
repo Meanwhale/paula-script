@@ -26,6 +26,8 @@ void paula::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 	}
 }
 
+#define ERROR_TEST(code,error) runErrorCheck([]() { CharInput input(code); return Paula::one.run(input, false); }, &error);
+
 void paula::doubleTest()
 {
 	// conversion test
@@ -106,16 +108,13 @@ void paula::ifTest()
 
 void paula::parenthesisErrorTest()
 {
-	runErrorCheck([]() {
-		CharInput input("foo (12, (34, 56)");
-		return Paula::one.run(input, false);
-	}, &PARENTHESIS);
+	ERROR_TEST("foo (12, (34, 56)", PARENTHESIS);
 }
 
 const paula::Error* paula::testCallback (Paula&p,Args&args)
 {
 	LOG.println("-------- TEST ACTION --------");
-	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	INT value = -1;
 	if(args.get(0).getInt(value))
 	{
@@ -133,10 +132,7 @@ void paula::textTest()
 	char * t;
 	TEST_TEXT("t", "hello!");
 
-	runErrorCheck([]() {
-		CharInput input2("t:\"hello!\"\nt:\"a\"");
-		return Paula::one.run(input2, false);
-	}, &TEXT_VARIABLE_OVERWRITE);
+	ERROR_TEST("t:\"hello!\"\nt:\"a\"", TEXT_VARIABLE_OVERWRITE);
 }
 
 void paula::callbackTest()
@@ -181,12 +177,13 @@ void paula::stackTest()
 }
 void paula::reservedNameTest()
 {
-	runErrorCheck([]() {
-		CharInput input("if:1");
-		return Paula::one.run(input, false);
-		}, &RESERVED_NAME);
+	ERROR_TEST("if:1", RESERVED_NAME);
+	ERROR_TEST("true:1", RESERVED_NAME);
 
 	auto error = Paula::one.addCallback("while", testCallback);
+	ASSERT(Error::equal(error, &RESERVED_NAME));
+
+	error = Paula::one.addCallback("true", testCallback);
 	ASSERT(Error::equal(error, &RESERVED_NAME));
 }
 void paula::runAll()

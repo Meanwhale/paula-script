@@ -9,7 +9,7 @@ using namespace paula;
 ERROR_STATUS printAction (Paula&,Args&args)
 {
 	LOG.println("-------- PRINT ACTION --------");
-	for(INT i=0; i<args.argCount(); i++)
+	for(INT i=0; i<args.count(); i++)
 	{
 		pout.print(args.get(i));
 	}
@@ -18,7 +18,7 @@ ERROR_STATUS printAction (Paula&,Args&args)
 ERROR_STATUS notAction (Paula&p,Args&args)
 {
 	LOG.println("-------- NOT ACTION --------");
-	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	bool value = false;
 	if(args.get(0).getBool(value))
 	{
@@ -30,7 +30,7 @@ ERROR_STATUS notAction (Paula&p,Args&args)
 ERROR_STATUS whileAction (Paula&p,Args&args)
 {
 	LOG.println("-------- WHILE ACTION --------");
-	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	bool value = false;
 	if(args.get(0).getBool(value))
 	{
@@ -44,7 +44,7 @@ ERROR_STATUS ifAction (Paula&p,Args&args)
 {
 	LOG.println("-------- IF ACTION --------");
 
-	CHECK(args.argCount() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	bool value = false;
 	if(args.get(0).getBool(value))
 	{
@@ -131,7 +131,7 @@ ERROR_STATUS paula::Paula::addCallback(const char* callbackName, const Error * (
 	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
 	charsToNameData(callbackName, nameData);
 
-	if (findCommand(nameData.ptr()) != nullptr) return &RESERVED_NAME;
+	if (isReservedName(nameData.ptr())) return &RESERVED_NAME;
 	
 	if (numCallbacks >= MAX_USER_CALLBACKS) return &CALLBACK_ERROR;
 	callbacks[numCallbacks].setup(nameData, _action);
@@ -225,7 +225,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 
 		vars.print();
 
-		INT index = findVariableIndex(it, vars);
+		INT index = findVariableIndex(it.getTextData(), vars);
 
 		if (index >= 0)
 		{
@@ -244,9 +244,9 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 		else
 		{
 			LOG.println("-------- NEW VAR --------");
+			if (isReservedName(it.getTextData())) return &RESERVED_NAME;
 			INT kvIndex = vars.addSubtree(0, NODE_KV);
 			// new
-			if (findCommand(it.getTextData()) != nullptr) return &RESERVED_NAME;
 			vars.addData(kvIndex, it); // add variable name to KV
 			it.next(); // move to SRC
 			CHECK_CALL(pushExprArg(it));
@@ -414,14 +414,14 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 
 ERROR_STATUS paula::Paula::pushVariable(TreeIterator& name)
 {
-	INT index = findVariableIndex(name, constants);
+	INT index = findVariableIndex(name.getTextData(), constants);
 	if (index >= 0)
 	{
 		TreeIterator out(constants, index);
 		CHECK_CALL(pushAtomicValue(out));
 		return NO_ERROR;
 	}
-	index = findVariableIndex(name, vars);
+	index = findVariableIndex(name.getTextData(), vars);
 	if (index >= 0)
 	{
 		TreeIterator out(vars, index);
@@ -432,7 +432,7 @@ ERROR_STATUS paula::Paula::pushVariable(TreeIterator& name)
 	return &VARIABLE_NOT_FOUND;
 }
 
-INT paula::Paula::findVariableIndex(TreeIterator& name, Tree& variableMap)
+INT paula::Paula::findVariableIndex(INT* nameData, Tree& variableMap)
 {
 
 	// iterate variables and find name. return true if found.
@@ -443,7 +443,7 @@ INT paula::Paula::findVariableIndex(TreeIterator& name, Tree& variableMap)
 	do
 	{
 		it.toChild(); // first child is the name
-		if (matchTextData(it.getTextData(), name.getTextData()))
+		if (matchTextData(it.getTextData(), nameData))
 		{
 			it.next(); // found! move to data
 			return it.index;
@@ -565,4 +565,11 @@ Command * paula::Paula::findCommand(INT * textData)
 		if (matchTextData(textData, callbacks[i].name)) return &callbacks[i];
 	}
 	return 0;
+}
+bool paula::Paula::isReservedName(INT * textData)
+{
+	if (findCommand(textData) != nullptr) return true;
+	if (findVariableIndex(textData, constants) >= 0) return true;
+	if (findVariableIndex(textData, vars) >= 0) return true;
+	return false;
 }

@@ -32,7 +32,7 @@ namespace paula
 		ERROR_STATUS pushArgListAndExecute(TreeIterator&, Command * cmd);
 		ERROR_STATUS pushAtomicValue(TreeIterator& _it);
 		ERROR_STATUS pushVariable(TreeIterator& name);
-		INT findVariableIndex(TreeIterator& name, Tree& tree);
+		INT findVariableIndex(INT* nameData, Tree& tree);
 		//bool pushVariable(TreeIterator& name, Tree&tree);
 		ERROR_STATUS pushExprArg(TreeIterator& _it);
 		ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
@@ -65,6 +65,8 @@ namespace paula
 		Command callbacks[MAX_USER_CALLBACKS];
 
 		Command* findCommand(INT* textData);
+
+        bool isReservedName(INT* textData);
 
 		// hide
 		Paula& operator=(const Paula&) = delete;

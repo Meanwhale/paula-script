@@ -40,7 +40,7 @@ paula::Args::Args(Tree& _tree) :
 	it(_tree)
 {
 }
-INT paula::Args::argCount()
+INT paula::Args::count()
 {
 	return numArgs;
 }
