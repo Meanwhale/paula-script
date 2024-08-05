@@ -1,13 +1,14 @@
 **Paula Script** is a lightweight scripting language written in C++. Features:
  - Bare-bones but fully operational build size about 30 KB.
- - No runtime memory allocation.
- - Basic data types: int, double, text, boolean.
+ - No runtime memory allocation. Everything runs in buffers, initialized at start.
+ - Basic data types: 32-bit integer, 64-bit floating point number, text, boolean.
  - Operators: +-*/<>=
  - Conditions (if) and loops (while)
  - Callbacks to call your source code from a script.
  - Built-in parser.
  - Step-by-step, non-blocking execution.
  - Compiles for Windows (Visual Studio) and Linux (g++)
+ - Stand-alone. Only dependencies for standard input/output.
 
 ## Examples
 Run Paula Script from your source code. 
