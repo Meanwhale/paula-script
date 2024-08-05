@@ -5,6 +5,8 @@
 #include "tree.h"
 
 #include <iostream>
+//#include <vector>
+
 namespace paula
 {
 	class Paula;
@@ -55,8 +57,10 @@ namespace paula
 		// declarations
 		
 		BYTE addState(const CHAR *);
-		void transition(BYTE state, const CHAR *, void (* action)(ByteAutomata*));
-		void fillTransition(BYTE state, void (* action)(ByteAutomata*));
+		//BYTE transition(BYTE state, std::vector<std::string>, void(*action)(ByteAutomata*));
+		void fillTransition(BYTE state, const CHAR* input, BYTE actionIndex);
+		BYTE transition(BYTE state, const CHAR *, void (* action)(ByteAutomata*));
+		BYTE fillTransition(BYTE state, void (* action)(ByteAutomata*));
 		BYTE addAction(void (* action)(ByteAutomata*));
 		void startAssignment();
 		void startFunction();

@@ -77,22 +77,32 @@ BYTE ByteAutomata::addState (const CHAR * stateName)
 	stateNames[stateCounter] = stateName;
 	return stateCounter;
 }
-void ByteAutomata::transition (BYTE state, const CHAR * input, void (* action)(ByteAutomata*))
+//BYTE ByteAutomata::transition (BYTE state, std::vector<std::string>list, void (* action)(ByteAutomata*))
+//{
+//	BYTE actionIndex = 0;
+//	if (action != nullptr) actionIndex = addAction(action);
+//	for (const auto& str : list)
+//	{
+//		fillTransition(state, str.c_str(), actionIndex);
+//	}
+//	return actionIndex;
+//}
+void ByteAutomata::fillTransition (BYTE state, const CHAR * input, BYTE actionIndex)
 {
-	BYTE actionIndex = 0;
-	if (action != 0)
-	{
-		actionIndex = addAction(action);
-	}
 	BYTE * bytes = (BYTE *)input;
-	INT i = 0;
-	while (bytes[i] != 0)
+	for(INT i = 0;bytes[i] != 0; i++)
 	{
 		tr[(state * 256) + bytes[i]] = actionIndex;
-		i++;
 	}
 }
-void ByteAutomata::fillTransition (BYTE state, void (* action)(ByteAutomata*))
+BYTE ByteAutomata::transition (BYTE state, const CHAR * input, void (* action)(ByteAutomata*))
+{
+	BYTE actionIndex = 0;
+	if (action != nullptr) actionIndex = addAction(action);
+	fillTransition(state, input, actionIndex);
+	return actionIndex;
+}
+BYTE ByteAutomata::fillTransition (BYTE state, void (* action)(ByteAutomata*))
 {
 	BYTE actionIndex = 0;
 	if (action != 0) actionIndex = addAction(action);
@@ -100,6 +110,7 @@ void ByteAutomata::fillTransition (BYTE state, void (* action)(ByteAutomata*))
 	{
 		tr[(state * 256) + i] = actionIndex;
 	}
+	return actionIndex;
 }
 BYTE ByteAutomata::addAction (void (* action)(ByteAutomata*))
 {
@@ -530,6 +541,16 @@ void ByteAutomata::startExpr(BYTE firstState)
 	stay();
 	next(firstState);
 }
+
+//#define TRANSITION_DEF(state,chars,trFunction,callback) \
+//	if (ai > 0) { \
+//		LOG.print("trans[").print(ai).print("]=[](ByteAutomata*ba)"); \
+//		LOG.print(#callback).endl(); \
+//	}
+#define TRANSITION(state,chars,callback) ai = transition(state, chars, [](ByteAutomata*ba) callback);
+#define SAME_TRANS(state,chars) fillTransition(state, chars, ai);
+#define FILL_TRANSITION(state,callback) ai = fillTransition(state, [](ByteAutomata*ba) callback);
+
 void ByteAutomata::defineTransitions()
 {
 	/*
@@ -549,53 +570,71 @@ void ByteAutomata::defineTransitions()
 	stateDecimal = addState("decimal");
 	stateQuote = addState("quote"); // TODO
 
-	transition(stateStart, "\x4", [](ByteAutomata*ba)					{ ba->eof(); });
-	transition(stateStart, "\t", [](ByteAutomata*ba)					{ ba->indentation++; });
-	transition(stateStart, letters, [](ByteAutomata*ba)					{ ba->startExpr(ba->stateFirstName); });
-	transition(stateStart, linebreak, [](ByteAutomata*ba)				{ ba->newLine(); });
+	BYTE ai; // action index
 
-	transition(stateFirstName, letters, 0);
-	transition(stateFirstName, whiteSpace, [](ByteAutomata*ba)			{ ba->addFirstNameAndTransit(); });
-	transition(stateFirstName, ":", [](ByteAutomata*ba)					{ ba->addFirstNameAndTransit(); });
-	transition(stateFirstName, blockStart, [](ByteAutomata*ba)			{ ba->addFirstNameAndTransit(); });
+	TRANSITION(stateStart, "\x4",										{ ba->eof(); })
+	TRANSITION(stateStart, "\t",										{ ba->indentation++; });
+	TRANSITION(stateStart, letters,										{ ba->startExpr(ba->stateFirstName); });
+	TRANSITION(stateStart, linebreak,									{ ba->newLine(); });
 
-	transition(stateAfterFirstName, whiteSpace, 0);
-	transition(stateAfterFirstName, ":", [](ByteAutomata*ba)			{ ba->startAssignment(); });
-	transition(stateAfterFirstName, blockStart, [](ByteAutomata*ba)		{ ba->startFunction(); });
+	transition(stateFirstName, letters, nullptr);
+	TRANSITION(stateFirstName, whiteSpace,								{ ba->addFirstNameAndTransit(); });
+	SAME_TRANS(stateFirstName, ":");
+	SAME_TRANS(stateFirstName, blockStart);
 
-	transition(stateSpace, whiteSpace, 0);
-	transition(stateSpace, operators, [](ByteAutomata*ba)				{ ba->addOperatorToken(); });
-	transition(stateSpace, letters, [](ByteAutomata*ba)					{ ba->next(ba->stateName); });
-	transition(stateSpace, numbers, [](ByteAutomata*ba)					{ ba->next(ba->stateNumber); });
-	transition(stateSpace, linebreak, [](ByteAutomata*ba)				{ ba->lineBreak(); });
-	transition(stateSpace, blockStart, [](ByteAutomata*ba)				{ ba->startBlock(); });
-	transition(stateSpace, blockEnd, [](ByteAutomata*ba)				{ ba->endBlock(); });
-	transition(stateSpace, ",", [](ByteAutomata*ba)						{ ba->comma(); });
-	transition(stateSpace, "\"", [](ByteAutomata*ba)					{ ba->next(ba->stateQuote); ba->quoteIndex = 0; });
+	transition(stateAfterFirstName, whiteSpace, nullptr);
+	TRANSITION(stateAfterFirstName, ":",								{ ba->startAssignment(); });
+	TRANSITION(stateAfterFirstName, blockStart,							{ ba->startFunction(); });
 
+	transition(stateSpace, whiteSpace, nullptr);
+	TRANSITION(stateSpace, operators,									{ ba->addOperatorToken(); });
+	TRANSITION(stateSpace, letters,										{ ba->next(ba->stateName); });
+	TRANSITION(stateSpace, numbers,										{ ba->next(ba->stateNumber); });
+	TRANSITION(stateSpace, linebreak,									{ ba->lineBreak(); });
+	TRANSITION(stateSpace, blockStart,									{ ba->startBlock(); });
+	TRANSITION(stateSpace, blockEnd,									{ ba->endBlock(); });
+	TRANSITION(stateSpace, ",",											{ ba->comma(); });
+	TRANSITION(stateSpace, "\"",										{ ba->next(ba->stateQuote); ba->quoteIndex = 0; });
 
-	fillTransition(stateQuote, [](ByteAutomata*ba)						{ ba->addQuoteByte(ba->currentInput); });
-	transition(stateQuote, linebreak, [](ByteAutomata*ba)				{ ba->error = &UNEXPECTED_CHARACTER; });
-	transition(stateQuote, "\"", [](ByteAutomata*ba)					{ ba->lastStart++; ba->addQuote(); ba->next(ba->stateSpace); });
-	transition(stateQuote, "\\", [](ByteAutomata*ba)					{ ba->error = &UNEXPECTED_CHARACTER; });
+	FILL_TRANSITION(stateQuote,											{ ba->addQuoteByte(ba->currentInput); });
+	TRANSITION(stateQuote, linebreak,									{ ba->error = &UNEXPECTED_CHARACTER; });
+	TRANSITION(stateQuote, "\"",										{ ba->lastStart++; ba->addQuote(); ba->next(ba->stateSpace); });
+	TRANSITION(stateQuote, "\\",										{ ba->error = &UNEXPECTED_CHARACTER; });
 
-	transition(stateName, letters, 0);
-	transition(stateName, whiteSpace, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateName, operators, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateName, blockStart, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateName, blockEnd, [](ByteAutomata*ba)					{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateName, linebreak, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateName, letters, nullptr);
+	TRANSITION(stateName, whiteSpace,									{ ba->addTokenAndTransitionToSpace(); });
+	SAME_TRANS(stateName, operators);
+	SAME_TRANS(stateName, blockStart);
+	SAME_TRANS(stateName, blockEnd);
+	SAME_TRANS(stateName, linebreak);
 
-	transition(stateNumber, numbers, 0);
-	transition(stateNumber, whiteSpace, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateNumber, ",", [](ByteAutomata*ba)					{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateNumber, operators, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateNumber, blockEnd, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateNumber, linebreak, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
-	transition(stateNumber, ".",  [](ByteAutomata*ba)					{ ba->nextCont(ba->stateDecimal); });
+	transition(stateNumber, numbers, nullptr);
+	TRANSITION(stateNumber, ".", 										{ ba->nextCont(ba->stateDecimal); });
+	TRANSITION(stateNumber, whiteSpace,									{ ba->addTokenAndTransitionToSpace(); });
+	SAME_TRANS(stateNumber, ",");
+	SAME_TRANS(stateNumber, operators);
+	SAME_TRANS(stateNumber, blockEnd);
+	SAME_TRANS(stateNumber, linebreak);
 
-	transition(stateDecimal, numbers, 0);
-	transition(stateDecimal, linebreak, [](ByteAutomata*ba)				{ ba->addTokenAndTransitionToSpace(); });
+	transition(stateDecimal, numbers, nullptr);
+	TRANSITION(stateDecimal, whiteSpace,								{ ba->addTokenAndTransitionToSpace(); });
+	SAME_TRANS(stateDecimal, operators);
+	SAME_TRANS(stateDecimal, blockStart);
+	SAME_TRANS(stateDecimal, blockEnd);
+	SAME_TRANS(stateDecimal, linebreak);
 
+	/*LOG.print("constexpr int maxStates=").print(ai+1).print(";").endl();
+	LOG.println("constexpr BYTE* transitionTable = {");
+
+	for (INT i=0; i<256; i++) LOG.print("0, ");
+	for (BYTE state = 1; state <= ai; state++)
+	{
+		LOG.endl();
+		for (INT i=0; i<256; i++)
+		{
+			LOG.print(tr[(state*256) + i]).print(",");
+		}
+	}
+	LOG.endl().print("};").endl();*/
 }
 }

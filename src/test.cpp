@@ -36,7 +36,7 @@ void paula::doubleTest()
 
 	// script test
 
-	CharInput input("a:123.456");
+	CharInput input("a:123.456 ");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	DOUBLE a;
@@ -207,10 +207,4 @@ void paula::runAll()
 
 	callbackTest();
 }
-
-//
-//const Error* paula::iteratorTest()
-//{
-//	// TODO
-//}
 #endif
