@@ -7,7 +7,7 @@
 #include <iostream>
 //#include <vector>
 
-namespace paula
+namespace paula { namespace core
 {
 	class Paula;
 
@@ -110,4 +110,4 @@ namespace paula
 		ByteAutomata() = delete;
 		ByteAutomata& operator=(const ByteAutomata&) = delete;
 	};
-}
+}}

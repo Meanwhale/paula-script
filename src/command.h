@@ -2,7 +2,7 @@
 #include "defs.h"
 #include "args.h"
 #include "tree.h"
-namespace paula
+namespace paula { namespace core
 {
 	class Paula;
 
@@ -30,4 +30,4 @@ namespace paula
 
 		Command& operator=(const Command&) = delete;
 	};
-}
+}}

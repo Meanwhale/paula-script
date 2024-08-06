@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "stream.h"
 
-namespace paula
+namespace paula { namespace core
 {
 
 template <class T> class Array
@@ -106,5 +106,5 @@ public:
 		return size;
 	}
 };
-}
+}}
 #endif // _ARRAY_H_

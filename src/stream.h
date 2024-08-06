@@ -6,7 +6,7 @@
 
 namespace paula
 {
-	class TreeIterator;
+	class core::TreeIterator;
 	class Var;
 
 	// OUTPUT

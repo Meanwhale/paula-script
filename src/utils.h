@@ -2,7 +2,7 @@
 #include "defs.h"
 //#include "array.h"
 #include <iostream>
-namespace paula
+namespace paula { namespace core
 {
 	template <class BYTE> class Array;
 	template <class INT> class Array;
@@ -32,4 +32,4 @@ namespace paula
 	bool readBool(bool& out, const INT* node);
 	bool readOp(char& out, const INT* node);
 	bool readChars(char*&out, const INT* node);
-}
+}}

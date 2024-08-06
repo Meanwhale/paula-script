@@ -1,7 +1,7 @@
 #include "paula.h"
 #include <string.h>
 
-using namespace paula;
+using namespace paulacore;
 using namespace std;
 
 constexpr const char * PAULA_VERSION = "0.1";

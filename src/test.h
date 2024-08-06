@@ -3,7 +3,7 @@
 
 #include"defs.h"
 
-namespace paula
+namespace paula { namespace core
 {
 	class Args;
 	class Paula;
@@ -28,5 +28,5 @@ namespace paula
 
     void runAll();
 	//const Error* iteratorTest();
-}
+}}
 #endif

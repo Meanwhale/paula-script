@@ -7,46 +7,46 @@ using namespace paula;
 
 // UTILS
 
-void paula::trap(const char* expr, const char* file, int line, const char* msg)
+void core::trap(const char* expr, const char* file, int line, const char* msg)
 {
-	paula::err.print("\nFAIL: \"").print(expr).print("\"\nFILE: ").print(file).print("\nLINE: ").print(line).print("\nMSG:  ").print(msg).endl(); 
+	err.print("\nFAIL: \"").print(expr).print("\"\nFILE: ").print(file).print("\nLINE: ").print(line).print("\nMSG:  ").print(msg).endl(); 
 	HALT;
 }
 
-LONG paula::doubleToLongFormat(double value)
+LONG core::doubleToLongFormat(double value)
 {
 	// NOTE: these conversions give 'strict-aliasing' warnings. Not even reinterpret_cast help...
 
 	return ((LONG&)(*(&value)));
 }
-DOUBLE paula::longToDoubleFormat(LONG value)
+DOUBLE core::longToDoubleFormat(LONG value)
 {
 	return ((DOUBLE&)(*(&value)));
 }
-INT paula::longHighBits(LONG x)
+INT core::longHighBits(LONG x)
 {
 	return (INT)(x>>32);
 }
-INT paula::longLowBits(LONG x)
+INT core::longLowBits(LONG x)
 {
 	return (INT)x;
 }
-LONG paula::intsToLong(INT high, INT low)
+LONG INTsToLong(INT high, INT low)
 {
 	LONG x = ((LONG)high) << 32;
 	x |= ((LONG)low) & 0x00000000ffffffffL;
 	return x;
 }
 
-paula::INT paula::charToInt(CHAR c)
+INT core::charToInt(CHAR c)
 {
 	return static_cast<unsigned int>(static_cast<unsigned char>(c));
 }
-paula::INT paula::textDataSize(INT numBytes)
+INT core::textDataSize(INT numBytes)
 {
 	return (numBytes / 4) + 2; // size int + ints with 4 char in one int and \0 at the end
 }
-void paula::bytesToInts(const unsigned char * bytes, int bytesOffset, Array<INT>& ints, int intsOffset, int bytesLength)
+void core::bytesToInts(const unsigned char * bytes, int bytesOffset, Array<INT>& ints, int intsOffset, int bytesLength)
 {
 	// order: 0x04030201
 
@@ -72,7 +72,7 @@ void paula::bytesToInts(const unsigned char * bytes, int bytesOffset, Array<INT>
 		else shift += 8;
 	}
 }
-bool paula::matchTextData(INT* a, INT* b)
+bool core::matchTextData(INT* a, INT* b)
 {
 	// data pointer starts from char count, followed by characters (4 chars per int)
 
@@ -88,14 +88,14 @@ bool paula::matchTextData(INT* a, INT* b)
 	}
 	return true;
 }
-void paula::charsToNameData(const char* str, Array<INT>& trg)
+void core::charsToNameData(const char* str, Array<INT>& trg)
 {
 	ASSERT(trg.length() == MAX_VAR_NAME_DATA_LENGTH);
 	INT length = (INT)strlen(str);
 	trg[0] = length;
 	bytesToInts((const unsigned char *)str, 0, trg, 1, length);
 }
-const char* paula::treeTypeName(INT tag)
+const char* core::treeTypeName(INT tag)
 {
 	switch(tag)
 	{
@@ -112,19 +112,19 @@ const char* paula::treeTypeName(INT tag)
 
 // data access
 
-bool paula::match(const INT* ptr, INT tag)
+bool core::match(const INT* ptr, INT tag)
 {
 	// check data type match
 	return (tag & TAG_MASK) == (*ptr & TAG_MASK);
 }
-bool paula::readInt(INT& out, const INT* node)
+bool core::readInt(INT& out, const INT* node)
 {
 	if (!match(node, NODE_INTEGER)) return false;
 	out = *(node + 3);
 	return true;
 }
 
-bool paula::readDouble(DOUBLE& out, const INT* node)
+bool core::readDouble(DOUBLE& out, const INT* node)
 {
 	if (!match(node, NODE_DOUBLE)) return false;
 	INT a = *(node + 3);
@@ -134,20 +134,20 @@ bool paula::readDouble(DOUBLE& out, const INT* node)
 	return true;
 }
 
-bool paula::readBool(bool& out, const INT* node)
+bool core::readBool(bool& out, const INT* node)
 {
 	if (!match(node, NODE_BOOL)) return false;
 	out = (*(node + 3)) != 0;
 	return true;
 }
-bool paula::readOp(char& out, const INT* node)
+bool core::readOp(char& out, const INT* node)
 {
 	if (!match(node, NODE_OPERATOR)) return false;
 	out = (char)(*(node + 3));
 	return true;
 }
 
-bool paula::readChars(char*& out, const INT* node)
+bool core::readChars(char*& out, const INT* node)
 {
 	if (!match(node, NODE_TEXT)) return false;
 	out = (char*)(node + 4);

@@ -3,7 +3,7 @@
 #include "args.h"
 #include <cstring> 
 
-namespace paula
+namespace paula { namespace core
 {
 // layout:
 //		SUBTREE NODE:	TAG (node type, size), PARENT, NEXT, FIRST CHILD, LAST CHILD
@@ -11,17 +11,17 @@ namespace paula
 // size = number of ints after the tag
 
 
-paula::Tree::Tree(INT size) : data(size)
+core::Tree::Tree(INT size) : data(size)
 {
 	clear();
 }
 
-INT paula::Tree::node(INT tag, INT size)
+INT core::Tree::node(INT tag, INT size)
 {
 	return tag | size;
 }
 
-void paula::Tree::insertTree(INT parentIndex, INT tag, INT size)
+void core::Tree::insertTree(INT parentIndex, INT tag, INT size)
 {
 	ASSERT(isSubtree(parentIndex));
 	INT previousLast = data[parentIndex + 4]; // save previous last child
@@ -43,13 +43,13 @@ void paula::Tree::insertTree(INT parentIndex, INT tag, INT size)
 	data[top++] = -1; // no siblings yet
 }
 
-void paula::Tree::addOperatorNode(INT parentIndex, CHAR op)
+void core::Tree::addOperatorNode(INT parentIndex, CHAR op)
 {
 	insertTree(parentIndex, NODE_OPERATOR, 3);
 	data[top++] = charToInt(op);
 }
 
-void paula::Tree::addDouble(INT parentIndex, double value)
+void core::Tree::addDouble(INT parentIndex, double value)
 {
 	insertTree(parentIndex, NODE_DOUBLE, 4);
 
@@ -60,13 +60,13 @@ void paula::Tree::addDouble(INT parentIndex, double value)
 	data[top++] = low;
 }
 
-void paula::Tree::addInt(INT parentIndex, INT value)
+void core::Tree::addInt(INT parentIndex, INT value)
 {
 	insertTree(parentIndex, NODE_INTEGER, 3);
 	data[top++] = value;
 }
 
-void paula::Tree::addBool(INT parentIndex, bool value)
+void core::Tree::addBool(INT parentIndex, bool value)
 {
 	insertTree(parentIndex, NODE_BOOL, 3);
 	data[top++] = value ? 1 : 0;
@@ -95,7 +95,7 @@ void Tree::addText(INT parentIndex, const unsigned char * bytes, INT firstByte, 
 	top += intsSize;
 }
 
-INT paula::Tree::addSubtree(INT parentIndex, INT type)
+INT core::Tree::addSubtree(INT parentIndex, INT type)
 {
 	ASSERT(isSubtreeTag(type));
 	INT newSubtreeIndex = top;
@@ -114,7 +114,7 @@ bool Tree::hasCapacity(INT size)
 
 // STACK NODE: TAG (node type, size), PARENT, NEXT, FIRST CHILD, -1 [not used but there to be same size as subtree node]
 
-void paula::Tree::pushStack(INT stackIndex, INT tag, INT size)
+void core::Tree::pushStack(INT stackIndex, INT tag, INT size)
 {
 	ASSERT(isStack(stackIndex));
 	INT previousFirst = data[stackIndex + 3]; // can be -1 if first
@@ -291,7 +291,7 @@ INT Tree::getNodeSize(INT index)
 {
 	return data[index] & 0x00ffffff;
 }
-bool paula::Tree::isSubtree(INT nodeIndex)
+bool core::Tree::isSubtree(INT nodeIndex)
 {
 	return isSubtreeTag(getType(nodeIndex));
 }
@@ -301,12 +301,12 @@ bool Tree::isStack(INT nodeIndex)
 	return getType(nodeIndex) == NODE_STACK;
 }
 
-bool paula::Tree::isSubtreeTag(INT tag)
+bool core::Tree::isSubtreeTag(INT tag)
 {
 	return (tag & 0xf0ffffff) == 0;
 }
 
-int paula::Tree::nodeSize(INT node)
+int core::Tree::nodeSize(INT node)
 {
 	return node & SIZE_MASK;
 }
@@ -333,7 +333,7 @@ bool Tree::isClear()
 	return top < 0;
 }
 
-void paula::Tree::printData()
+void core::Tree::printData()
 {
 	if (isClear())
 	{
@@ -351,7 +351,7 @@ void paula::Tree::printData()
 	}
 }
 
-void paula::Tree::print()
+void core::Tree::print()
 {
 	if (isClear())
 	{
@@ -523,4 +523,4 @@ INT* TreeIterator::getTextData()
 	ASSERT(isTextType());
 	return tree.data.ptr() + index + 3;
 }
-}
+}}

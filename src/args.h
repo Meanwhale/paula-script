@@ -3,6 +3,8 @@
 #include "array.h"
 #include "tree.h"
 
+using namespace paula::core;
+
 namespace paula
 {
 	class Var
@@ -19,7 +21,7 @@ namespace paula
 		bool isSubtree() const;
 
 		friend class Args;
-		friend class TreeIterator;
+		friend class core::TreeIterator;
 	private:
 		const INT* ptr; // pointer to a data tag in a tree. volatile, as data can change
 		Var(const INT*_ptr);
@@ -33,7 +35,7 @@ namespace paula
 
 		Tree& tree;
 		INT numArgs;
-		TreeIterator it;
+		core::TreeIterator it;
 
 		static INT emptyData;
 

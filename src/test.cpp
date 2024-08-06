@@ -5,8 +5,9 @@
 #include <iostream>
 #include <cstring>
 
+using namespace paula;
 
-void paula::runErrorCheck(const Error* (*test)(), const Error* expectedError)
+void core::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 {
 	auto error = test();
 	
@@ -28,7 +29,7 @@ void paula::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 
 #define ERROR_TEST(code,error) runErrorCheck([]() { CharInput input(code); return Paula::one.run(input, false); }, &error);
 
-void paula::doubleTest()
+void core::doubleTest()
 {
 	// conversion test
 
@@ -50,7 +51,7 @@ void paula::doubleTest()
 #define TEST_BOOL(name,value) b = false; ASSERT(Paula::one.vars.getBool(b, name)); LOG.print("b:").print(b).endl(); ASSERT(b == value);
 #define TEST_TEXT(name,value) t = nullptr; ASSERT(Paula::one.vars.getChars(t, name)); LOG.print("t:").print(t).endl(); ASSERT(strcmp(t, value) == 0);
 
-void paula::operatorTest()
+void core::operatorTest()
 {
 	CharInput input("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
 	auto err = Paula::one.run(input, false);
@@ -67,7 +68,7 @@ void paula::operatorTest()
 	TEST_BOOL("eisama", false);
 }
 
-void paula::variableTest()
+void core::variableTest()
 {
 	CharInput input("a:5");
 	auto err = Paula::one.run(input, false);
@@ -76,7 +77,7 @@ void paula::variableTest()
 	ASSERT(Paula::one.vars.getInt(a, "a"));
 	ASSERT(a == 5);
 }
-void paula::functionTest()
+void core::functionTest()
 {
 	CharInput input("b:true\ntmp:not(b)");
 	auto err = Paula::one.run(input, false);
@@ -88,7 +89,7 @@ void paula::functionTest()
 	ASSERT(!value);
 }
 
-void paula::loopTest()
+void core::loopTest()
 {
 	CharInput input("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
 	auto err = Paula::one.run(input, false);
@@ -96,7 +97,7 @@ void paula::loopTest()
 	INT a;
 	TEST_INT("a", 5);
 }
-void paula::ifTest()
+void core::ifTest()
 {
 	CharInput input("a:1\nb:1\nwhile(a<5)\n\ta:a+1\n\tif(a>4)\n\t\tb:b+10\n\t\tif(a>4)\n\t\t\tb:b+10");
 	auto err = Paula::one.run(input, false);
@@ -106,12 +107,12 @@ void paula::ifTest()
 	TEST_INT("b", 21);
 }
 
-void paula::parenthesisErrorTest()
+void core::parenthesisErrorTest()
 {
 	ERROR_TEST("foo (12, (34, 56)", PARENTHESIS);
 }
 
-const paula::Error* paula::testCallback (Paula&p,Args&args)
+const core::Error* core::testCallback (Paula&p,Args&args)
 {
 	LOG.println("-------- TEST ACTION --------");
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
@@ -124,7 +125,7 @@ const paula::Error* paula::testCallback (Paula&p,Args&args)
 	return &TYPE_MISMATCH;
 }
 
-void paula::textTest()
+void core::textTest()
 {
 	CharInput input("t:\"hello!\"");
 	auto error = Paula::one.run(input, false);
@@ -135,7 +136,7 @@ void paula::textTest()
 	ERROR_TEST("t:\"hello!\"\nt:\"a\"", TEXT_VARIABLE_OVERWRITE);
 }
 
-void paula::callbackTest()
+void core::callbackTest()
 {
 	auto error = Paula::one.addCallback("testCallback", testCallback);
 	ASSERT(error == NO_ERROR);
@@ -146,7 +147,7 @@ void paula::callbackTest()
 	TEST_INT("a", 6);
 }
 
-void paula::treeTest()
+void core::treeTest()
 {
 	Tree tree(1024);
 	tree.init(NODE_SUBTREE);
@@ -163,7 +164,7 @@ void paula::treeTest()
 	ASSERT(it.var().getInt(a));
 	ASSERT(a == 400);
 }
-void paula::stackTest()
+void core::stackTest()
 {
 	Tree stack(1024);
 	stack.init(NODE_STACK);
@@ -175,7 +176,7 @@ void paula::stackTest()
 	stack.pop(0);
 	ASSERT(stack.stackSize(0) == 0);
 }
-void paula::reservedNameTest()
+void core::reservedNameTest()
 {
 	ERROR_TEST("if:1", RESERVED_NAME);
 	ERROR_TEST("true:1", RESERVED_NAME);
@@ -186,7 +187,7 @@ void paula::reservedNameTest()
 	error = Paula::one.addCallback("true", testCallback);
 	ASSERT(Error::equal(error, &RESERVED_NAME));
 }
-void paula::runAll()
+void core::runAll()
 {
 	stackTest();
 	treeTest();

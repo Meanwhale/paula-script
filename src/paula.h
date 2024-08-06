@@ -5,10 +5,11 @@
 #include "byteautomata.h"
 #include "command.h"
 
-namespace paula
+
+namespace paula { namespace core
 {
-	class IInputStream;
-	class Tree;
+	class paula::IInputStream;
+	class core::Tree;
 
 	constexpr int
 		NUM_COMMANDS = 4,
@@ -24,6 +25,14 @@ namespace paula
 	class Paula
 	{
 	public:
+
+		void startLoop();
+		void startIf();
+		void skipBlock();
+
+	private:
+		Paula();
+
 		static Paula one; // the one Paula object
 
 		Tree vars;
@@ -37,19 +46,9 @@ namespace paula
 		ERROR_STATUS pushExprArg(TreeIterator& _it);
 		ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
 		ERROR_STATUS operatorPush(CHAR op, INT a, INT b);
-        ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Paula&, Args&));
-        ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
-        ERROR_STATUS executeLine(INT indentation, INT lineStartIndex, INT lineType, Tree& tree);
-
-		void startLoop();
-
-		void startIf();
-
-		void skipBlock();
-
-	private:
-
-		Paula();
+		ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Paula&, Args&));
+		ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
+		ERROR_STATUS executeLine(INT indentation, INT lineStartIndex, INT lineType, Tree& tree);
 
 		INT currentIndentation, skipIndentation, blockStackSize, lineStartIndex, numCallbacks;
 
@@ -71,4 +70,4 @@ namespace paula
 		// hide
 		Paula& operator=(const Paula&) = delete;
 	};
-}
+}}

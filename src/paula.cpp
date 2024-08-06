@@ -3,6 +3,7 @@
 #include "args.h"
 
 using namespace paula;
+using namespace paula::core;
 
 // PAULA
 
@@ -125,7 +126,7 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 	}
 }
 
-ERROR_STATUS paula::Paula::addCallback(const char* callbackName, const Error * (* _action)(Paula&,Args&))
+ERROR_STATUS core::Paula::addCallback(const char* callbackName, const Error * (* _action)(Paula&,Args&))
 {
 	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
 	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
@@ -139,7 +140,7 @@ ERROR_STATUS paula::Paula::addCallback(const char* callbackName, const Error * (
 	return NO_ERROR;
 }
 
-ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& executeLine)
+ERROR_STATUS core::Paula::lineIndentationInit(INT indentation, bool& executeLine)
 {
 	executeLine = true;
 	currentIndentation = indentation;
@@ -201,7 +202,7 @@ ERROR_STATUS paula::Paula::lineIndentationInit(INT indentation, bool& executeLin
 	return NO_ERROR;
 }
 
-ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT lineType, Tree& tree)
+ERROR_STATUS core::Paula::executeLine(INT indentation, INT _lineStartIndex, INT lineType, Tree& tree)
 {
 	bool executeLine = false;
 	CHECK_CALL(lineIndentationInit(indentation, executeLine));
@@ -290,7 +291,7 @@ ERROR_STATUS paula::Paula::executeLine(INT indentation, INT _lineStartIndex, INT
 	return NO_ERROR;
 }
 
-void paula::Paula::startLoop()
+void core::Paula::startLoop()
 {
 	LOG.println("-------- START LOOP --------");
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
@@ -299,7 +300,7 @@ void paula::Paula::startLoop()
 	blockStack[blockStackSize].loop = true;
 	blockStackSize++;
 }
-void paula::Paula::startIf()
+void core::Paula::startIf()
 {
 	LOG.println("-------- START IF --------");
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
@@ -309,7 +310,7 @@ void paula::Paula::startIf()
 	blockStackSize++;
 }
 
-void paula::Paula::skipBlock()
+void core::Paula::skipBlock()
 {
 	LOG.println("-------- SKIP BLOCK (TODO) --------");
 	
@@ -319,7 +320,7 @@ void paula::Paula::skipBlock()
 	skipIndentation = currentIndentation + 1;
 }
 
-ERROR_STATUS paula::Paula::pushArgListAndExecute(TreeIterator& _it, Command * cmd)
+ERROR_STATUS core::Paula::pushArgListAndExecute(TreeIterator& _it, Command * cmd)
 {
 	// push list of expressions, eg. ( 1, f(x), y )
 	// --> pushExprArg("1"), pushExprArg("f(x)"), pushExprArg("y")
@@ -372,7 +373,7 @@ ERROR_STATUS paula::Paula::pushArgListAndExecute(TreeIterator& _it, Command * cm
 	return NO_ERROR;
 }
 
-ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
+ERROR_STATUS core::Paula::pushAtomicValue(TreeIterator&_it)
 {
 	// push a value in expression,
 	// eg. "1" in "f(1)" or "2" in "f(2+3)" or "(4+5)" in "f((4+5)+6)"
@@ -412,7 +413,7 @@ ERROR_STATUS paula::Paula::pushAtomicValue(TreeIterator&_it)
 	return NO_ERROR;
 }
 
-ERROR_STATUS paula::Paula::pushVariable(TreeIterator& name)
+ERROR_STATUS core::Paula::pushVariable(TreeIterator& name)
 {
 	INT index = findVariableIndex(name.getTextData(), constants);
 	if (index >= 0)
@@ -432,7 +433,7 @@ ERROR_STATUS paula::Paula::pushVariable(TreeIterator& name)
 	return &VARIABLE_NOT_FOUND;
 }
 
-INT paula::Paula::findVariableIndex(INT* nameData, Tree& variableMap)
+INT core::Paula::findVariableIndex(INT* nameData, Tree& variableMap)
 {
 
 	// iterate variables and find name. return true if found.
@@ -454,7 +455,7 @@ INT paula::Paula::findVariableIndex(INT* nameData, Tree& variableMap)
 	return -1; // variable not found in the tree
 }
 
-ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
+ERROR_STATUS core::Paula::pushExprArg(TreeIterator& it)
 {
 	INT stackSizeBefore = stack.stackSize(0);
 	// 'it' now points to first element of the expression, eg. "x" in "x + 1"
@@ -523,7 +524,7 @@ ERROR_STATUS paula::Paula::pushExprArg(TreeIterator& it)
 	return NO_ERROR;
 }
 
-ERROR_STATUS paula::Paula::pushExprSubtreeArg(TreeIterator& _it)
+ERROR_STATUS core::Paula::pushExprSubtreeArg(TreeIterator& _it)
 {
 	// push an argument that is wrapped in an expression
 
@@ -536,7 +537,7 @@ ERROR_STATUS paula::Paula::pushExprSubtreeArg(TreeIterator& _it)
 
 	return NO_ERROR;
 }
-ERROR_STATUS paula::Paula::operatorPush(CHAR op, INT a, INT b)
+ERROR_STATUS core::Paula::operatorPush(CHAR op, INT a, INT b)
 {
 	switch(op)
 	{
@@ -552,7 +553,7 @@ ERROR_STATUS paula::Paula::operatorPush(CHAR op, INT a, INT b)
 	ERR.printCharSymbol(op);
 	return &INVALID_OPERATOR;
 }
-Command * paula::Paula::findCommand(INT * textData)
+Command * core::Paula::findCommand(INT * textData)
 {
 	// 'it' points to command name
 	INT i;
@@ -566,7 +567,7 @@ Command * paula::Paula::findCommand(INT * textData)
 	}
 	return 0;
 }
-bool paula::Paula::isReservedName(INT * textData)
+bool core::Paula::isReservedName(INT * textData)
 {
 	if (findCommand(textData) != nullptr) return true;
 	if (findVariableIndex(textData, constants) >= 0) return true;

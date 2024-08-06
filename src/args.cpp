@@ -1,6 +1,7 @@
 #include "args.h"
 
 using namespace paula;
+using namespace paula::core;
 
 /*
 paula::ArgDef::ArgDef(INT size) : types(size)
@@ -31,20 +32,20 @@ return i == types.length();
 }
 */
 
-paula::INT paula::Args::emptyData = paula::NODE_VOID | 0; // size=0
+INT Args::emptyData = core::NODE_VOID | 0; // size=0
 
-paula::Args::Args(Tree& _tree) :
+Args::Args(Tree& _tree) :
 	returnValue(MAX_RETURN_VALUE_SIZE),
 	tree(_tree),
 	numArgs(0),
 	it(_tree)
 {
 }
-INT paula::Args::count()
+INT Args::count()
 {
 	return numArgs;
 }
-void paula::Args::returnInt(INT value)
+void Args::returnInt(INT value)
 {
 	returnValue[0] = NODE_INTEGER | 3;
 	returnValue[1] = -1; // no parent
@@ -52,11 +53,11 @@ void paula::Args::returnInt(INT value)
 	returnValue[3] = value;
 }
 
-bool paula::Args::hasReturnValue()
+bool Args::hasReturnValue()
 {
 	return returnValue[0] != -1;
 }
-void paula::Args::returnBool(bool value)
+void Args::returnBool(bool value)
 {
 	returnValue[0] = NODE_BOOL | 3;
 	returnValue[1] = -1; // no parent
@@ -64,7 +65,7 @@ void paula::Args::returnBool(bool value)
 	returnValue[3] = value ? 1 : 0;
 }
 
-Var paula::Args::get(INT dataIndex)
+Var Args::get(INT dataIndex)
 {
 	if (dataIndex < 0 || dataIndex >= numArgs)
 	{
@@ -86,43 +87,43 @@ Var paula::Args::get(INT dataIndex)
 	return Var(tree.data.ptr(it.index)); // set pointer to the data
 }
 
-void paula::Args::reset(INT _numArgs)
+void Args::reset(INT _numArgs)
 {
 	// _initIndex points one item before first arg.
 	numArgs = _numArgs;
 	returnValue[0] = -1;
 }
 
-paula::Var::Var(const INT* _ptr) : ptr(_ptr)
+Var::Var(const INT* _ptr) : ptr(_ptr)
 {
 }
 
-paula::Var::Var() : ptr(&Args::emptyData)
+Var::Var() : ptr(&Args::emptyData)
 {
 }
 
-INT paula::Var::type() const
+INT Var::type() const
 {
 	return *ptr & TAG_MASK;
 }
-bool paula::Var::match(INT tag) const
+bool Var::match(INT tag) const
 {
 	// check data type match
 	return (tag & TAG_MASK) == (*ptr & TAG_MASK);
 }
-bool paula::Var::getInt(INT& out) const
+bool Var::getInt(INT& out) const
 {
 	return readInt(out, ptr);
 }
-bool paula::Var::getBool(bool& out) const
+bool Var::getBool(bool& out) const
 {
 	return readBool(out, ptr);
 }
-bool paula::Var::getOp(char& out) const
+bool Var::getOp(char& out) const
 {
 	return readOp(out, ptr);
 }
-bool paula::Var::readChars(char*&out) const
+bool Var::readChars(char*&out) const
 {
 	// out: reference to a pointer.
 	// this function could return a pointer (null if not successful)
@@ -132,7 +133,7 @@ bool paula::Var::readChars(char*&out) const
 	out = (char*) (ptr + 4);
 	return true;
 }
-bool paula::Var::isSubtree() const
+bool Var::isSubtree() const
 {
 	return (type() & 0xf0ffffff) == 0;
 }

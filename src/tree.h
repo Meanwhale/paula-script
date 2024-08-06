@@ -1,6 +1,6 @@
 #pragma once
 #include "array.h"
-namespace paula
+namespace paula { namespace core
 {
 	constexpr INT
 
@@ -37,8 +37,8 @@ namespace paula
 		SIZE_MASK	= 0x00ffffff;
 
 	class TreeIterator;
-	class Args;
-	class Var;
+	class paula::Args;
+	class paula::Var;
 
 	class Tree
 	{
@@ -161,4 +161,4 @@ namespace paula
 		//TreeIterator() = delete;
 		//TreeIterator& operator=(const TreeIterator&) = delete;
 	};
-}
+}}

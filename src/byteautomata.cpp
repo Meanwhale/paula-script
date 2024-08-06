@@ -3,7 +3,7 @@
 
 #define BA_CHECK(x,e) { if (!(x)) { error = &e; return; } }
 
-namespace paula
+namespace paula { namespace core
 {
 constexpr INT
 	TREE_ARRAY_SIZE = 1024,
