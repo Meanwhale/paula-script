@@ -31,7 +31,7 @@ INT core::longLowBits(LONG x)
 {
 	return (INT)x;
 }
-LONG INTsToLong(INT high, INT low)
+LONG core::intsToLong(INT high, INT low)
 {
 	LONG x = ((LONG)high) << 32;
 	x |= ((LONG)low) & 0x00000000ffffffffL;

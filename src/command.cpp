@@ -29,3 +29,21 @@ const Error * core::Command::execute(Paula& paula, Args& args)
 	LOG.println("Command: EXECUTE!");
 	return action(paula,args);
 }
+
+const Error* paula::Callback::execute(Paula&, Args&args)
+{
+	LOG.println("Callback: EXECUTE!");
+	return action(args);
+}
+
+void paula::Callback::setup(Array<INT>& _nameData, const Error* (*_action)(Args&))
+{
+	Array<INT> nameData (name, MAX_VAR_NAME_DATA_LENGTH);
+	nameData.copyFrom(_nameData);
+	action = _action;
+}
+
+paula::Callback::Callback() :
+	action(0)
+{
+}

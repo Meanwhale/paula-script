@@ -115,6 +115,10 @@ bool Var::getInt(INT& out) const
 {
 	return readInt(out, ptr);
 }
+bool paula::Var::getDouble(DOUBLE& out) const
+{
+	return readDouble(out, ptr);
+}
 bool Var::getBool(bool& out) const
 {
 	return readBool(out, ptr);
@@ -123,7 +127,7 @@ bool Var::getOp(char& out) const
 {
 	return readOp(out, ptr);
 }
-bool Var::readChars(char*&out) const
+bool Var::getChars(char*&out) const
 {
 	// out: reference to a pointer.
 	// this function could return a pointer (null if not successful)

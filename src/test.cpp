@@ -6,6 +6,7 @@
 #include <cstring>
 
 using namespace paula;
+using namespace paula::core;
 
 void core::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 {
@@ -43,13 +44,14 @@ void core::doubleTest()
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	DOUBLE a;
-	ASSERT(Paula::one.vars.getDouble(a, "a"));
+	//ASSERT(Paula::one.vars.getDouble(a, "a"));
+	ASSERT(paula::get("a").getDouble(a));
 	ASSERT(a == 123.456);
 }
 
-#define TEST_INT(name,value) a = -123456; ASSERT(Paula::one.vars.getInt(a, name)); LOG.print("a:").print(a).endl(); ASSERT(a == value);
-#define TEST_BOOL(name,value) b = false; ASSERT(Paula::one.vars.getBool(b, name)); LOG.print("b:").print(b).endl(); ASSERT(b == value);
-#define TEST_TEXT(name,value) t = nullptr; ASSERT(Paula::one.vars.getChars(t, name)); LOG.print("t:").print(t).endl(); ASSERT(strcmp(t, value) == 0);
+#define TEST_INT(name,value) a = -123456; ASSERT(paula::get(name).getInt(a)); LOG.print("a:").print(a).endl(); ASSERT(a == value);
+#define TEST_BOOL(name,value) b = false; ASSERT(paula::get(name).getBool(b)); LOG.print("b:").print(b).endl(); ASSERT(b == value);
+#define TEST_TEXT(name,value) t = nullptr; ASSERT(paula::get(name).getChars(t)); LOG.print("t:").print(t).endl(); ASSERT(strcmp(t, value) == 0);
 
 void core::operatorTest()
 {
@@ -74,19 +76,16 @@ void core::variableTest()
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
-	ASSERT(Paula::one.vars.getInt(a, "a"));
-	ASSERT(a == 5);
+	TEST_INT("a", 5);
 }
 void core::functionTest()
 {
 	CharInput input("b:true\ntmp:not(b)");
 	auto err = Paula::one.run(input, false);
 	ASSERT(err == NO_ERROR);
-	bool value;
-	ASSERT(Paula::one.vars.getBool(value, "b"))
-	ASSERT(value);
-	ASSERT(Paula::one.vars.getBool(value, "tmp"))
-	ASSERT(!value);
+	bool b;
+	TEST_BOOL("b", true);
+	TEST_BOOL("tmp", false);
 }
 
 void core::loopTest()
@@ -112,7 +111,7 @@ void core::parenthesisErrorTest()
 	ERROR_TEST("foo (12, (34, 56)", PARENTHESIS);
 }
 
-const core::Error* core::testCallback (Paula&p,Args&args)
+const Error* core::testCallback (Args&args)
 {
 	LOG.println("-------- TEST ACTION --------");
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
@@ -138,7 +137,7 @@ void core::textTest()
 
 void core::callbackTest()
 {
-	auto error = Paula::one.addCallback("testCallback", testCallback);
+	auto error = paula::addCallback("testCallback", testCallback);
 	ASSERT(error == NO_ERROR);
 	CharInput input("a:3\na:testCallback(3)");
 	auto err = Paula::one.run(input, false);
@@ -181,10 +180,10 @@ void core::reservedNameTest()
 	ERROR_TEST("if:1", RESERVED_NAME);
 	ERROR_TEST("true:1", RESERVED_NAME);
 
-	auto error = Paula::one.addCallback("while", testCallback);
+	auto error = paula::addCallback("while", testCallback);
 	ASSERT(Error::equal(error, &RESERVED_NAME));
 
-	error = Paula::one.addCallback("true", testCallback);
+	error = paula::addCallback("true", testCallback);
 	ASSERT(Error::equal(error, &RESERVED_NAME));
 }
 void core::runAll()

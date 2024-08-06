@@ -6,7 +6,7 @@
 
 namespace paula
 {
-	class core::TreeIterator;
+	namespace core { class TreeIterator; }
 	class Var;
 
 	// OUTPUT
@@ -16,11 +16,6 @@ namespace paula
 	public:
 		virtual void close() = 0;
 		virtual bool closed() = 0;
-	};
-
-	class BinaryOut : public IOutputStream
-	{
-		// TODO if needed
 	};
 
 	class POut : public IOutputStream
@@ -42,7 +37,7 @@ namespace paula
 		const POut& println(const char*) const;
 		const POut& endl() const;
 
-		const POut& print(const TreeIterator& x) const;
+		const POut& print(const core::TreeIterator& x) const;
 
 		const POut& print(const Var& x) const;
 
@@ -61,7 +56,7 @@ namespace paula
 		const NullPrint& printCharSymbol(CHAR c) const;
 		const NullPrint& print(const Error* a) const;
 		const NullPrint& println(const char*) const;
-		const NullPrint& print(const TreeIterator& x) const;
+		const NullPrint& print(const core::TreeIterator& x) const;
 		const NullPrint& endl() const;
 	};
 	class STDOut : public POut

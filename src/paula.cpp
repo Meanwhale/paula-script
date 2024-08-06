@@ -126,7 +126,7 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 	}
 }
 
-ERROR_STATUS core::Paula::addCallback(const char* callbackName, const Error * (* _action)(Paula&,Args&))
+ERROR_STATUS core::Paula::addCallback(const char* callbackName, const Error * (* _action)(Args&))
 {
 	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
 	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
@@ -320,7 +320,7 @@ void core::Paula::skipBlock()
 	skipIndentation = currentIndentation + 1;
 }
 
-ERROR_STATUS core::Paula::pushArgListAndExecute(TreeIterator& _it, Command * cmd)
+ERROR_STATUS core::Paula::pushArgListAndExecute(TreeIterator& _it, ICallback * cmd)
 {
 	// push list of expressions, eg. ( 1, f(x), y )
 	// --> pushExprArg("1"), pushExprArg("f(x)"), pushExprArg("y")
@@ -553,7 +553,7 @@ ERROR_STATUS core::Paula::operatorPush(CHAR op, INT a, INT b)
 	ERR.printCharSymbol(op);
 	return &INVALID_OPERATOR;
 }
-Command * core::Paula::findCommand(INT * textData)
+ICallback * core::Paula::findCommand(INT * textData)
 {
 	// 'it' points to command name
 	INT i;
@@ -573,4 +573,19 @@ bool core::Paula::isReservedName(INT * textData)
 	if (findVariableIndex(textData, constants) >= 0) return true;
 	if (findVariableIndex(textData, vars) >= 0) return true;
 	return false;
+}
+
+const Error* paula::run(IInputStream&str, bool handleError)
+{
+	return core::Paula::one.run(str, handleError);
+}
+
+Var paula::get(const char* varName)
+{
+	return core::Paula::one.vars.get(varName);
+}
+
+ERROR_STATUS paula::addCallback(const char* callbackName, const Error* (*_action)(Args&))
+{
+	return core::Paula::one.addCallback(callbackName, _action);
 }

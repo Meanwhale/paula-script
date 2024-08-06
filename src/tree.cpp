@@ -139,6 +139,8 @@ void Tree::pushBool(INT stackIndex, bool value)
 	data[top++] = value ? 1 : 0;
 }
 
+// TODO: combine these three below
+
 void Tree::addData(INT parentIndex, TreeIterator& src)
 {
 	ASSERT(isSubtree(parentIndex));
@@ -227,7 +229,14 @@ INT Tree::stackSize(INT stackIndex)
 // 
 // ------------- MAP BEGIN
 
-bool Tree::getBool(bool& out, const char* varName)
+Var Tree::get(const char* varName)
+{
+	INT index = getIndexOfData(varName);
+	if (index < 0) return Var();
+	return Var(data.ptr(index));
+}
+
+/*bool Tree::getBool(bool& out, const char* varName)
 {
 	INT index = getIndexOfData(varName, NODE_BOOL);
 	if (index < 0) return false;
@@ -250,17 +259,21 @@ bool Tree::getChars(char*&out, const char* varName)
 	INT index = getIndexOfData(varName, NODE_TEXT);
 	if (index < 0) return false;
 	return readChars(out, data.ptr(index));
-}
+}*/
 
-INT Tree::getIndexOfData(const char* varName, INT dataType)
+INT Tree::getIndexOfData(const char* varName)
 {
+	// assume tree is a _map_ i.e. list of name-value pairs.
+	// convert chars to Paula-style text data (varNameData)
+	// and search for name. return its pair if the name is found.
+
 	ASSERT(getType(0) == NODE_SUBTREE);
 	TreeIterator it(*this);
 	if (!it.hasChild()) return -1;
 	it.toChild();
 
 	INT length = (INT)strlen(varName);
-	int tmp[MAX_VAR_NAME_DATA_LENGTH]; // avoid "new"
+	int tmp[MAX_VAR_NAME_DATA_LENGTH];
 	Array<INT>varNameData(tmp, MAX_VAR_NAME_DATA_LENGTH);
 	varNameData[0] = length;
 	bytesToInts((const unsigned char*)varName, 0, varNameData, 1, length);
@@ -271,7 +284,7 @@ INT Tree::getIndexOfData(const char* varName, INT dataType)
 		if (matchTextData(it.getTextData(), varNameData.ptr()))
 		{
 			it.next(); // found! move forward to data
-			if (getType(it.index) != dataType) return -1;
+			//if (getType(it.index) != dataType) return -1;
 			return it.index;
 		}
 		it.toParent();
@@ -361,9 +374,6 @@ void core::Tree::print()
 	TreeIterator it(*this);
 	LOG.print(it).endl();
 	printSubtree(it);
-	//printNode(0, 0);
-
-	//printData();
 }
 void Tree::printSubtree(TreeIterator& it)
 {
@@ -411,7 +421,6 @@ TreeIterator::TreeIterator(Tree& _tree) :
 	index(0),
 	depth(0)
 {
-	//ASSERT(!tree.isClear());
 }
 TreeIterator::TreeIterator(Tree& _tree, INT _index) :
 	tree(_tree),
@@ -457,7 +466,6 @@ INT TreeIterator::getDepth()
 {
 	return depth;
 }
-
 
 bool TreeIterator::hasNext()
 {

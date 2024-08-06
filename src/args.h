@@ -14,13 +14,15 @@ namespace paula
 		INT type() const;
 		bool match(INT tag) const;
 		bool getInt(INT& out) const;
+		bool getDouble(DOUBLE& out) const;
 		bool getBool(bool& out) const;
 		bool getOp(char& out) const;
-		bool readChars(char*&out) const;
+		bool getChars(char*&out) const;
 
 		bool isSubtree() const;
 
 		friend class Args;
+		friend class core::Tree;
 		friend class core::TreeIterator;
 	private:
 		const INT* ptr; // pointer to a data tag in a tree. volatile, as data can change

@@ -5,12 +5,12 @@
 
 namespace paula { namespace core
 {
-	class Args;
+	class paula::Args;
 	class Paula;
 
 	void runErrorCheck(const Error* (* test)(), const Error* expectedError);
 	
-	const Error* testCallback (Paula&p,Args&args);
+	const Error* testCallback (Args&args);
 
 	void textTest();
 

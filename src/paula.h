@@ -6,68 +6,79 @@
 #include "command.h"
 
 
-namespace paula { namespace core
+namespace paula
 {
-	class paula::IInputStream;
-	class core::Tree;
+	// user interface
 
-	constexpr int
-		NUM_COMMANDS = 4,
-		MAX_USER_CALLBACKS = 16,
-		MAX_BLOCK_DEPTH = 16;
+	[[nodiscard]] const Error * run(IInputStream&, bool handleError);
+	Var get(const char * varName);
+	ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 
-	struct Block
+	namespace core
 	{
-		INT startAddress, indentation;
-		bool loop;
-	};
+		class paula::IInputStream;
+		class core::Tree;
 
-	class Paula
-	{
-	public:
+		constexpr int
+			NUM_COMMANDS = 4,
+			MAX_USER_CALLBACKS = 16,
+			MAX_BLOCK_DEPTH = 16;
 
-		void startLoop();
-		void startIf();
-		void skipBlock();
+		struct Block
+		{
+			INT startAddress, indentation;
+			bool loop;
+		};
 
-	private:
-		Paula();
+		class Paula
+		{
+		public:
 
-		static Paula one; // the one Paula object
+			static Paula one; // the one Paula object
 
-		Tree vars;
+			void startLoop();
+			void startIf();
+			void skipBlock();
 
-		ERROR_STATUS run(IInputStream&, bool handleError);
-		ERROR_STATUS pushArgListAndExecute(TreeIterator&, Command * cmd);
-		ERROR_STATUS pushAtomicValue(TreeIterator& _it);
-		ERROR_STATUS pushVariable(TreeIterator& name);
-		INT findVariableIndex(INT* nameData, Tree& tree);
-		//bool pushVariable(TreeIterator& name, Tree&tree);
-		ERROR_STATUS pushExprArg(TreeIterator& _it);
-		ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
-		ERROR_STATUS operatorPush(CHAR op, INT a, INT b);
-		ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Paula&, Args&));
-		ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
-		ERROR_STATUS executeLine(INT indentation, INT lineStartIndex, INT lineType, Tree& tree);
+			ERROR_STATUS run(IInputStream&, bool handleError);
+			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
+			Tree vars;
 
-		INT currentIndentation, skipIndentation, blockStackSize, lineStartIndex, numCallbacks;
+			friend class ByteAutomata;
 
-		ByteAutomata automata;
+		private:
+			Paula();
 
-		Block blockStack[MAX_BLOCK_DEPTH];
+			ERROR_STATUS pushArgListAndExecute(TreeIterator&, ICallback * cmd);
+			ERROR_STATUS pushAtomicValue(TreeIterator& _it);
+			ERROR_STATUS pushVariable(TreeIterator& name);
+			INT findVariableIndex(INT* nameData, Tree& tree);
+			//bool pushVariable(TreeIterator& name, Tree&tree);
+			ERROR_STATUS pushExprArg(TreeIterator& _it);
+			ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
+			ERROR_STATUS operatorPush(CHAR op, INT a, INT b);
+			ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
+			ERROR_STATUS executeLine(INT indentation, INT lineStartIndex, INT lineType, Tree& tree);
 
-		Tree stack, constants;
+			INT currentIndentation, skipIndentation, blockStackSize, lineStartIndex, numCallbacks;
 
-		Args args;
+			ByteAutomata automata;
 
-		Command commands[NUM_COMMANDS];
-		Command callbacks[MAX_USER_CALLBACKS];
+			Block blockStack[MAX_BLOCK_DEPTH];
 
-		Command* findCommand(INT* textData);
+			Tree stack, constants;
 
-        bool isReservedName(INT* textData);
+			Args args;
 
-		// hide
-		Paula& operator=(const Paula&) = delete;
-	};
-}}
+			Command commands[NUM_COMMANDS];
+			Callback callbacks[MAX_USER_CALLBACKS];
+
+			ICallback* findCommand(INT* textData);
+
+			bool isReservedName(INT* textData);
+
+			// hide
+			Paula& operator=(const Paula&) = delete;
+		};
+	}
+}

@@ -6,7 +6,8 @@
 #include "stream.h"
 #include "test.h"
 
-using namespace paulacore;
+using namespace paula;
+using namespace paula::core;
 
 void treeTest();
 void stackTest();

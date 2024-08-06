@@ -48,7 +48,7 @@ const POut& POut::print(const Var& x) const
 
 	if (t == NODE_TEXT || t == NODE_NAME)
 	{
-		char * s; if (x.readChars(s)) print(s);
+		char * s; if (x.getChars(s)) print(s);
 	}
 	else if (t == NODE_INTEGER)
 	{
@@ -136,7 +136,7 @@ const NullPrint& NullPrint::printHex(INT i) const { return *this; }
 const NullPrint& NullPrint::printCharSymbol(CHAR c) const { return *this; }
 const NullPrint& NullPrint::print(const Error* a) const { return *this; }
 const NullPrint& NullPrint::println(const char*) const { return *this; }
-const NullPrint& NullPrint::print(const TreeIterator& x) const{ return *this; }
+const NullPrint& NullPrint::print(const TreeIterator& x) const { return *this; }
 const NullPrint& NullPrint::endl() const { return *this; }
 
 

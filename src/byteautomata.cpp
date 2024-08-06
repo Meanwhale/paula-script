@@ -3,8 +3,7 @@
 
 #define BA_CHECK(x,e) { if (!(x)) { error = &e; return; } }
 
-namespace paula { namespace core
-{
+namespace paula { namespace core {
 constexpr INT
 	TREE_ARRAY_SIZE = 1024,
 	MAX_STATES = 32,
@@ -631,5 +630,4 @@ void ByteAutomata::defineTransitions()
 		}
 	}
 	LOG.endl().print("};").endl();*/
-}
-}
+}}}
