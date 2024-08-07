@@ -26,3 +26,7 @@ mini: $(SRC) $(CMD_SRC)
 	@mkdir -p $(OUT_DIR)   # Create the output directory if it doesn't exist
 	$(CC) $(FLAGS) $(MINI_FLAGS) $(SRC) projects/paula-cli/paula-cli.cpp -o $(OUT_DIR)/paulamini -Wall
 	
+example: $(SRC) $(CMD_SRC)
+	@echo --- Paula EXAMPLE ---
+	@mkdir -p $(OUT_DIR)   # Create the output directory if it doesn't exist
+	$(CC) $(FLAGS) $(RELEASE_FLAGS) $(SRC) projects/paula-example/paula-example.cpp -o $(OUT_DIR)/paulaexample -Wall

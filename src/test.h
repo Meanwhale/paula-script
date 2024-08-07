@@ -3,30 +3,34 @@
 
 #include"defs.h"
 
-namespace paula { namespace core
+namespace paula
 {
-	class paula::Args;
-	class Paula;
+	class Args;
 
-	void runErrorCheck(const Error* (* test)(), const Error* expectedError);
+	namespace core
+	{
+		class Paula;
+
+		void runErrorCheck(const Error* (* test)(), const Error* expectedError);
 	
-	const Error* testCallback (Args&args);
+		const Error* testCallback (Args&args);
 
-	void textTest();
+		void textTest();
 
-	void doubleTest();
-    void operatorTest();
-	void variableTest();
-	void functionTest();
-	void loopTest();
-	void ifTest();
-	void parenthesisErrorTest();
-	void callbackTest();
-	void treeTest();
-	void stackTest();
-	void reservedNameTest();
+		void doubleTest();
+		void operatorTest();
+		void variableTest();
+		void functionTest();
+		void loopTest();
+		void ifTest();
+		void parenthesisErrorTest();
+		void callbackTest();
+		void treeTest();
+		void stackTest();
+		void reservedNameTest();
 
-    void runAll();
-	//const Error* iteratorTest();
-}}
+		void runAll();
+		//const Error* iteratorTest();
+	}
+}
 #endif

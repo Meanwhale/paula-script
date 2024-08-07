@@ -8,16 +8,20 @@
 
 namespace paula
 {
+	class IInputStream;
+
 	// user interface
 
-	[[nodiscard]] const Error * run(IInputStream&, bool handleError);
+	[[nodiscard]] const Error * run(const char*);
+	[[nodiscard]] const Error * run(IInputStream&);
+	void runAndCatch(const char*);
+	void runAndCatch(IInputStream&);
 	Var get(const char * varName);
-	ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
+	const Error * addCallback(const char* callbackName, const Error* (*_action)(Args&));
 
 	namespace core
 	{
-		class paula::IInputStream;
-		class core::Tree;
+		class Tree;
 
 		constexpr int
 			NUM_COMMANDS = 4,
@@ -39,7 +43,6 @@ namespace paula
 			void startLoop();
 			void startIf();
 			void skipBlock();
-
 			ERROR_STATUS run(IInputStream&, bool handleError);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 			Tree vars;

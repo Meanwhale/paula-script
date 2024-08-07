@@ -4,32 +4,33 @@
 #include "tree.h"
 namespace paula
 {
-	class ICallback
-	{
-	public:
-		virtual const Error * execute(Paula& paula, Args& args) = 0;
-		INT name[MAX_VAR_NAME_DATA_LENGTH];
-	};
-
-	class Callback : public ICallback
-	{
-		// user-defined callback
-
-		const Error * execute(Paula&,Args&) override;
-
-		friend class Paula;
-
-	private:
-		void setup(Array<INT>& _nameData, const Error* (*_action)(Args&));
-		Callback();
-
-		const Error * (*action) (Args&); // pointer to callback function
-
-	};
-
 	namespace core
 	{
 		class Paula;
+
+		class ICallback
+		{
+		public:
+			virtual const Error * execute(Paula& paula, Args& args) = 0;
+			INT name[MAX_VAR_NAME_DATA_LENGTH];
+		};
+
+		class Callback : public ICallback
+		{
+			// user-defined callback
+
+			const Error * execute(Paula&,Args&) override;
+
+			friend class Paula;
+
+		private:
+			void setup(Array<INT>& _nameData, const Error* (*_action)(Args&));
+			Callback();
+
+			const Error * (*action) (Args&); // pointer to callback function
+
+		};
+
 
 		class Command : public ICallback
 		{
@@ -40,7 +41,6 @@ namespace paula
 			void setup(Array<INT>& _nameData, const Error* (*_action)(Paula&, Args&));
 
 			const Error * execute(Paula&,Args&) override;
-
 
 			friend class Paula;
 

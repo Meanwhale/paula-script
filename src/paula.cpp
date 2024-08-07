@@ -117,6 +117,8 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 			.print(error->id)
 			.print(")")
 			.endl();
+#else
+		log.endl().print("ERROR: L").print(error->id).endl(); // L = line
 #endif
 		return NO_ERROR;
 	}
@@ -125,6 +127,7 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 		return error;
 	}
 }
+
 
 ERROR_STATUS core::Paula::addCallback(const char* callbackName, const Error * (* _action)(Args&))
 {
@@ -575,9 +578,25 @@ bool core::Paula::isReservedName(INT * textData)
 	return false;
 }
 
-const Error* paula::run(IInputStream&str, bool handleError)
+const Error* paula::run(const char* code)
 {
-	return core::Paula::one.run(str, handleError);
+	CharInput input(code);
+	return Paula::one.run(input, false);
+}
+const Error* paula::run(IInputStream&str)
+{
+	return core::Paula::one.run(str, false);
+}
+
+void paula::runAndCatch(const char*code)
+{
+	CharInput input(code);
+	auto tmp = Paula::one.run(input, true);
+}
+
+void paula::runAndCatch(IInputStream&str)
+{
+	auto tmp = core::Paula::one.run(str, true);
 }
 
 Var paula::get(const char* varName)

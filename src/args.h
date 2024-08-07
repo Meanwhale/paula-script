@@ -7,6 +7,10 @@ using namespace paula::core;
 
 namespace paula
 {
+	namespace core
+	{
+		class Paula;
+	}
 	class Var
 	{
 		// handle to data for functions (via Args)
@@ -42,6 +46,7 @@ namespace paula
 		static INT emptyData;
 
 		friend class Var;
+		friend class core::Paula;
 
 	public:
 		Args(Tree&_tree);
