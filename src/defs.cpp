@@ -10,7 +10,7 @@ STDErr stdErr = STDErr();
 STDOut stdPrint = STDOut();
 
 #if PAULA_RELEASE
-const NullPrint paula::log = NullPrint();
+const NullPrint paula::log = paula::NullPrint();
 #else
 const POut& paula::log = stdOut;
 #endif

@@ -111,8 +111,9 @@ const POut& POut::print(const Error* a) const
 
 // sdt::cout
 
-void STDOut::close() { }
-bool STDOut::closed() { return false; }
+void STDOut::flush()  const { std::cout<<std::flush; }
+void STDOut::close()  const { }
+bool STDOut::closed() const { return false; }
 const POut& STDOut::print(char x) const { std::cout<<x; return *this; }
 const POut& STDOut::print(const char* x) const { std::cout<<x; return *this; }
 const POut& STDOut::print(long x) const { std::cout<<x; return *this; }
@@ -121,8 +122,9 @@ const POut& STDOut::print(double x) const { std::cout<<x; return *this; }
 
 // sdt::cerr
 
-void STDErr::close() { }
-bool STDErr::closed() { return false; }
+void STDErr::flush()  const { std::cerr<<std::flush; }
+void STDErr::close()  const { }
+bool STDErr::closed() const { return false; }
 const POut& STDErr::print(char x) const { std::cerr<<x; return *this; }
 const POut& STDErr::print(const char* x) const { std::cerr<<x; return *this; }
 const POut& STDErr::print(long x) const { std::cerr<<x; return *this; }
@@ -130,6 +132,7 @@ const POut& STDErr::print(double x) const { std::cerr<<x; return *this; }
 
 // null printer
 
+void             NullPrint::flush() const { }
 const NullPrint& NullPrint::print(const char*) const { return *this; }
 const NullPrint& NullPrint::print(double) const { return *this; }
 const NullPrint& NullPrint::printHex(INT i) const { return *this; }

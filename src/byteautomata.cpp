@@ -591,9 +591,9 @@ void ByteAutomata::defineTransitions()
 	TRANSITION(stateSpace, "\"",										{ ba->next(ba->stateQuote); ba->quoteIndex = 0; });
 
 	FILL_TRANSITION(stateQuote,											{ ba->addQuoteByte(ba->currentInput); });
-	TRANSITION(stateQuote, linebreak,									{ ba->error = &UNEXPECTED_CHARACTER; });
+	TRANSITION(stateQuote, linebreak,									{ ba->error = &QUOTE_ERROR; });
 	TRANSITION(stateQuote, "\"",										{ ba->lastStart++; ba->addQuote(); ba->next(ba->stateSpace); });
-	TRANSITION(stateQuote, "\\",										{ ba->error = &UNEXPECTED_CHARACTER; });
+	TRANSITION(stateQuote, "\\",										{ ba->error = &QUOTE_ERROR; });
 
 	transition(stateName, letters, nullptr);
 	TRANSITION(stateName, whiteSpace,									{ ba->addTokenAndTransitionToSpace(); });

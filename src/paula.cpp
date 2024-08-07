@@ -117,15 +117,14 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 			.print(error->id)
 			.print(")")
 			.endl();
+		ERR.flush();
 #else
 		log.endl().print("ERROR: L").print(error->id).endl(); // L = line
 #endif
-		return NO_ERROR;
+		error = NO_ERROR;
 	}
-	else
-	{
-		return error;
-	}
+	log.flush();
+	return error;
 }
 
 

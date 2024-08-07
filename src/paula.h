@@ -17,7 +17,7 @@ namespace paula
 	void runAndCatch(const char*);
 	void runAndCatch(IInputStream&);
 	Var get(const char * varName);
-	const Error * addCallback(const char* callbackName, const Error* (*_action)(Args&));
+	const Error * addCallback(const char* name, const Error* (*_action)(Args&));
 
 	namespace core
 	{

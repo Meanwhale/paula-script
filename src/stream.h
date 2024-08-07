@@ -14,13 +14,17 @@ namespace paula
 	class IOutputStream
 	{
 	public:
-		virtual void close() = 0;
-		virtual bool closed() = 0;
+		virtual void flush()  const = 0;
+		virtual void close()  const = 0;
+		virtual bool closed() const = 0;
 	};
 
 	class POut : public IOutputStream
 	{
 	public:
+
+		virtual void flush()  const = 0;
+
 		// paula printing interface
 		
 		virtual const POut& print(char) const = 0; // eg. std::cout<<c; return *this;
@@ -50,6 +54,7 @@ namespace paula
 		// dummy printer that does nothing.
 		// use to get debug prints optimized away on release.
 	public:
+		void flush() const;
 		const NullPrint& print(const char*) const;
 		const NullPrint& print(double) const; // take care of all numbers and bool
 		const NullPrint& printHex(INT i) const;
@@ -63,8 +68,9 @@ namespace paula
 	{
 	public:
 		// Inherited via POut
-		void close() override;
-		bool closed() override;
+		void flush()  const override;
+		void close()  const override;
+		bool closed() const override;
 		const POut& print(char) const override;
 		const POut& print(const char*) const override;
 		const POut& print(long) const override;
@@ -74,8 +80,9 @@ namespace paula
 	{
 	public:
 		// Inherited via POut
-		void close() override;
-		bool closed() override;
+		void flush()  const override;
+		void close()  const override;
+		bool closed() const  override;
 		const POut& print(char) const override;
 		const POut& print(const char*) const override;
 		const POut& print(long) const override;

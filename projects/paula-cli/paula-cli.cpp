@@ -30,7 +30,7 @@ int fileNotFound()
 	err.println("file not found.");
 	return -1;
 }
-int run (IInputStream&input)
+int runScript (IInputStream&input)
 {
 	auto error = Paula::one.run(input, false);
 	if (error != NO_ERROR)
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 			// read from standard input
 
 			StandardInput input;
-			return run(input);
+			return runScript(input);
 		}
 	}
 	else if (argc == 3)
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 			}
 			pout.print("read file: ").print(fn.c_str()).endl();
 			FileInput input(fn.c_str());
-			return run(input);
+			return runScript(input);
 		}
 #endif
 	}

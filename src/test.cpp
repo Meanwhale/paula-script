@@ -19,7 +19,8 @@ void core::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 			.print(error->name)
 			.print(" (id=")
 			.print(error->id)
-			.print(")")
+			.print("), expecting: ")
+			.print(expectedError)
 			.endl();
 	}
 	if (!Error::equal(expectedError, error))
@@ -133,6 +134,7 @@ void core::textTest()
 	TEST_TEXT("t", "hello!");
 
 	ERROR_TEST("t:\"hello!\"\nt:\"a\"", TEXT_VARIABLE_OVERWRITE);
+	ERROR_TEST("t:\"abc", QUOTE_ERROR);
 }
 
 void core::callbackTest()

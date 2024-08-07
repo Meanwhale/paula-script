@@ -5,9 +5,9 @@
 
 using namespace paula;
 
-const Error* doubler (Args&args)
+const paula::Error* doubler (paula::Args&args)
 {
-	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	if (args.count() != 1) return &WRONG_NUMBER_OF_ARGUMENTS;
 	INT value = -1;
 	if(args.get(0).getInt(value))
 	{
@@ -22,7 +22,8 @@ int main()
 	auto error = paula::addCallback("doubler", doubler);
     paula::runAndCatch("six: doubler(3)");
 	INT value;
-	if (paula::get("six").getInt(value))
+	Var v = paula::get("six");
+	if (v.getInt(value))
 	{
 		std::cout<<"six = "<<value<<std::endl;
 	}
