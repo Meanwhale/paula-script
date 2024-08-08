@@ -33,6 +33,7 @@
     <ClInclude Include="..\..\src\command.h" />
     <ClInclude Include="..\..\src\defs.h" />
     <ClInclude Include="..\..\src\engine.h" />
+    <ClInclude Include="..\..\src\paula.h" />
     <ClInclude Include="..\..\src\stream.h" />
     <ClInclude Include="..\..\src\test.h" />
     <ClInclude Include="..\..\src\tree.h" />
@@ -44,6 +45,7 @@
     <ClCompile Include="..\..\src\command.cpp" />
     <ClCompile Include="..\..\src\defs.cpp" />
     <ClCompile Include="..\..\src\engine.cpp" />
+    <ClCompile Include="..\..\src\paula.cpp" />
     <ClCompile Include="..\..\src\stream.cpp" />
     <ClCompile Include="..\..\src\test.cpp" />
     <ClCompile Include="..\..\src\tree.cpp" />

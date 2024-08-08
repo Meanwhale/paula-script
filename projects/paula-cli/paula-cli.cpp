@@ -1,4 +1,5 @@
 #include "paula.h"
+#include "engine.h"
 #include <string.h>
 
 using namespace paula;

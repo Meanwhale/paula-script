@@ -10,15 +10,6 @@ namespace paula
 {
 	class IInputStream;
 
-	// user interface
-
-	[[nodiscard]] const Error * run(const char*);
-	[[nodiscard]] const Error * run(IInputStream&);
-	void runAndCatch(const char*);
-	void runAndCatch(IInputStream&);
-	Var get(const char * varName);
-	const Error * addCallback(const char* name, const Error* (*_action)(Args&));
-
 	namespace core
 	{
 		class Tree;

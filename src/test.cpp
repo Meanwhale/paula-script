@@ -1,5 +1,6 @@
 #ifndef PAULA_RELEASE
 #include "defs.h"
+#include "paula.h"
 #include "engine.h"
 #include "test.h"
 #include <iostream>
@@ -81,8 +82,7 @@ void core::variableTest()
 }
 void core::functionTest()
 {
-	CharInput input("b:true\ntmp:not(b)");
-	auto err = Engine::one.run(input, false);
+	auto err = paula::run("b:true\ntmp:not(b)");
 	ASSERT(err == NO_ERROR);
 	bool b;
 	TEST_BOOL("b", true);
