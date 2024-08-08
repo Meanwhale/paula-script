@@ -1,16 +1,11 @@
-**Paula Script** is a lightweight scripting language written in C++. Features:
- - Minimum build **size about 35 KB**.
- - **No runtime memory allocation.** Everything runs in buffers, that are initialized at start.
- - Built-in parser.
- - Line-by-line, non-blocking execution. Paula executes the code on-fly, while reading the input.
+**Paula Script** is a lightweight scripting language written in C++.
+ - **Small** but easy to expand. Currently minimum CLI build size is about 35 KB.
+ - **No runtime memory allocation:** everything runs in buffers, that are initialized at start.
+ - **Stand-alone:** the only external dependencies are for standard input/output. Built-in parser.
+ - **Line-by-line, non-blocking execution:** Paula executes the code on-fly, while reading the input.
    It can take input from an endless input stream, and execute the code from a buffer, without memory issues (no runtime memory allocation).
- - Basic data types: 32-bit integer, 64-bit floating point number, text, boolean.
- - Basic arithmetic (+-*/) and comparison operators (<>=).
- - Conditions (if) and loops (while).
- - Callbacks to call your source code from a script.
  - Compiles for Windows (Visual Studio) and Linux (g++).
  - Command line interface (CLI) and a static library.
- - Stand-alone: the only external dependencies are for standard input/output.
 
 ## Examples
 
@@ -23,6 +18,11 @@ int main()
 ```
 
 ### Language Features
+
+ - Basic data types: 32-bit integer, 64-bit floating point number, text, boolean.
+ - Basic arithmetic (+-*/) and comparison operators (<>=).
+ - Conditions (if) and loops (while).
+ - Callbacks to call your source code from a script.
 
 #### Variable assignment
 
@@ -37,7 +37,7 @@ fact: true                    | boolean
 
 #### Operators
 
-Operator expression (with +-*/<>=) can have two operards:<p>
+Operator expression can have two operards and the operator (+-*/<>=) between them:<p>
 _operand1 operator operand2_<p>
 An operand can be a _literal_ value (eg. _123_), a variable, or an expression in parenthesis.
 ```
@@ -140,24 +140,24 @@ else std::cout<<"variable not found..."<<std::endl;
 
 # Build
 
-## Visual Studio
+#### Visual Studio
 
 Open _projects/paula-vs/paula-vs.sln_. Projects:
 
-- paula-core: script parser, engine, etc.
-- paula-cli: command line interface (CLI).
-- paula-test: unit tests.
-- paula-example: example project to try out Paula script. Main source file: _projects/paula-example/paula-example.cpp_
+- _paula-core_: script parser, engine, etc.
+- _paula-cli_: command line interface (CLI).
+- _paula-test_: unit tests.
+- _paula-example_: example project to try out Paula script. Main source file: _projects/paula-example/paula-example.cpp_
 
-Configurations:
+Build configurations:
 
 - Debug: asserts and debug prints enabled.
 - Realease: asserts and debug prints disabled.
 - Mini: experimental, minimal build.
 
-## Linux
+#### Linux
 
-Run _make_ in project root. Build target is _bin_ folder. Make options:
+Run _make_ with a target option in project root. Build target is _bin_ folder. Make targets:
 ```
 make release    # CLI release build
 make debug      # Debug test build
