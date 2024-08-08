@@ -16,7 +16,6 @@ namespace paula { namespace core
 	public:
 
 		ByteAutomata(Engine&);
-		~ByteAutomata();
 		void init(IInputStream* _input);
 		bool running();
 		void step();

@@ -46,25 +46,6 @@ ByteAutomata::ByteAutomata(Engine& p) :
 
 	defineTransitions();
 }
-ByteAutomata::~ByteAutomata()
-{
-}
-//void ByteAutomata::print ()
-//{
-//	for (INT i = 0; i <= stateCounter; i++)
-//	{
-//		//vrbout()<<("state: ")<<(i)<<std::endl;
-//		for (INT n = 0; n < 256; n++)
-//		{
-//			BYTE foo = tr[(i * 256) + n];
-//			if (foo == 0xff) std::cout<<(".");
-//			else std::cout<<(foo);
-//		}
-//		std::cout<<("")<<std::endl;
-//	}
-//}
-
-
 
 //////////////// TRANSITION FUNCTIONS
 
@@ -320,6 +301,7 @@ INT ByteAutomata::currentParent()
 }
 void ByteAutomata::printTreeStack()
 {
+#ifdef VERBOSE
 	if (treeStackTop < 1) LOG.print(" tree stack, top: ").print(treeStackTop).endl();
 	for(INT i=0; i<=treeStackTop; i++)
 	{
@@ -327,6 +309,7 @@ void ByteAutomata::printTreeStack()
 		LOG.print(treeTypeName(tree.getType(treeStack[i]))).print(" > ");
 	}
 	LOG.println("");
+#endif
 }
 void ByteAutomata::pushTree(INT subtreeType)
 {
@@ -336,26 +319,26 @@ void ByteAutomata::pushTree(INT subtreeType)
 	treeStackTop++;
 	treeStack[treeStackTop] = newParent;
 
-	LOG.print("pushTree: ");
+	VRB(LOG.print("pushTree: ");)
 	printTreeStack();
 }
 void ByteAutomata::popTree()
 {
 	treeStackTop--;
 
-	LOG.print("popTree [top=").print(treeStackTop).print("]:");
+	VRB(LOG.print("popTree [top=").print(treeStackTop).print("]:");)
 	printTreeStack();
 }
 void ByteAutomata::startAssignment ()
 {
-	LOG.println("startAssignment");
+	VRB(LOG.println("startAssignment");)
 	ASSERT(lineType == LINE_UNDEFINED);
 	lineType = LINE_ASSIGNMENT;
 	next(stateSpace);
 }
 void ByteAutomata::startFunction ()
 {
-	LOG.println("startFunction");
+	VRB(LOG.println("startFunction");)
 	ASSERT(lineType == LINE_UNDEFINED);
 	lineType = LINE_CALL;
 	stay();
@@ -400,13 +383,13 @@ void ByteAutomata::prepareAddToken()
 	if (tree.getType(currentParent()) == NODE_SUBTREE)
 	{
 		// parent is a subtree "(...)", start a new expr after "(" or ","
-		LOG.println("addToken: new expr");
+		VRB(LOG.println("addToken: new expr");)
 		pushTree(NODE_EXPR);
 	}
 }
 void ByteAutomata::addOperatorToken()
 {
-	LOG.println("addOperatorToken");
+	VRB(LOG.println("addOperatorToken");)
 	prepareAddToken();
 	tree.addOperatorNode(currentParent(), (char)currentInput);
 }
@@ -429,14 +412,14 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 	}
 	else if (currentState == stateNumber)
 	{
-		LOG.print("add integer token: ").print(lastStart).print(" -> ").print(readIndex).endl();
+		VRB(LOG.print("add integer token: ").print(lastStart).print(" -> ").print(readIndex).endl();)
 		INT value = parseInt(buffer, lastStart, readIndex);
 		prepareAddToken();
 		tree.addInt(currentParent(), value);
 	}
 	else if (currentState == stateDecimal)
 	{
-		LOG.print("add decimal token: ").print(lastStart).print(" -> ").print(readIndex).endl();
+		VRB(LOG.print("add decimal token: ").print(lastStart).print(" -> ").print(readIndex).endl();)
 		double value = parseDouble(buffer, lastStart, readIndex);
 		prepareAddToken();
 		tree.addDouble(currentParent(), value);
@@ -460,15 +443,15 @@ void ByteAutomata::addLiteralToken(INT nodeType)
 		error = &TEXT_TOO_LONG;
 		return;
 	}
-	LOG.print("add token: ").print(lastStart).print(" -> ").print(readIndex).endl();
-	LOG.print("addLiteralToken: ").printHex(nodeType).endl();
+	VRB(LOG.print("add token: ").print(lastStart).print(" -> ").print(readIndex).endl();)
+	VRB(LOG.print("addLiteralToken: ").printHex(nodeType).endl();)
 	prepareAddToken();
 	tree.addText(currentParent(), buffer.ptr(), lastStart, readIndex, nodeType);
 }
 void ByteAutomata::comma()
 {
 	printTreeStack();
-	LOG.println("comma");
+	VRB(LOG.println("comma");)
 	if (tree.getType(currentParent()) == NODE_EXPR)
 	{
 		// pop from expr first
@@ -497,18 +480,18 @@ void ByteAutomata::lineBreak()
 }
 void ByteAutomata::startBlock()
 {
-	LOG.println("addBlock");
+	VRB(LOG.println("addBlock");)
 	pushTree(NODE_SUBTREE);
 }
 void ByteAutomata::endBlock()
 {
-	LOG.println("endBlock");
+	VRB(LOG.println("endBlock");)
 	tree.print();
 	
 	if (tree.getType(currentParent()) == NODE_EXPR)
 	{
 		// pop from expr first
-		LOG.println("pop expr");
+		VRB(LOG.println("pop expr");)
 		printTreeStack();
 		popTree();
 	}
@@ -536,7 +519,7 @@ void ByteAutomata::newLine()
 }
 void ByteAutomata::startExpr(BYTE firstState)
 {
-	LOG.print("startExpr: indentation=").print(indentation).endl();
+	VRB(LOG.print("startExpr: indentation=").print(indentation).endl();)
 	stay();
 	next(firstState);
 }

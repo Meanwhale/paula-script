@@ -14,6 +14,7 @@ ERROR_STATUS printAction (Engine&,Args&args)
 	{
 		pout.print(args.get(i));
 	}
+	LOG.println("------------------------------");
 	return NO_ERROR;
 }
 ERROR_STATUS notAction (Engine&p,Args&args)
@@ -226,7 +227,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _lineStartIndex, INT
 
 		// new or override?
 
-		vars.print();
+		VRB(vars.print();)
 
 		INT index = findVariableIndex(it.getTextData(), vars);
 
@@ -259,7 +260,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _lineStartIndex, INT
 			stack.pop(0);
 		}
 
-		vars.print();
+		VRB(vars.print();)
 	}
 	else if (lineType == LINE_CALL)
 	{
@@ -346,6 +347,7 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 	while(it.next());
 
 	// print args
+
 	if (stack.stackTopIndex(0) > 0)
 	{
 		TreeIterator argIt(stack, stack.stackTopIndex(0));
