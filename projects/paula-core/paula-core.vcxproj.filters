@@ -27,7 +27,7 @@
     <ClInclude Include="..\..\src\defs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\paula.h">
+    <ClInclude Include="..\..\src\engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\stream.h">
@@ -56,7 +56,7 @@
     <ClCompile Include="..\..\src\defs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\paula.cpp">
+    <ClCompile Include="..\..\src\engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\stream.cpp">

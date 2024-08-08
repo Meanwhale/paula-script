@@ -9,13 +9,13 @@
 
 namespace paula { namespace core
 {
-	class Paula;
+	class Engine;
 
 	class ByteAutomata
 	{
 	public:
 
-		ByteAutomata(Paula&);
+		ByteAutomata(Engine&);
 		~ByteAutomata();
 		void init(IInputStream* _input);
 		bool running();
@@ -31,7 +31,7 @@ namespace paula { namespace core
 		void closeInput();
 		void uninit();
 
-		Paula& paula;
+		Engine& paula;
 		IInputStream* input;
 		const Error* error;
 		Tree tree;

@@ -1,6 +1,6 @@
 #ifndef PAULA_RELEASE
 #include "defs.h"
-#include "paula.h"
+#include "engine.h"
 #include "test.h"
 #include <iostream>
 #include <cstring>
@@ -29,7 +29,7 @@ void core::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 	}
 }
 
-#define ERROR_TEST(code,error) runErrorCheck([]() { CharInput input(code); return Paula::one.run(input, false); }, &error);
+#define ERROR_TEST(code,error) runErrorCheck([]() { CharInput input(code); return Engine::one.run(input, false); }, &error);
 
 void core::doubleTest()
 {
@@ -42,7 +42,7 @@ void core::doubleTest()
 	// script test
 
 	CharInput input("a:123.456 ");
-	auto err = Paula::one.run(input, false);
+	auto err = Engine::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	DOUBLE a;
 	//ASSERT(Paula::one.vars.getDouble(a, "a"));
@@ -57,7 +57,7 @@ void core::doubleTest()
 void core::operatorTest()
 {
 	CharInput input("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
-	auto err = Paula::one.run(input, false);
+	auto err = Engine::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
 	bool b;
@@ -74,7 +74,7 @@ void core::operatorTest()
 void core::variableTest()
 {
 	CharInput input("a:5");
-	auto err = Paula::one.run(input, false);
+	auto err = Engine::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
 	TEST_INT("a", 5);
@@ -82,7 +82,7 @@ void core::variableTest()
 void core::functionTest()
 {
 	CharInput input("b:true\ntmp:not(b)");
-	auto err = Paula::one.run(input, false);
+	auto err = Engine::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	bool b;
 	TEST_BOOL("b", true);
@@ -92,7 +92,7 @@ void core::functionTest()
 void core::loopTest()
 {
 	CharInput input("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
-	auto err = Paula::one.run(input, false);
+	auto err = Engine::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
 	TEST_INT("a", 5);
@@ -100,7 +100,7 @@ void core::loopTest()
 void core::ifTest()
 {
 	CharInput input("a:1\nb:1\nwhile(a<5)\n\ta:a+1\n\tif(a>4)\n\t\tb:b+10\n\t\tif(a>4)\n\t\t\tb:b+10");
-	auto err = Paula::one.run(input, false);
+	auto err = Engine::one.run(input, false);
 	ASSERT(err == NO_ERROR);
 	INT a;
 	TEST_INT("a", 5);
@@ -128,7 +128,7 @@ const Error* core::testCallback (Args&args)
 void core::textTest()
 {
 	CharInput input("t:\"hello!\"");
-	auto error = Paula::one.run(input, false);
+	auto error = Engine::one.run(input, false);
 	ASSERT(error == NO_ERROR);
 	char * t;
 	TEST_TEXT("t", "hello!");
@@ -142,7 +142,7 @@ void core::callbackTest()
 	auto error = paula::addCallback("testCallback", testCallback);
 	ASSERT(error == NO_ERROR);
 	CharInput input("a:3\na:testCallback(3)");
-	auto err = Paula::one.run(input, false);
+	auto err = Engine::one.run(input, false);
 	ASSERT(error == NO_ERROR);
 	INT a;
 	TEST_INT("a", 6);

@@ -1,5 +1,5 @@
 ﻿#include "byteautomata.h"
-#include "paula.h"
+#include "engine.h"
 
 #define BA_CHECK(x,e) { if (!(x)) { error = &e; return; } }
 
@@ -22,7 +22,7 @@ const CHAR
 	*blockEnd = ")"; //")]}";
 
 
-ByteAutomata::ByteAutomata(Paula& p) :
+ByteAutomata::ByteAutomata(Engine& p) :
 	paula(p),
 	input(nullptr),
 	error(NO_ERROR),

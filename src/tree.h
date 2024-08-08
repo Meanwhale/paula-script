@@ -152,7 +152,7 @@ namespace paula {
 			INT* getTextData();
 
 			friend class Tree;
-			friend class Paula;
+			friend class Engine;
 			friend class paula::Var;
 			friend class paula::Args;
 

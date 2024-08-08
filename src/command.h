@@ -6,12 +6,12 @@ namespace paula
 {
 	namespace core
 	{
-		class Paula;
+		class Engine;
 
 		class ICallback
 		{
 		public:
-			virtual const Error * execute(Paula& paula, Args& args) = 0;
+			virtual const Error * execute(Engine& paula, Args& args) = 0;
 			INT name[MAX_VAR_NAME_DATA_LENGTH];
 		};
 
@@ -19,9 +19,9 @@ namespace paula
 		{
 			// user-defined callback
 
-			const Error * execute(Paula&,Args&) override;
+			const Error * execute(Engine&,Args&) override;
 
-			friend class Paula;
+			friend class Engine;
 
 		private:
 			void setup(Array<INT>& _nameData, const Error* (*_action)(Args&));
@@ -36,17 +36,17 @@ namespace paula
 		{
 			// system callback
 		public:
-			Command(const char* _name, const Error * (* _action)(Paula&,Args&));
+			Command(const char* _name, const Error * (* _action)(Engine&,Args&));
 
-			void setup(Array<INT>& _nameData, const Error* (*_action)(Paula&, Args&));
+			void setup(Array<INT>& _nameData, const Error* (*_action)(Engine&, Args&));
 
-			const Error * execute(Paula&,Args&) override;
+			const Error * execute(Engine&,Args&) override;
 
-			friend class Paula;
+			friend class Engine;
 
 		private:
 
-			const Error * (*action) (Paula&,Args&); // pointer to callback function
+			const Error * (*action) (Engine&,Args&); // pointer to callback function
 
 			Command();
 

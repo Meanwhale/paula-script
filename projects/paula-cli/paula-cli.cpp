@@ -32,7 +32,7 @@ int fileNotFound()
 }
 int runScript (IInputStream&input)
 {
-	auto error = Paula::one.run(input, false);
+	auto error = Engine::one.run(input, false);
 	if (error != NO_ERROR)
 	{
 		err.println("ERROR: ").print(error).endl();

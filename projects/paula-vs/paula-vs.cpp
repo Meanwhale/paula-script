@@ -1,7 +1,7 @@
 // paula-vs.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include "paula.h"
+#include "engine.h"
 #include "tree.h"
 #include "stream.h"
 #include "test.h"

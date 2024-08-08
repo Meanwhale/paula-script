@@ -9,7 +9,7 @@ namespace paula
 {
 	namespace core
 	{
-		class Paula;
+		class Engine;
 	}
 	class Var
 	{
@@ -46,7 +46,7 @@ namespace paula
 		static INT emptyData;
 
 		friend class Var;
-		friend class core::Paula;
+		friend class core::Engine;
 
 	public:
 		Args(Tree&_tree);
@@ -57,7 +57,7 @@ namespace paula
 		Var get(INT dataIndex);
 		void reset(INT numArgs);
 
-		friend class Paula;
+		friend class Engine;
 	};
 
 	/*

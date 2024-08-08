@@ -34,11 +34,11 @@ namespace paula
 			bool loop;
 		};
 
-		class Paula
+		class Engine
 		{
 		public:
 
-			static Paula one; // the one Paula object
+			static Engine one; // the one Paula object
 
 			void startLoop();
 			void startIf();
@@ -50,7 +50,7 @@ namespace paula
 			friend class ByteAutomata;
 
 		private:
-			Paula();
+			Engine();
 
 			ERROR_STATUS pushArgListAndExecute(TreeIterator&, ICallback * cmd);
 			ERROR_STATUS pushAtomicValue(TreeIterator& _it);
@@ -81,7 +81,7 @@ namespace paula
 			bool isReservedName(INT* textData);
 
 			// hide
-			Paula& operator=(const Paula&) = delete;
+			Engine& operator=(const Engine&) = delete;
 		};
 	}
 }

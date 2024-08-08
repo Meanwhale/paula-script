@@ -1,4 +1,4 @@
-#include "paula.h"
+#include "engine.h"
 #include "stream.h"
 #include "args.h"
 
@@ -7,7 +7,7 @@ using namespace paula::core;
 
 // PAULA
 
-ERROR_STATUS printAction (Paula&,Args&args)
+ERROR_STATUS printAction (Engine&,Args&args)
 {
 	LOG.println("-------- PRINT ACTION --------");
 	for(INT i=0; i<args.count(); i++)
@@ -16,7 +16,7 @@ ERROR_STATUS printAction (Paula&,Args&args)
 	}
 	return NO_ERROR;
 }
-ERROR_STATUS notAction (Paula&p,Args&args)
+ERROR_STATUS notAction (Engine&p,Args&args)
 {
 	LOG.println("-------- NOT ACTION --------");
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
@@ -28,7 +28,7 @@ ERROR_STATUS notAction (Paula&p,Args&args)
 	}
 	return &TYPE_MISMATCH;
 }
-ERROR_STATUS whileAction (Paula&p,Args&args)
+ERROR_STATUS whileAction (Engine&p,Args&args)
 {
 	LOG.println("-------- WHILE ACTION --------");
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
@@ -41,7 +41,7 @@ ERROR_STATUS whileAction (Paula&p,Args&args)
 	}
 	return &TYPE_MISMATCH;
 }
-ERROR_STATUS ifAction (Paula&p,Args&args)
+ERROR_STATUS ifAction (Engine&p,Args&args)
 {
 	LOG.println("-------- IF ACTION --------");
 
@@ -56,10 +56,10 @@ ERROR_STATUS ifAction (Paula&p,Args&args)
 	return &TYPE_MISMATCH;
 }
 
-Paula Paula::one = Paula();
+Engine Engine::one = Engine();
 
 
-Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
+Engine::Engine() : //buffer(BUFFER_SIZE), index(0)
 	vars(VARS_SIZE),
 	currentIndentation(0),
 	skipIndentation(-1),
@@ -94,7 +94,7 @@ Paula::Paula() : //buffer(BUFFER_SIZE), index(0)
 }
 
 
-ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
+ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 {
 	LOG.println("Paula::run");
 
@@ -128,7 +128,7 @@ ERROR_STATUS Paula::run(IInputStream& input, bool handleErrors)
 }
 
 
-ERROR_STATUS core::Paula::addCallback(const char* callbackName, const Error * (* _action)(Args&))
+ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (* _action)(Args&))
 {
 	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
 	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
@@ -142,7 +142,7 @@ ERROR_STATUS core::Paula::addCallback(const char* callbackName, const Error * (*
 	return NO_ERROR;
 }
 
-ERROR_STATUS core::Paula::lineIndentationInit(INT indentation, bool& executeLine)
+ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLine)
 {
 	executeLine = true;
 	currentIndentation = indentation;
@@ -204,7 +204,7 @@ ERROR_STATUS core::Paula::lineIndentationInit(INT indentation, bool& executeLine
 	return NO_ERROR;
 }
 
-ERROR_STATUS core::Paula::executeLine(INT indentation, INT _lineStartIndex, INT lineType, Tree& tree)
+ERROR_STATUS core::Engine::executeLine(INT indentation, INT _lineStartIndex, INT lineType, Tree& tree)
 {
 	bool executeLine = false;
 	CHECK_CALL(lineIndentationInit(indentation, executeLine));
@@ -293,7 +293,7 @@ ERROR_STATUS core::Paula::executeLine(INT indentation, INT _lineStartIndex, INT 
 	return NO_ERROR;
 }
 
-void core::Paula::startLoop()
+void core::Engine::startLoop()
 {
 	LOG.println("-------- START LOOP --------");
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
@@ -302,7 +302,7 @@ void core::Paula::startLoop()
 	blockStack[blockStackSize].loop = true;
 	blockStackSize++;
 }
-void core::Paula::startIf()
+void core::Engine::startIf()
 {
 	LOG.println("-------- START IF --------");
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
@@ -312,7 +312,7 @@ void core::Paula::startIf()
 	blockStackSize++;
 }
 
-void core::Paula::skipBlock()
+void core::Engine::skipBlock()
 {
 	LOG.println("-------- SKIP BLOCK (TODO) --------");
 	
@@ -322,7 +322,7 @@ void core::Paula::skipBlock()
 	skipIndentation = currentIndentation + 1;
 }
 
-ERROR_STATUS core::Paula::pushArgListAndExecute(TreeIterator& _it, ICallback * cmd)
+ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * cmd)
 {
 	// push list of expressions, eg. ( 1, f(x), y )
 	// --> pushExprArg("1"), pushExprArg("f(x)"), pushExprArg("y")
@@ -375,7 +375,7 @@ ERROR_STATUS core::Paula::pushArgListAndExecute(TreeIterator& _it, ICallback * c
 	return NO_ERROR;
 }
 
-ERROR_STATUS core::Paula::pushAtomicValue(TreeIterator&_it)
+ERROR_STATUS core::Engine::pushAtomicValue(TreeIterator&_it)
 {
 	// push a value in expression,
 	// eg. "1" in "f(1)" or "2" in "f(2+3)" or "(4+5)" in "f((4+5)+6)"
@@ -415,7 +415,7 @@ ERROR_STATUS core::Paula::pushAtomicValue(TreeIterator&_it)
 	return NO_ERROR;
 }
 
-ERROR_STATUS core::Paula::pushVariable(TreeIterator& name)
+ERROR_STATUS core::Engine::pushVariable(TreeIterator& name)
 {
 	INT index = findVariableIndex(name.getTextData(), constants);
 	if (index >= 0)
@@ -435,7 +435,7 @@ ERROR_STATUS core::Paula::pushVariable(TreeIterator& name)
 	return &VARIABLE_NOT_FOUND;
 }
 
-INT core::Paula::findVariableIndex(INT* nameData, Tree& variableMap)
+INT core::Engine::findVariableIndex(INT* nameData, Tree& variableMap)
 {
 
 	// iterate variables and find name. return true if found.
@@ -457,7 +457,7 @@ INT core::Paula::findVariableIndex(INT* nameData, Tree& variableMap)
 	return -1; // variable not found in the tree
 }
 
-ERROR_STATUS core::Paula::pushExprArg(TreeIterator& it)
+ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 {
 	INT stackSizeBefore = stack.stackSize(0);
 	// 'it' now points to first element of the expression, eg. "x" in "x + 1"
@@ -526,7 +526,7 @@ ERROR_STATUS core::Paula::pushExprArg(TreeIterator& it)
 	return NO_ERROR;
 }
 
-ERROR_STATUS core::Paula::pushExprSubtreeArg(TreeIterator& _it)
+ERROR_STATUS core::Engine::pushExprSubtreeArg(TreeIterator& _it)
 {
 	// push an argument that is wrapped in an expression
 
@@ -539,7 +539,7 @@ ERROR_STATUS core::Paula::pushExprSubtreeArg(TreeIterator& _it)
 
 	return NO_ERROR;
 }
-ERROR_STATUS core::Paula::operatorPush(CHAR op, INT a, INT b)
+ERROR_STATUS core::Engine::operatorPush(CHAR op, INT a, INT b)
 {
 	switch(op)
 	{
@@ -555,7 +555,7 @@ ERROR_STATUS core::Paula::operatorPush(CHAR op, INT a, INT b)
 	ERR.printCharSymbol(op);
 	return &INVALID_OPERATOR;
 }
-ICallback * core::Paula::findCommand(INT * textData)
+ICallback * core::Engine::findCommand(INT * textData)
 {
 	// 'it' points to command name
 	INT i;
@@ -569,7 +569,7 @@ ICallback * core::Paula::findCommand(INT * textData)
 	}
 	return 0;
 }
-bool core::Paula::isReservedName(INT * textData)
+bool core::Engine::isReservedName(INT * textData)
 {
 	if (findCommand(textData) != nullptr) return true;
 	if (findVariableIndex(textData, constants) >= 0) return true;
@@ -580,30 +580,30 @@ bool core::Paula::isReservedName(INT * textData)
 const Error* paula::run(const char* code)
 {
 	CharInput input(code);
-	return Paula::one.run(input, false);
+	return Engine::one.run(input, false);
 }
 const Error* paula::run(IInputStream&str)
 {
-	return core::Paula::one.run(str, false);
+	return core::Engine::one.run(str, false);
 }
 
 void paula::runAndCatch(const char*code)
 {
 	CharInput input(code);
-	auto tmp = Paula::one.run(input, true);
+	auto tmp = Engine::one.run(input, true);
 }
 
 void paula::runAndCatch(IInputStream&str)
 {
-	auto tmp = core::Paula::one.run(str, true);
+	auto tmp = core::Engine::one.run(str, true);
 }
 
 Var paula::get(const char* varName)
 {
-	return core::Paula::one.vars.get(varName);
+	return core::Engine::one.vars.get(varName);
 }
 
 ERROR_STATUS paula::addCallback(const char* callbackName, const Error* (*_action)(Args&))
 {
-	return core::Paula::one.addCallback(callbackName, _action);
+	return core::Engine::one.addCallback(callbackName, _action);
 }

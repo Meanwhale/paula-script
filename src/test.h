@@ -9,7 +9,7 @@ namespace paula
 
 	namespace core
 	{
-		class Paula;
+		class Engine;
 
 		void runErrorCheck(const Error* (* test)(), const Error* expectedError);
 	
