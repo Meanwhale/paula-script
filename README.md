@@ -7,6 +7,8 @@
  - Compiles for Windows (Visual Studio) and Linux (g++).
  - Command line interface (CLI) and a static library.
 
+**Project status:** work-in-progress. 
+
 ## Examples
 
 Run Paula Script from your source code. 
@@ -107,9 +109,11 @@ int main()
  - Run a script that calls the callback (``doubler(3)``) and assign the return value (6) to a variable ``six``.
  - Get the value of the variable: ``paula::get("six").getInt(value)`` and print it.
 
+# C++ API
 
-## C++ API
+See <a href="https://github.com/Meanwhale/paula-script/blob/main/src/paula.h">paula.h header file</a> for complete, public API.
 
+<!--
 Global functions in ``paula`` namespace:
 ```cpp
 const Error * run(const char*);      // run a script and return error (NO_ERROR if everything's OK)
@@ -137,6 +141,7 @@ Var v = paula::get("six");
 if (v.getInt(value)) std::cout<<"six = "<<value<<std::endl;
 else std::cout<<"variable not found..."<<std::endl;
 ```
+-->
 
 # Build
 
