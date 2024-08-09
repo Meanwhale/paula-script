@@ -49,9 +49,10 @@ namespace paula { namespace core
 		// running:
 		INT readIndex = -1;
 		INT bufferIndex = 0;
-		INT lineStartIndex = 0;
+		INT commandStartIndex = 0;
 		INT lineNumber = 0;
 		bool stayNextStep = false;
+		bool oneLiner = true;
 
 		// declarations
 		
@@ -83,19 +84,23 @@ namespace paula { namespace core
 
 		void stay();
 		void addLiteralToken(INT tokenType);
-		void lineBreak();
+		void breakCommand();
+		void startNewLine();
+		void breakLine();
 		void comma();
 		void startBlock();
 		void endBlock();
         void eof();
-		void newLine();
+		void executeCommand();
+		void resetCommand();
 		void startExpr(BYTE firstState);
 		void defineTransitions();
 
 		INT currentParent();
-		INT lastStart, indentation, lineType, treeStackTop, quoteIndex;
+		INT lastStart, indentation, commandType, treeStackTop, quoteIndex;
 		BYTE
-			stateStart,
+			stateNewLine,
+			stateNewCommand,
 			stateSpace,
 			stateName,
 			stateFirstName,

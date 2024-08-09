@@ -37,6 +37,7 @@ namespace paula
 			ERROR_STATUS run(IInputStream&, bool handleError);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 			Tree vars;
+			bool oneLiner;
 
 			friend class ByteAutomata;
 
@@ -52,7 +53,7 @@ namespace paula
 			ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
 			ERROR_STATUS operatorPush(CHAR op, INT a, INT b);
 			ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
-			ERROR_STATUS executeLine(INT indentation, INT lineStartIndex, INT lineType, Tree& tree);
+			ERROR_STATUS executeLine(INT indentation, bool oneLiner, INT lineStartIndex, INT lineType, Tree& tree);
 
 			INT currentIndentation, skipIndentation, blockStackSize, lineStartIndex, numCallbacks;
 

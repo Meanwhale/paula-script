@@ -14,7 +14,7 @@ ERROR_STATUS printAction (Engine&,Args&args)
 	{
 		pout.print(args.get(i));
 	}
-	LOG.println("------------------------------");
+	LOG.endl().println("------------------------------");
 	return NO_ERROR;
 }
 ERROR_STATUS notAction (Engine&p,Args&args)
@@ -32,6 +32,7 @@ ERROR_STATUS notAction (Engine&p,Args&args)
 ERROR_STATUS whileAction (Engine&p,Args&args)
 {
 	LOG.println("-------- WHILE ACTION --------");
+	CHECK(p.oneLiner, CONDITION_LINE_WITH_SEMICOLON);
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	bool value = false;
 	if(args.get(0).getBool(value))
@@ -45,7 +46,7 @@ ERROR_STATUS whileAction (Engine&p,Args&args)
 ERROR_STATUS ifAction (Engine&p,Args&args)
 {
 	LOG.println("-------- IF ACTION --------");
-
+	CHECK(p.oneLiner, CONDITION_LINE_WITH_SEMICOLON);
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	bool value = false;
 	if(args.get(0).getBool(value))
@@ -62,6 +63,7 @@ Engine Engine::one = Engine();
 
 Engine::Engine() : //buffer(BUFFER_SIZE), index(0)
 	vars(VARS_SIZE),
+	oneLiner(true),
 	currentIndentation(0),
 	skipIndentation(-1),
 	blockStackSize(0),
@@ -205,8 +207,9 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 	return NO_ERROR;
 }
 
-ERROR_STATUS core::Engine::executeLine(INT indentation, INT _lineStartIndex, INT lineType, Tree& tree)
+ERROR_STATUS core::Engine::executeLine(INT indentation, bool _oneLiner, INT _lineStartIndex, INT lineType, Tree& tree)
 {
+	oneLiner = _oneLiner;
 	bool executeLine = false;
 	CHECK_CALL(lineIndentationInit(indentation, executeLine));
 

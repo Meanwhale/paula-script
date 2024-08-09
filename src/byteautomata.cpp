@@ -16,8 +16,8 @@ const CHAR
 	*numbers = "1234567890",
 	*operators = "+-*/<>=",
 	*whiteSpace = " \t", // "\n\r",
-	*linebreak = "\n\r",
-	//*expressionBreak = ",;",
+	*lineBreak = "\n\r",
+	*commandBreak = "\n\r;",
 	*blockStart = "(", // "([{",
 	*blockEnd = ")"; //")]}";
 
@@ -145,20 +145,20 @@ void ByteAutomata::stay ()
 void ByteAutomata::init (IInputStream * _input)
 {
 	input = _input;
-	currentState = stateStart;
+	currentState = stateNewLine;
 	bufferIndex = -1;
 	readIndex = -1;
 	lineNumber = 1;
 	stayNextStep = false;
 	indentation = 0;
 	error = NO_ERROR;
-	newLine();
+	resetCommand();
 }
 bool ByteAutomata::running()
 {
 	if (error != NO_ERROR)
 	{
-		ERR.print("ByteAutomata: ERROR ").print(error).endl();
+		ERR.print("ERROR in ByteAutomata: ").print(error).endl();
 		closeInput();
 		return false;
 	}
@@ -251,7 +251,7 @@ void ByteAutomata::step(BYTE b)
 	}
 	if (actionIndex == 0xff)
 	{
-		ERR.print("unexpected character: ").printCharSymbol(currentInput).endl();
+		ERR.print("unexpected character: '").printCharSymbol(currentInput).print("' state: ").print(stateNames[(INT)currentState]).endl();
 		error = &UNEXPECTED_CHARACTER;
 		return;
 	}
@@ -288,7 +288,7 @@ void ByteAutomata::clearBuffer()
 
 void ByteAutomata::jump(INT address)
 {
-	lineStartIndex = readIndex = address;
+	commandStartIndex = readIndex = address;
 }
 
 //--------------------------------------------------------------
@@ -332,15 +332,15 @@ void ByteAutomata::popTree()
 void ByteAutomata::startAssignment ()
 {
 	VRB(LOG.println("startAssignment");)
-	ASSERT(lineType == LINE_UNDEFINED);
-	lineType = LINE_ASSIGNMENT;
+	ASSERT(commandType == LINE_UNDEFINED);
+	commandType = LINE_ASSIGNMENT;
 	next(stateSpace);
 }
 void ByteAutomata::startFunction ()
 {
 	VRB(LOG.println("startFunction");)
-	ASSERT(lineType == LINE_UNDEFINED);
-	lineType = LINE_CALL;
+	ASSERT(commandType == LINE_UNDEFINED);
+	commandType = LINE_CALL;
 	stay();
 	next(stateSpace);
 }
@@ -459,24 +459,32 @@ void ByteAutomata::comma()
 		popTree();
 	}
 }
-void ByteAutomata::lineBreak()
+void ByteAutomata::breakCommand()
 {
 	ASSERT(error == NO_ERROR);
-	LOG.println("lineBreak: execute command");
+	LOG.println("breakCommand: execute command");
+	oneLiner = false;
 	tree.print();
-	if (lineType == LINE_UNDEFINED)
-	{
-		error = &SYNTAX_ERROR;
-		return;
-	}
-	if (treeStackTop != 0)
-	{
-		error = &PARENTHESIS;
-		return;
-	}
-	error = paula.executeLine(indentation, lineStartIndex, lineType, tree);
+	executeCommand();
 	if (error != NO_ERROR) return;
-	newLine();
+	resetCommand();
+	next(stateNewCommand);
+}
+void ByteAutomata::startNewLine()
+{
+	oneLiner = true;
+	indentation = 0;
+	resetCommand();
+	next(stateNewLine);
+}
+void ByteAutomata::breakLine()
+{
+	ASSERT(error == NO_ERROR);
+	LOG.println("breakLine: execute command");
+	tree.print();
+	executeCommand();
+	if (error != NO_ERROR) return;
+	startNewLine();
 }
 void ByteAutomata::startBlock()
 {
@@ -504,18 +512,30 @@ void ByteAutomata::eof()
 	bool executeLine = false;
 	error = paula.lineIndentationInit(0, executeLine);
 }
-void ByteAutomata::newLine()
+void ByteAutomata::executeCommand()
 {
-	indentation = 0;
-	lineType = LINE_UNDEFINED;
-	lineStartIndex = readIndex;
+	if (commandType == LINE_UNDEFINED)
+	{
+		error = &SYNTAX_ERROR;
+		return;
+	}
+	if (treeStackTop != 0)
+	{
+		error = &PARENTHESIS;
+		return;
+	}
+	error = paula.executeLine(indentation, oneLiner, commandStartIndex, commandType, tree);
+}
+void ByteAutomata::resetCommand()
+{
+	commandType = LINE_UNDEFINED;
+	commandStartIndex = readIndex;
 	
 	// tree node to the top of the stack
 
 	tree.init(NODE_STATEMENT);
 	treeStack[0] = 0;
 	treeStackTop = 0;
-	next(stateStart);
 }
 void ByteAutomata::startExpr(BYTE firstState)
 {
@@ -536,7 +556,8 @@ void ByteAutomata::defineTransitions()
 				2) function → read args ()
 	*/
 
-	stateStart = addState("start");
+	stateNewLine = addState("new line");
+	stateNewCommand = addState("new command");
 	stateSpace = addState("space");
 	stateName = addState("name");
 	stateFirstName = addState("first name");
@@ -549,10 +570,14 @@ void ByteAutomata::defineTransitions()
 
 	BYTE ai; // action index
 
-	TRANSITION(stateStart, "\x4",										{ ba->eof(); })
-	TRANSITION(stateStart, "\t",										{ ba->indentation++; });
-	TRANSITION(stateStart, letters,										{ ba->startExpr(ba->stateFirstName); });
-	TRANSITION(stateStart, linebreak,									{ ba->newLine(); });
+	TRANSITION(stateNewLine, "\x4",										{ ba->eof(); })
+	TRANSITION(stateNewLine, "\t",										{ ba->indentation++; });
+	TRANSITION(stateNewLine, letters,									{ ba->startExpr(ba->stateFirstName); });
+	TRANSITION(stateNewLine, lineBreak,									{ ba->startNewLine(); });
+
+	transition(stateNewCommand, whiteSpace,	nullptr);
+	TRANSITION(stateNewCommand, letters,								{ ba->startExpr(ba->stateFirstName); });
+	TRANSITION(stateNewCommand, lineBreak,								{ ba->startNewLine(); });
 
 	transition(stateFirstName, letters, nullptr);
 	TRANSITION(stateFirstName, whiteSpace,								{ ba->addFirstNameAndTransit(); });
@@ -567,38 +592,30 @@ void ByteAutomata::defineTransitions()
 	TRANSITION(stateSpace, operators,									{ ba->addOperatorToken(); });
 	TRANSITION(stateSpace, letters,										{ ba->next(ba->stateName); });
 	TRANSITION(stateSpace, numbers,										{ ba->next(ba->stateNumber); });
-	TRANSITION(stateSpace, linebreak,									{ ba->lineBreak(); });
+	TRANSITION(stateSpace, lineBreak,									{ ba->breakLine(); });
+	TRANSITION(stateSpace, ";",											{ ba->breakCommand(); });
 	TRANSITION(stateSpace, blockStart,									{ ba->startBlock(); });
 	TRANSITION(stateSpace, blockEnd,									{ ba->endBlock(); });
 	TRANSITION(stateSpace, ",",											{ ba->comma(); });
 	TRANSITION(stateSpace, "\"",										{ ba->next(ba->stateQuote); ba->quoteIndex = 0; });
 
 	FILL_TRANSITION(stateQuote,											{ ba->addQuoteByte(ba->currentInput); });
-	TRANSITION(stateQuote, linebreak,									{ ba->error = &QUOTE_ERROR; });
+	TRANSITION(stateQuote, lineBreak,									{ ba->error = &QUOTE_ERROR; });
 	TRANSITION(stateQuote, "\"",										{ ba->lastStart++; ba->addQuote(); ba->next(ba->stateSpace); });
 	TRANSITION(stateQuote, "\\",										{ ba->error = &QUOTE_ERROR; });
 
+	FILL_TRANSITION(stateName,											{ ba->addTokenAndTransitionToSpace(); });
 	transition(stateName, letters, nullptr);
-	TRANSITION(stateName, whiteSpace,									{ ba->addTokenAndTransitionToSpace(); });
-	SAME_TRANS(stateName, operators);
-	SAME_TRANS(stateName, blockStart);
-	SAME_TRANS(stateName, blockEnd);
-	SAME_TRANS(stateName, linebreak);
+	fillTransition(stateName, numbers, -1);
 
+	FILL_TRANSITION(stateNumber,										{ ba->addTokenAndTransitionToSpace(); });
 	transition(stateNumber, numbers, nullptr);
 	TRANSITION(stateNumber, ".", 										{ ba->nextCont(ba->stateDecimal); });
-	TRANSITION(stateNumber, whiteSpace,									{ ba->addTokenAndTransitionToSpace(); });
-	SAME_TRANS(stateNumber, ",");
-	SAME_TRANS(stateNumber, operators);
-	SAME_TRANS(stateNumber, blockEnd);
-	SAME_TRANS(stateNumber, linebreak);
+	fillTransition(stateNumber, letters, -1);
 
+	FILL_TRANSITION(stateDecimal,										{ ba->addTokenAndTransitionToSpace(); });
 	transition(stateDecimal, numbers, nullptr);
-	TRANSITION(stateDecimal, whiteSpace,								{ ba->addTokenAndTransitionToSpace(); });
-	SAME_TRANS(stateDecimal, operators);
-	SAME_TRANS(stateDecimal, blockStart);
-	SAME_TRANS(stateDecimal, blockEnd);
-	SAME_TRANS(stateDecimal, linebreak);
+	fillTransition(stateDecimal, letters, -1);
 
 	/*LOG.print("constexpr int maxStates=").print(ai+1).print(";").endl();
 	LOG.println("constexpr BYTE* transitionTable = {");

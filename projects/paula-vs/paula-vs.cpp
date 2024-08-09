@@ -9,9 +9,6 @@
 using namespace paula;
 using namespace paula::core;
 
-void treeTest();
-void stackTest();
-
 int main()
 {
 	LOG.println("Paula unit tests\n");

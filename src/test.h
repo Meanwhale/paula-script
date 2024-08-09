@@ -28,6 +28,7 @@ namespace paula
 		void treeTest();
 		void stackTest();
 		void reservedNameTest();
+        void semicolonTest();
 
 		void runAll();
 		//const Error* iteratorTest();

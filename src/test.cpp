@@ -13,19 +13,9 @@ void core::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 {
 	auto error = test();
 	
-	if (error != NO_ERROR)
-	{
-		ERR
-			.print("test: caught an exception: ")
-			.print(error->name)
-			.print(" (id=")
-			.print(error->id)
-			.print("), expecting: ")
-			.print(expectedError)
-			.endl();
-	}
 	if (!Error::equal(expectedError, error))
 	{
+		ERR.print("catch: ").print(error).print(" expected: ").print(expectedError).endl();
 		ASSERT_MSG(false, "error don't match");
 	}
 }
@@ -181,6 +171,16 @@ void core::reservedNameTest()
 	error = paula::addCallback("true", testCallback);
 	ASSERT(Error::equal(error, &RESERVED_NAME));
 }
+void core::semicolonTest()
+{
+	auto error = paula::run("i:5;i:i+1");
+	ASSERT(error == NO_ERROR);
+	INT a;
+	TEST_INT("i", 6);
+
+	ERROR_TEST("b:true;if(b)\n\tb:false", CONDITION_LINE_WITH_SEMICOLON);
+	ERROR_TEST("b:true;while(b)\n\tb:false", CONDITION_LINE_WITH_SEMICOLON);
+}
 void core::runAll()
 {
 	stackTest();
@@ -196,6 +196,7 @@ void core::runAll()
 	ifTest();
 	operatorTest();
 	reservedNameTest();
+	semicolonTest();
 
 	callbackTest();
 }
