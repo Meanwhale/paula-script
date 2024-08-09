@@ -7,6 +7,8 @@
  - Compiles for Windows (Visual Studio) and Linux (g++).
  - Command line interface (CLI) and a static library.
 
+**Project status:** work-in-progress. 
+
 ## Examples
 
 Run Paula Script from your source code. 
