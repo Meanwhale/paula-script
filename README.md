@@ -104,7 +104,7 @@ while (i > 0)
     print(i)
     i:i-1
 ```
-For conditions and loops, code blocks are defined by tab indentation, one tab per depth.
+For conditions and loops, code blocks are defined by tab indentation.
 Line can't start with other whitespace characters.
 
 ## Callbacks
