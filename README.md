@@ -1,10 +1,10 @@
 **Paula Script** is a lightweight scripting language written in C++.
  - **Small** but easy to expand. Currently minimum CLI build size is about 35 KB.
  - **No runtime memory allocation:** everything runs in buffers, that are initialized at start.
- - **Stand-alone:** the only external dependencies are for standard input/output. Built-in parser.
+ - **Stand-alone:** minimal external dependencies. Built-in parser.
  - **Line-by-line, non-blocking execution:** Paula executes the code on-fly, while reading the input.
    It can take input from an endless input stream, and execute the code from a buffer, without memory issues (no runtime memory allocation).
- - Compiles for Windows (Visual Studio) and Linux (g++).
+ - Compiles for Windows (Visual Studio) and Linux (GCC).
  - Command line interface (CLI) and a static library.
 
 **Project status:** work-in-progress. 
@@ -13,7 +13,7 @@
 
 Run Paula Script from your source code. 
 ```cpp
-int main()
+void main()
 {
 	paula::runAndCatch("print(\"Hello World!\")"); // prints "Hello World!"
 }
@@ -123,7 +123,7 @@ const paula::Error* doubler (paula::Args&args)
 	return &CALLBACK_ERROR;
 }
 
-int main()
+void main()
 {
 	auto error = paula::addCallback("doubler", doubler);
 	paula::runAndCatch("six: doubler(3)");
@@ -199,3 +199,6 @@ make debug      # Debug test build
 make mini       # experimental, minimal  CLI
 make example    # example project to try out Paula script. Main source file: projects/paula-example/paula-example.cpp
 ```
+
+<hr>
+Copyright © Meanwhale
