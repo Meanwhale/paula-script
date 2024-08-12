@@ -18,6 +18,21 @@ int main()
 	paula::runAndCatch("print(\"Hello World!\")"); // prints "Hello World!"
 }
 ```
+Run a script from a file using CLI. Create a file named _fibonacci.paula_:
+```
+n:20; i:0; a:0; b:1
+while(i<n)
+	c:a+b
+	print(c, " ")
+	a:b; b:c
+	i:i+1
+```
+Execute the script from command line:
+```
+paula -f fibonacci.paula
+```
+It prints 20 (``n:20``) Fibonacci numbers.
+
 
 ## Language Features
 
