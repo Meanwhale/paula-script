@@ -19,16 +19,31 @@ int main()
 }
 ```
 
-### Language Features
+## Language Features
 
  - Basic data types: 32-bit integer, 64-bit floating point number, text, boolean.
  - Basic arithmetic (+-*/) and comparison operators (<>=).
  - Conditions (if) and loops (while).
  - Callbacks to call your source code from a script.
 
+#### Statements
+
+A statement can be an assignment
+```
+variableName: value
+```
+or a function call
+```
+functionName ( argument1, argument2)
+```
+
+Statements are separated with line breaks. Consecutive statements, except for conditionals (``if`` and ``while``), can be separated by a semicolon:
+```
+a: 123; b: 456; foo(a, b)
+```
+
 #### Variable assignment
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_variableName **:** value_<p>
 Variable's type is defined when its value is assigned. Reassigned value must be of same type.
 ```
 name: "Paula"                 | text variable
