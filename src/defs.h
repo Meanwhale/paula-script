@@ -58,10 +58,7 @@ namespace paula
 #endif
 	extern const POut& pout; // print output
 	
-	// language keywords
-
-	//extern INT* keywords[];
-	//void addKeyword(INT*);
+	// errors
 
 	class Error
 	{

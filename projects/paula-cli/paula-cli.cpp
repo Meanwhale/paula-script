@@ -6,8 +6,6 @@ using namespace paula;
 using namespace paula::core;
 using namespace std;
 
-constexpr const char * PAULA_VERSION = "0.1";
-
 const char* evDir = "PAULA_DIR";
 
 inline char separator()

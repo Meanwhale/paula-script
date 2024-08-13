@@ -1,4 +1,6 @@
-
-i: 3
-while (i > 0)
-	print(i); i:i-1
+n:20; i:0; a:0; b:1
+while(i<n)
+	c:a+b
+	print(c, " ")
+	a:b; b:c
+	i:i+1

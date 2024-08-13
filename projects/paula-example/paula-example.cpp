@@ -20,7 +20,7 @@ const paula::Error* doubler (paula::Args&args)
 int main()
 {
 	auto error = paula::addCallback("doubler", doubler);
-    paula::runAndCatch("six: doubler(3)");
+    paula::runSafe("six: doubler(3)");
 	INT value;
 	Var v = paula::get("six");
 	if (v.getInt(value))

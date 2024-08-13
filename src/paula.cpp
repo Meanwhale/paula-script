@@ -4,6 +4,11 @@
 
 using namespace paula;
 
+void paula::printVersion()
+{
+	pout.print(PAULA_VERSION);
+}
+
 const Error* paula::run(const char* code)
 {
 	CharInput input(code);
@@ -14,13 +19,13 @@ const Error* paula::run(IInputStream&str)
 	return core::Engine::one.run(str, false);
 }
 
-void paula::runAndCatch(const char*code)
+void paula::runSafe(const char*code)
 {
 	CharInput input(code);
 	auto tmp = core::Engine::one.run(input, true);
 }
 
-void paula::runAndCatch(IInputStream&str)
+void paula::runSafe(IInputStream&str)
 {
 	auto tmp = core::Engine::one.run(str, true);
 }

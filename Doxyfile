@@ -1,0 +1,21 @@
+# Doxyfile: Minimal Configuration
+
+HAVE_DOT = NO
+
+# The directory to which the output will be written.
+OUTPUT_DIRECTORY       = ../meanwhale.github.io/paula/api
+
+# The input file or directory that Doxygen should parse.
+INPUT                  = 	./src/paula.h ./src/args.h ./src/node_types.h ./src/stream.h
+
+# Enable HTML output.
+GENERATE_HTML          = YES
+EXTRACT_ALL = YES
+EXTRACT_STATIC = YES
+GENERATE_HTML = YES
+GENERATE_TREEVIEW = NO
+# Disable unnecessary output formats.
+GENERATE_LATEX         = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+GENERATE_XML           = NO

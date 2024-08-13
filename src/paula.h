@@ -9,6 +9,10 @@ namespace paula
 
 	// user interface
 
+	constexpr const char * PAULA_VERSION = "0.1";
+
+	void printVersion();
+
 	/**
 	*  @brief Run a script and return error, or NO_ERROR, if everything went well.
 	*/
@@ -22,12 +26,12 @@ namespace paula
 	/**
 	*  @brief Run a script. If an error occurs, print the error.
 	*/
-	void runAndCatch(const char*);
+	void runSafe(const char*);
 
 	/**
 	*  @brief Run a script. If an error occurs, print the error.
 	*/
-	void runAndCatch(IInputStream&);
+	void runSafe(IInputStream&);
 
 	/**
 	*  @brief Get a variable by name. Return 'empty' if the variable is not found.

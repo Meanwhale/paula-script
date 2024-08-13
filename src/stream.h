@@ -11,6 +11,9 @@ namespace paula
 
 	// OUTPUT
 
+	/**
+	 * @brief Base class for output.
+	 */
 	class IOutputStream
 	{
 	public:
@@ -18,7 +21,9 @@ namespace paula
 		virtual void close()  const = 0;
 		virtual bool closed() const = 0;
 	};
-
+	/**
+	 * @brief Base class for print output.
+	 */
 	class POut : public IOutputStream
 	{
 	public:
@@ -49,6 +54,9 @@ namespace paula
 		// printIntsToText(x*)
 	};
 
+	/**
+	 * @brief Dummy printer. Use to optimize out debug prints.
+	 */
 	class NullPrint
 	{
 		// dummy printer that does nothing.
@@ -64,6 +72,9 @@ namespace paula
 		const NullPrint& print(const core::TreeIterator& x) const;
 		const NullPrint& endl() const;
 	};
+	/**
+	 * @brief Print output using C++ std cout.
+	 */
 	class STDOut : public POut
 	{
 	public:
@@ -76,6 +87,9 @@ namespace paula
 		const POut& print(long) const override;
 		const POut& print(double) const override;
 	};
+	/**
+	* @brief Print output using C++ std err.
+	*/
 	class STDErr : public POut
 	{
 	public:
@@ -91,13 +105,18 @@ namespace paula
 
 	// INPUT
 
+	/**
+	 * @brief Base class for input streams.
+	 */
 	class IInputStream
 	{
 	public:
 		virtual bool read(BYTE&) = 0; // we don't know we're at end before reaching it
 		virtual void close() = 0;
 	};
-
+	/**
+	 * @brief Input stream for constant strings.
+	 */
 	class CharInput : public IInputStream
 	{
 	public:
@@ -108,7 +127,9 @@ namespace paula
 		const char * str;
 		INT i;
 	};
-
+	/**
+	 * @brief Input stream for C++ std input.
+	 */
 	class StandardInput : public IInputStream
 	{
 	public:
@@ -119,6 +140,9 @@ namespace paula
 	};
 
 #ifndef PAULA_MINI
+	/**
+	 * @brief Input stream for C++ std ifstream.
+	 */
 	class FileInput : public IInputStream
 	{
 	private:

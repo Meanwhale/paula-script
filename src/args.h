@@ -11,18 +11,57 @@ namespace paula
 	{
 		class Engine;
 	}
+	/**
+	 * @brief Access Paula script variable data.
+	 */
 	class Var
 	{
-		// handle to data for functions (via Args)
 	public:
+		/**
+		 * @brief Get variable type, eg. NODE_INTEGER. See node_types.h.
+		 * @return Node (variable) type.
+		 */
 		INT type() const;
+		/**
+		 * @brief Compare node (variable) type.
+		 * @param tag eg. NODE_INTEGER. See node_types.h.
+		 * @return True if types match.
+		 */
 		bool match(INT tag) const;
+		/**
+		 * @brief Write variable's integer (32 bits) value to reference, if variable is of correct type.
+		 * @param out Write target. If type doesn't match, the value is not changed.
+		 * @return True if type is correct and the value is written.
+		 */
 		bool getInt(INT& out) const;
+		/**
+		* @brief Write variable's double (64-bit floating point) value to reference, if variable is of correct type.
+		* @param out Write target. If type doesn't match, the value is not changed.
+		* @return True if type is correct and the value is written.
+		*/
 		bool getDouble(DOUBLE& out) const;
+		/**
+		* @brief Write variable's boolean value to reference, if variable is of correct type.
+		* @param out Write target. If type doesn't match, the value is not changed.
+		* @return True if type is correct and the value is written.
+		*/
 		bool getBool(bool& out) const;
+		/**
+		* @brief Write variable's operation character (eg. '+' or '<') to reference, if variable is of correct type.
+		* @param out Write target. If type doesn't match, the value is not changed.
+		* @return True if type is correct and the value is written.
+		*/
 		bool getOp(char& out) const;
+		/**
+		* @brief Write variable's text value (char*) to reference, if variable is of correct type.
+		* @param out Write target. If type doesn't match, the value is not changed.
+		* @return True if type is correct and the value is written.
+		*/
 		bool getChars(char*&out) const;
-
+		/**
+		 * @brief Check if a variable is a subtree.
+		 * @return True if variable is a subtree.
+		 */
 		bool isSubtree() const;
 
 		friend class Args;
@@ -33,31 +72,57 @@ namespace paula
 		Var(const INT*_ptr);
 		Var();
 	};
-
+	/**
+	 * @brief Access callback arguments (e.g. 1 in "f(1)") and set return value if a callback function, called from a script.
+	 */
 	class Args
 	{
+	public:
+		/**
+		 * @brief Get number of arguments, eg. 3 for "f(a, b, c)"
+		 * @return Argument count.
+		 */
+		INT count();
+		/**
+		 * @brief Set return value, returned by a callback.
+		 * @param value Integer value.
+		 */
+		void returnInt(INT value);
+		/**
+		* @brief Set return value, returned by a callback.
+		* @param value Boolean value.
+		*/
+		void returnBool(bool value);
+		/**
+		 * @brief Check if a return value is set.
+		 * @return True if a return value is set.
+		 */
+		bool hasReturnValue();
+		/**
+		 * @brief Get argument value, eg. get(2) to value of c if the call is "f(a, b, c)".
+		 * @param dataIndex Argument index, starting from 0. 0 <= dataIndex < count().
+		 * @return Argument value, or void (NODE_VOID) value doesn't exist. See class Var.
+		 */
+		Var get(INT dataIndex);
+
+		friend class Engine;
+
 	private:
+		Args(Tree&_tree);
+		void reset(INT numArgs);
+
 		Array<INT> returnValue;
 
 		Tree& tree;
 		INT numArgs;
 		core::TreeIterator it;
 
+		Args() = delete;
 		static INT emptyData;
 
 		friend class Var;
 		friend class core::Engine;
 
-	public:
-		Args(Tree&_tree);
-		INT count();
-		void returnInt(INT);
-		bool hasReturnValue();
-		void returnBool(bool value);
-		Var get(INT dataIndex);
-		void reset(INT numArgs);
-
-		friend class Engine;
 	};
 
 	/*

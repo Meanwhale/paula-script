@@ -32,7 +32,7 @@ return i == types.length();
 }
 */
 
-INT Args::emptyData = core::NODE_VOID | 0; // size=0
+INT Args::emptyData = paula::NODE_VOID | 0; // size=0
 
 Args::Args(Tree& _tree) :
 	returnValue(MAX_RETURN_VALUE_SIZE),
