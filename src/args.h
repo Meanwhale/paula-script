@@ -73,7 +73,7 @@ namespace paula
 		Var();
 	};
 	/**
-	 * @brief Access callback arguments (e.g. 1 in "f(1)") and set return value if a callback function, called from a script.
+	 * @brief Access callback arguments (e.g. value of "a" in "f(a)"). Set return value of the callback function, called from a script.
 	 */
 	class Args
 	{

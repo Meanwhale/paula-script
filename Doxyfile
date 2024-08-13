@@ -1,12 +1,16 @@
 # Doxyfile: Minimal Configuration
 
+PROJECT_NAME = "Paula Script"
+
 HAVE_DOT = NO
 
 # The directory to which the output will be written.
 OUTPUT_DIRECTORY       = ../meanwhale.github.io/paula/api
 
 # The input file or directory that Doxygen should parse.
-INPUT                  = 	./src/paula.h ./src/args.h ./src/node_types.h ./src/stream.h
+INPUT                  = 	./src/paula.h ./src/args.h ./src/node_types.h ./src/stream.h projects/doxygen_main_page.md
+
+USE_MDFILE_AS_MAINPAGE = projects/doxygen_main_page.md
 
 # Enable HTML output.
 GENERATE_HTML          = YES
