@@ -15,7 +15,7 @@ Run Paula Script from your source code.
 ```cpp
 void main()
 {
-	paula::runAndCatch("print(\"Hello World!\")"); // prints "Hello World!"
+	paula::runSafe("print(\"Hello World!\")"); // prints "Hello World!"
 }
 ```
 Run a script from a file using CLI. Create a file named _fibonacci.paula_:
@@ -126,7 +126,7 @@ const paula::Error* doubler (paula::Args&args)
 void main()
 {
 	auto error = paula::addCallback("doubler", doubler);
-	paula::runAndCatch("six: doubler(3)");
+	paula::runSafe("six: doubler(3)");
 	INT value;
 	if (paula::get("six").getInt(value))
 	{
