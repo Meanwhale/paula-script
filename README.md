@@ -141,7 +141,7 @@ void main()
 
 # C++ API
 
-<a href="https://meanwhale.github.io/paula/api/html/namespacepaula.html">meanwhale.github.io/paula/api/html/namespacepaula.html</a>
+<a href="https://meanwhale.github.io/paula/api/html/namespacepaula.html" target="_blank">meanwhale.github.io/paula/api/html/namespacepaula.html</a>
 
 <!--
 Global functions in ``paula`` namespace:
