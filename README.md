@@ -141,7 +141,7 @@ void main()
 
 # C++ API
 
-See <a href="https://github.com/Meanwhale/paula-script/blob/main/src/paula.h">paula.h header file</a> for complete, public API.
+<a href="https://meanwhale.github.io/paula/api/html/namespacepaula.html">meanwhale.github.io/paula/api/html/namespacepaula.html</a>
 
 <!--
 Global functions in ``paula`` namespace:
