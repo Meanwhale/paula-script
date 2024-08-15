@@ -8,6 +8,9 @@
 
 **Project status:** work-in-progress. 
 
+🌏 [https://meanwhale.github.io/](https://meanwhale.github.io/)<br>
+🐦 [https://x.com/TheMeanwhale](https://x.com/TheMeanwhale)
+
 ## Examples
 
 Run Paula Script from your source code. 
