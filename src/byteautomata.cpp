@@ -14,6 +14,7 @@ constexpr INT
 const CHAR
 	*letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	*numbers = "1234567890",
+	*hexNumbers = "1234567890abcdefABCDEF",
 	*operators = "+-*/<>=",
 	*whiteSpace = " \t", // "\n\r",
 	*lineBreak = "\n\r",
@@ -448,6 +449,40 @@ void ByteAutomata::addLiteralToken(INT nodeType)
 	prepareAddToken();
 	tree.addText(currentParent(), buffer.ptr(), lastStart, readIndex, nodeType);
 }
+void ByteAutomata::addHexByte()
+{
+	// eg. "\xF4"
+	//       ^lastStart
+	BYTE high = buffer[lastStart + 1];
+	BYTE low = buffer[lastStart + 2];
+	BYTE b = (BYTE)(((hexCharToByte(high) << 4) & 0xf0) | hexCharToByte(low));
+	addQuoteByte(b);
+}
+void ByteAutomata::escapeChar()
+{
+	// standard escape character literals: https://en.cppreference.com/w/cpp/language/escape
+	char c = (char)currentInput;
+
+	     if (c == '\'') addQuoteByte(0x27);
+	else if (c == '\"') addQuoteByte(0x22);
+	else if (c == '?')  addQuoteByte(0x3f);
+	else if (c == '\\') addQuoteByte(0x5c);
+	else if (c == 'a')  addQuoteByte(0x07);
+	else if (c == 'b')  addQuoteByte(0x08);
+	else if (c == 'f')  addQuoteByte(0x0c);
+	else if (c == 'n')  addQuoteByte(0x0a);
+	else if (c == 'r')  addQuoteByte(0x0d);
+	else if (c == 't')  addQuoteByte(0x09);
+	else if (c == 'v')  addQuoteByte(0x0b);
+	else if (c == 'x')
+	{
+		next(stateHexChar);
+		return;
+	}
+	else error = &QUOTE_ERROR;
+
+	next(stateQuote);
+}
 void ByteAutomata::comma()
 {
 	printTreeStack();
@@ -566,7 +601,9 @@ void ByteAutomata::defineTransitions()
 	stateName = addState("name");
 	stateNumber = addState("number");
 	stateDecimal = addState("decimal");
-	stateQuote = addState("quote"); // TODO
+	stateQuote = addState("quote");
+	stateEscapeChar = addState("excape character");
+	stateHexChar = addState("hex character");
 
 	BYTE ai; // action index
 
@@ -602,7 +639,13 @@ void ByteAutomata::defineTransitions()
 	FILL_TRANSITION(stateQuote,											{ ba->addQuoteByte(ba->currentInput); });
 	TRANSITION(stateQuote, lineBreak,									{ ba->error = &QUOTE_ERROR; });
 	TRANSITION(stateQuote, "\"",										{ ba->lastStart++; ba->addQuote(); ba->next(ba->stateSpace); });
-	TRANSITION(stateQuote, "\\",										{ ba->error = &QUOTE_ERROR; });
+	TRANSITION(stateQuote, "\\",										{ ba->next(ba->stateEscapeChar); });
+
+	FILL_TRANSITION(stateEscapeChar,									{ ba->escapeChar(); });
+
+	FILL_TRANSITION(stateHexChar,										{ ba->error = &INVALID_HEXADECIMAL_CHARACTER; });
+	TRANSITION(stateHexChar, hexNumbers,								{ if (ba->readIndex - ba->lastStart >= 2) { ba->addHexByte(); ba->next(ba->stateQuote); }; });
+
 
 	FILL_TRANSITION(stateName,											{ ba->addTokenAndTransitionToSpace(); });
 	transition(stateName, letters, nullptr);

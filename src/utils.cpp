@@ -38,6 +38,14 @@ LONG core::intsToLong(INT high, INT low)
 	return x;
 }
 
+BYTE core::hexCharToByte(BYTE code)
+{
+	if (code >= '0' && code <= '9') return (BYTE)(code - '0');
+	if (code >= 'a' && code <= 'f') return (BYTE)(0xa + code - 'a');
+	if (code >= 'A' && code <= 'F') return (BYTE)(0xa + code - 'A');
+	ASSERT(false); // byteautomata shouldn't let this happen
+	return 0;
+}
 INT core::charToInt(CHAR c)
 {
 	return static_cast<unsigned int>(static_cast<unsigned char>(c));

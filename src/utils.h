@@ -17,7 +17,9 @@ namespace paula { namespace core
 
 	// text functions
 
-	INT charToInt(CHAR c);
+    BYTE hexCharToByte(BYTE c);
+
+    INT charToInt(CHAR c);
     INT textDataSize(INT numBytes);
     void bytesToInts(const unsigned char *  bytes, int bytesOffset, Array<INT>& ints, int intsOffset, int bytesLength);
     bool matchTextData(INT* a, INT* b);

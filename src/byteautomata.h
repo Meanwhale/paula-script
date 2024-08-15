@@ -67,6 +67,7 @@ namespace paula { namespace core
 		INT parseInt(Array<BYTE>& src, INT firstByte, INT lastByte);
 		double parseDouble(Array<BYTE>& src, INT i, INT lastByte);
 		void addQuoteByte(BYTE);
+		void addHexByte();
 		void addQuote();
         void addTokenAndTransitionToSpace();
 		void prepareAddToken();
@@ -84,6 +85,7 @@ namespace paula { namespace core
 
 		void stay();
 		void addLiteralToken(INT tokenType);
+		void escapeChar();
 		void breakCommand();
 		void startNewLine();
 		void breakLine();
@@ -108,7 +110,9 @@ namespace paula { namespace core
 			statePostName,
 			stateNumber,
 			stateDecimal,
-			stateQuote;
+			stateQuote,
+			stateEscapeChar,
+			stateHexChar;
 		
 		// hide
 		ByteAutomata() = delete;

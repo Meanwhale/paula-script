@@ -117,8 +117,17 @@ void core::textTest()
 	char * t;
 	TEST_TEXT("t", "hello!");
 
+	error = paula::run("t:\"\\x7E\"");
+	ASSERT(error == NO_ERROR);
+	TEST_TEXT("t", "~");
+
+	error = paula::run("t:\"\\n\"");
+	ASSERT(error == NO_ERROR);
+	TEST_TEXT("t", "\n");
+
 	ERROR_TEST("t:\"hello!\"\nt:\"a\"", TEXT_VARIABLE_OVERWRITE);
 	ERROR_TEST("t:\"abc", QUOTE_ERROR);
+	ERROR_TEST("t:\"\\!", QUOTE_ERROR);
 }
 
 void core::callbackTest()
