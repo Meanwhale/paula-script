@@ -106,6 +106,10 @@ INT Var::type() const
 {
 	return *ptr & TAG_MASK;
 }
+INT Var::size() const
+{
+	return *ptr & SIZE_MASK;
+}
 bool Var::match(INT tag) const
 {
 	// check data type match

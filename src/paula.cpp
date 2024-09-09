@@ -18,6 +18,10 @@ const Error* paula::run(IInputStream&str)
 {
 	return core::Engine::one.run(str, false);
 }
+const Error* paula::newRun(IInputStream&str)
+{
+	return core::Engine::one.run(str, false);
+}
 
 void paula::runSafe(const char*code)
 {

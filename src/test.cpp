@@ -78,7 +78,10 @@ void core::functionTest()
 
 void core::loopTest()
 {
-	auto err = paula::run("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
+	auto err = paula::run("b:true\nwhile(b)\n\tb:false");
+	ASSERT(err == NO_ERROR);
+
+	err = paula::run("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
 	ASSERT(err == NO_ERROR);
 	INT a;
 	TEST_INT("a", 5);
@@ -201,12 +204,13 @@ void core::runAll()
 
 	functionTest();
 	parenthesisErrorTest();
-	loopTest();
-	ifTest();
 	operatorTest();
 	reservedNameTest();
 	semicolonTest();
-
 	callbackTest();
+
+	loopTest();
+	ifTest();
+
 }
 #endif

@@ -22,6 +22,8 @@ namespace paula
 	*  @brief Run a script and return error, or NO_ERROR, if everything went well.
 	*/
 	[[nodiscard]] const Error * run(IInputStream&);
+
+    const Error* newRun(IInputStream& str);
 	
 	/**
 	*  @brief Run a script. If an error occurs, print the error.

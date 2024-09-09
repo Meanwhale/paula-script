@@ -2,6 +2,7 @@
 //
 
 #include "paula.h"
+#include "test.h"
 
 using namespace paula;
 
@@ -19,7 +20,7 @@ const paula::Error* doubler (paula::Args&args)
 
 int main()
 {
-	auto error = paula::addCallback("doubler", doubler);
+	/*auto error = paula::addCallback("doubler", doubler);
     paula::runSafe("six: doubler(3)");
 	INT value;
 	Var v = paula::get("six");
@@ -30,5 +31,8 @@ int main()
 	else
 	{
 		std::cout<<"something went wrong..."<<std::endl;
-	}
+	}*/
+	//CharInput input("i:5");
+
+	core::runAll();
 }

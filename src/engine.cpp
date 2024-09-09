@@ -67,11 +67,13 @@ Engine::Engine() : //buffer(BUFFER_SIZE), index(0)
 	currentIndentation(0),
 	skipIndentation(-1),
 	blockStackSize(0),
-	lineStartIndex(0),
+	bytecodeIndex(0),
 	numCallbacks(0),
+	jumpIndex(-1),
 	automata(*this),
 	stack(ARG_STACK_SIZE),
 	constants(CONSTANTS_SIZE),
+	bytecode(BYTECODE_SIZE),
 	args(stack),
 	commands
 	{
@@ -97,19 +99,112 @@ Engine::Engine() : //buffer(BUFFER_SIZE), index(0)
 }
 
 
+ERROR_STATUS Engine::addParsedLine()
+{
+	// add line info and parsed tree
+	INT nodeIndex = bytecode.addSubtree(0, NODE_SUBTREE);
+	bytecode.addInt(nodeIndex, automata.lineNumber);
+	bytecode.addInt(nodeIndex, automata.indentation);
+	bytecode.addInt(nodeIndex, automata.commandType);
+	bytecode.addBool(nodeIndex, automata.oneLiner);
+	bytecode.addRawTree(nodeIndex, automata.tree);
+	LOG.print("PARSED TREE ADDED:\n");
+	automata.tree.print();
+	LOG.endl();
+	return NO_ERROR;
+}
+
+
 ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 {
-	LOG.println("Paula::run");
+	LOG.println("Paula::newRun");
 
 	stack.init(NODE_STACK);
 	vars.init(NODE_SUBTREE);
+	bytecode.init(NODE_SUBTREE);
 
 	currentIndentation = 0;
 	skipIndentation = -1;
 	blockStackSize = 0;
+	const Error* error = nullptr; // NO_ERROR
 
-	automata.run(&input);
-	auto error = automata.getError();
+	// parse lines and add them to the bytecode list
+
+	automata.init(&input);
+	bool running = true;
+	while(running)
+	{
+		running = automata.parseLine(&input);
+		error = automata.getError();
+		if (error != nullptr) return returnHandleError(error, handleErrors);
+		CHECK_CALL(addParsedLine());	// add command to bytecode list
+		automata.resetCommand();		// prepare to another command
+
+		// reset line here so that addParsedLine has correct values
+		if (automata.currentState == automata.stateNewLine) automata.resetNewLine();
+	}
+	
+	// all lines parsed --> execute bytecode
+
+	bytecode.print();
+
+	TreeIterator it(bytecode);
+	if (!it.hasChild())	return NO_ERROR;
+	it.toChild();
+
+	bool hasNextLine;
+	do
+	{
+		INT bytecodeIndex = it.index;
+
+		it.toChild();
+		// read line data
+		INT lineNumber, indentation, commandType;
+		bool oneLiner;
+
+		it.var().getInt(lineNumber);  it.next();
+		it.var().getInt(indentation); it.next();
+		it.var().getInt(commandType); it.next();
+		it.var().getBool(oneLiner); it.next();
+
+		// assign parsed tree from bytecode
+		INT* rawTreeDataPtr  = it.tree.data.ptr(it.index + 3);
+		INT  rawTreeDataSize = it.var().size() - 2;
+		Tree parsedCommand(rawTreeDataPtr, rawTreeDataSize);
+
+		VRB(LOG.print("\nEXECUTE LINE\n"));
+		VRB(parsedCommand.print());
+
+		CHECK_CALL(executeLine(indentation, oneLiner, bytecodeIndex, commandType, parsedCommand));
+
+		it.toParent();
+
+		if (!it.hasNext())
+		{
+			// end of file. make a call to end if's and loops. possibly jump back by moving bytecode index.
+			bool executeLine = false;
+			CHECK_CALL(lineIndentationInit(0, executeLine));
+		}
+		if (jumpIndex >= 0)
+		{
+			it.jumpTo(jumpIndex);
+			ASSERT(it.isType(NODE_SUBTREE));
+			jumpIndex = -1;
+			hasNextLine = true;
+		}
+		else
+		{
+			hasNextLine = it.next();
+		}
+	}
+	while(hasNextLine);
+
+	return NO_ERROR;
+}
+
+ERROR_STATUS Engine::returnHandleError(const Error* error, bool handleErrors)
+{
+	error = automata.getError();
 	if (handleErrors && error != NO_ERROR)
 	{
 #ifndef PAULA_MINI
@@ -130,7 +225,6 @@ ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 	return error;
 }
 
-
 ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (* _action)(Args&))
 {
 	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
@@ -142,6 +236,14 @@ ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (
 	if (numCallbacks >= MAX_USER_CALLBACKS) return &CALLBACK_ERROR;
 	callbacks[numCallbacks].setup(nameData, _action);
 	numCallbacks++;
+	return NO_ERROR;
+}
+
+ERROR_STATUS core::Engine::jump(INT bytecodeIndex)
+{
+	// move bytecode iterator
+	ASSERT(jumpIndex < 0);
+	jumpIndex = bytecodeIndex;
 	return NO_ERROR;
 }
 
@@ -181,8 +283,10 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 			if (block.loop)
 			{
 				LOG.println("-------- JUMP BACK --------");
-				LOG.print("address: ").print(block.startAddress).endl();
-				automata.jump(block.startAddress);
+				LOG.print("address: ").print(block.startBytecodeIndex).endl();
+				LOG.print("indentation: ").print(block.indentation).endl();
+				LOG.print("current blockStackSize: ").print(blockStackSize).endl();
+				CHECK_CALL(jump(block.startBytecodeIndex));
 				blockStackSize--;
 				LOG.print("jump back, pop stack, stack size: ").print(blockStackSize).endl();
 				executeLine = false;
@@ -207,7 +311,7 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 	return NO_ERROR;
 }
 
-ERROR_STATUS core::Engine::executeLine(INT indentation, bool _oneLiner, INT _lineStartIndex, INT lineType, Tree& tree)
+ERROR_STATUS core::Engine::executeLine(INT indentation, bool _oneLiner, INT _bytecodeIndex, INT lineType, Tree& tree)
 {
 	oneLiner = _oneLiner;
 	bool executeLine = false;
@@ -215,7 +319,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, bool _oneLiner, INT _lin
 
 	if (!executeLine) return NO_ERROR;
 
-	lineStartIndex = _lineStartIndex;
+	bytecodeIndex = _bytecodeIndex;
 
 	stack.init(NODE_STACK);
 
@@ -301,7 +405,7 @@ void core::Engine::startLoop()
 {
 	LOG.println("-------- START LOOP --------");
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
-	blockStack[blockStackSize].startAddress = lineStartIndex;
+	blockStack[blockStackSize].startBytecodeIndex = bytecodeIndex;
 	blockStack[blockStackSize].indentation = currentIndentation+1;
 	blockStack[blockStackSize].loop = true;
 	blockStackSize++;
@@ -310,7 +414,7 @@ void core::Engine::startIf()
 {
 	LOG.println("-------- START IF --------");
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
-	blockStack[blockStackSize].startAddress = -123456; // not needed
+	blockStack[blockStackSize].startBytecodeIndex = -123456; // not needed
 	blockStack[blockStackSize].indentation = currentIndentation+1;
 	blockStack[blockStackSize].loop = false;
 	blockStackSize++;

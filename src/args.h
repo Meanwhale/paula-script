@@ -23,6 +23,11 @@ namespace paula
 		 */
 		INT type() const;
 		/**
+		* @brief Get node size.
+		* @return Node size.
+		*/
+		INT size() const;
+		/**
 		 * @brief Compare node (variable) type.
 		 * @param tag eg. NODE_INTEGER. See node_types.h.
 		 * @return True if types match.
@@ -67,6 +72,7 @@ namespace paula
 		friend class Args;
 		friend class core::Tree;
 		friend class core::TreeIterator;
+		friend class core::Engine;
 	private:
 		const INT* ptr; // pointer to a data tag in a tree. volatile, as data can change
 		Var(const INT*_ptr);

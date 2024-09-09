@@ -17,12 +17,13 @@ namespace paula { namespace core
 
 		ByteAutomata(Engine&);
 		void init(IInputStream* _input);
-		bool running();
+		//bool running();
 		void step();
-		void run(IInputStream* input);
+		bool parseLine(IInputStream* input);
 		void clearBuffer();
-		void jump(INT address);
 		const Error* getError();
+
+		friend class Engine;
 
 	private:
 
@@ -47,12 +48,13 @@ namespace paula { namespace core
 		BYTE stateCounter;
 		BYTE actionCounter; // 0 = end
 		// running:
-		INT readIndex = -1;
+		//INT readIndex = -1;
 		INT bufferIndex = 0;
 		INT commandStartIndex = 0;
 		INT lineNumber = 0;
 		bool stayNextStep = false;
 		bool oneLiner = true;
+		bool commandReady = false;
 
 		// declarations
 		
@@ -93,7 +95,8 @@ namespace paula { namespace core
 		void startBlock();
 		void endBlock();
         void eof();
-		void executeCommand();
+		void finishCommand();
+		void resetNewLine();
 		void resetCommand();
 		void startExpr(BYTE firstState);
 		void defineTransitions();

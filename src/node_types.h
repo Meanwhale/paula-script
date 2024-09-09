@@ -34,6 +34,8 @@ namespace paula
 
 		NODE_OPERATOR			= 0x31000000,
 
+		NODE_RAW_TREE			= 0x41000000, // raw tree data. copy to a new Tree object
+
 		// masks
 		TAG_MASK				= 0xff000000,
 		SIZE_MASK				= 0x00ffffff;

@@ -12,12 +12,15 @@ namespace paula {
 		{
 		public:
 			Tree(INT size);
+			Tree(INT * a, int s);
 			void addInt(INT parentIndex, INT data);
 			void addBool(INT parentIndex, bool data);
 			void addOperatorNode(INT parentIndex, CHAR op);
 			void addDouble(INT parentIndex, double value);
+			void addRawTree(INT parentIndex, Tree& tree);
 			void addText(INT parentIndex, const char* text);
 			void addText(INT parentIndex, const unsigned char * bytes, INT first, INT last, INT nodeType);
+			void addData(INT parentIndex, Var src);
 			void addData(INT stackIndex, TreeIterator& src);
 			void pushData(INT stackIndex, INT* src);
 			INT addSubtree(INT parentIndex, INT type);
@@ -38,6 +41,8 @@ namespace paula {
 			// map functions
 
 			Var get(const char * varName);
+
+			Var getAt(INT dataIndex);
 
 			//bool getBool(bool& out, const char* varName);
 	  //      bool getDouble(double& out, const char* varName);
@@ -67,6 +72,7 @@ namespace paula {
 			void printCompact(TreeIterator&);
 
 			friend class TreeIterator;
+			friend class Engine;
 			friend class paula::Var;
 			friend class paula::Args;
 
@@ -75,7 +81,7 @@ namespace paula {
 			INT top;
 			INT node(INT tag, INT size);
 			void pushStack(INT parentIndex, INT tag, INT size);
-			void insertTree(INT parentIndex, INT tag, INT size);
+			void insertToTree(INT parentIndex, INT tag, INT size);
 
 
 			//void printNode(INT index, INT depth);
@@ -98,6 +104,7 @@ namespace paula {
 
 			void toChild();
 			void toParent();
+			void jumpTo(INT);
 
 			bool hasNext();
 			bool hasChild();

@@ -16,12 +16,16 @@ core::Tree::Tree(INT size) : data(size)
 	clear();
 }
 
+core::Tree::Tree(INT * a, int s) : data(a, s)
+{
+}
+
 INT core::Tree::node(INT tag, INT size)
 {
 	return tag | size;
 }
 
-void core::Tree::insertTree(INT parentIndex, INT tag, INT size)
+void core::Tree::insertToTree(INT parentIndex, INT tag, INT size)
 {
 	ASSERT(isSubtree(parentIndex));
 	INT previousLast = data[parentIndex + 4]; // save previous last child
@@ -37,21 +41,24 @@ void core::Tree::insertTree(INT parentIndex, INT tag, INT size)
 		ASSERT(previousLast > 0);
 		data[previousLast + 2] = top; // set new node as previous last's next sibling
 	}
+	
+	// size: num. items after the tag, includes parent and sibling indexes and the data.
+	// eg. size = 3 (parent, next, data)
 
-	data[top++] = node(tag, size); // size = 3 (parent, next, data)
+	data[top++] = node(tag, size);
 	data[top++] = parentIndex;
 	data[top++] = -1; // no siblings yet
 }
 
 void core::Tree::addOperatorNode(INT parentIndex, CHAR op)
 {
-	insertTree(parentIndex, NODE_OPERATOR, 3);
+	insertToTree(parentIndex, NODE_OPERATOR, 3);
 	data[top++] = charToInt(op);
 }
 
 void core::Tree::addDouble(INT parentIndex, double value)
 {
-	insertTree(parentIndex, NODE_DOUBLE, 4);
+	insertToTree(parentIndex, NODE_DOUBLE, 4);
 
 	LONG number = doubleToLongFormat(value);
 	INT hi =  longHighBits(number);
@@ -60,15 +67,26 @@ void core::Tree::addDouble(INT parentIndex, double value)
 	data[top++] = low;
 }
 
+void core::Tree::addRawTree(INT parentIndex, Tree& tree)
+{
+	VRB(LOG.print("addRawTree. size:").print(tree.top).endl();)
+	INT treeSize = tree.top;
+	insertToTree(parentIndex, NODE_RAW_TREE, treeSize + 2);
+	
+	// copy tree data
+	
+	for(INT i=0; i<treeSize; i++) data[top++] = tree.data[i];
+}
+
 void core::Tree::addInt(INT parentIndex, INT value)
 {
-	insertTree(parentIndex, NODE_INTEGER, 3);
+	insertToTree(parentIndex, NODE_INTEGER, 3);
 	data[top++] = value;
 }
 
 void core::Tree::addBool(INT parentIndex, bool value)
 {
-	insertTree(parentIndex, NODE_BOOL, 3);
+	insertToTree(parentIndex, NODE_BOOL, 3);
 	data[top++] = value ? 1 : 0;
 }
 
@@ -86,7 +104,7 @@ void Tree::addText(INT parentIndex, const unsigned char * bytes, INT firstByte, 
 	INT numBytes = lastByte - firstByte;
 	INT intsSize = textDataSize(numBytes);
 
-	insertTree(parentIndex, nodeType, 3 + intsSize);
+	insertToTree(parentIndex, nodeType, 3 + intsSize);
 	
 	data[top++] = numBytes;
 
@@ -99,7 +117,7 @@ INT core::Tree::addSubtree(INT parentIndex, INT type)
 {
 	ASSERT(isSubtreeTag(type));
 	INT newSubtreeIndex = top;
-	insertTree(parentIndex, type, 4);
+	insertToTree(parentIndex, type, 4);
 	data[top++] = -1; // first child
 	data[top++] = -1; // last child
 	return newSubtreeIndex;
@@ -141,18 +159,22 @@ void Tree::pushBool(INT stackIndex, bool value)
 
 // TODO: combine these three below
 
-void Tree::addData(INT parentIndex, TreeIterator& src)
+void Tree::addData(INT parentIndex, Var src)
 {
 	ASSERT(isSubtree(parentIndex));
 	INT type = src.type();
 	INT size = src.size();
-	insertTree(parentIndex, type, size);
+	insertToTree(parentIndex, type, size);
 	// copy actual data
 	for(INT i=3; i<=size; i++)
 	{
-		VRB(LOG.print("copy value: ").print(src.tree.data[src.index + i]).endl();)
-		data[top++] = src.tree.data[src.index + i];
+		VRB(LOG.print("copy value: ").print(src.ptr[i]).endl();)
+		data[top++] = src.ptr[i];
 	}
+}
+void Tree::addData(INT parentIndex, TreeIterator& src)
+{
+	addData(parentIndex, src.var());
 }
 void Tree::pushData(INT stackIndex, INT* src)
 {
@@ -231,9 +253,14 @@ INT Tree::stackSize(INT stackIndex)
 
 Var Tree::get(const char* varName)
 {
-	INT index = getIndexOfData(varName);
-	if (index < 0) return Var();
-	return Var(data.ptr(index));
+	INT dataIndex = getIndexOfData(varName);
+	if (dataIndex < 0) return Var();
+	return Var(data.ptr(dataIndex));
+}
+Var Tree::getAt(INT dataIndex)
+{
+	if (dataIndex < 0) return Var();
+	return Var(data.ptr(dataIndex));
 }
 
 /*bool Tree::getBool(bool& out, const char* varName)
@@ -460,6 +487,11 @@ void TreeIterator::toParent()
 	ASSERT(hasParent());
 	index = tree.data[index+1];
 	depth--;
+}
+
+void TreeIterator::jumpTo(INT i)
+{
+	index = i;
 }
 
 INT TreeIterator::getDepth()

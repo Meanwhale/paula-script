@@ -58,6 +58,10 @@ const POut& POut::print(const Var& x) const
 	{
 		bool b; if (x.getBool(b)) print(b ? "true" : "false");
 	}
+	else if (t == NODE_RAW_TREE)
+	{
+		print("<RAW TREE>");
+	}
 	else if (t == NODE_OPERATOR)
 	{
 		char op; if (x.getOp(op)) print(op);
@@ -68,7 +72,7 @@ const POut& POut::print(const Var& x) const
 	}
 	else
 	{
-		LOG.print("<! ! ! TreeIterator::print: unknown node ! ! !>");
+		print("<! ! ! TreeIterator::print: unknown node ! ! !>");
 	}
 	return *this;
 }

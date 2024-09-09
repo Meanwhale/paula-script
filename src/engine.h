@@ -21,7 +21,7 @@ namespace paula
 
 		struct Block
 		{
-			INT startAddress, indentation;
+			INT startBytecodeIndex, indentation;
 			bool loop;
 		};
 
@@ -34,8 +34,11 @@ namespace paula
 			void startLoop();
 			void startIf();
 			void skipBlock();
+			ERROR_STATUS addParsedLine();
 			ERROR_STATUS run(IInputStream&, bool handleError);
+			ERROR_STATUS returnHandleError(const Error* error, bool handleErrors);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
+			ERROR_STATUS jump(INT bytecodeIndex);
 			Tree vars;
 			bool oneLiner;
 
@@ -53,15 +56,15 @@ namespace paula
 			ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
 			ERROR_STATUS operatorPush(CHAR op, INT a, INT b);
 			ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
-			ERROR_STATUS executeLine(INT indentation, bool oneLiner, INT lineStartIndex, INT lineType, Tree& tree);
+			ERROR_STATUS executeLine(INT indentation, bool oneLiner, INT _bytecodeIndex, INT lineType, Tree& tree);
 
-			INT currentIndentation, skipIndentation, blockStackSize, lineStartIndex, numCallbacks;
+			INT currentIndentation, skipIndentation, blockStackSize, bytecodeIndex, numCallbacks, jumpIndex;
 
 			ByteAutomata automata;
 
 			Block blockStack[MAX_BLOCK_DEPTH];
 
-			Tree stack, constants;
+			Tree stack, constants, bytecode;
 
 			Args args;
 
