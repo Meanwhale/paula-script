@@ -110,8 +110,6 @@ const char* core::treeTypeName(INT tag)
 	case NODE_SUBTREE: return "<subtree>";
 	case NODE_EXPR: return "<expr>";
 	case NODE_STATEMENT: return "<statement>";
-
-	case NODE_STACK: return "<stack>";
 	case NODE_MAP: return "<map>";
 	case NODE_KV: return "<key-value>";
 	}
@@ -123,7 +121,7 @@ const char* core::treeTypeName(INT tag)
 bool core::match(const INT* ptr, INT tag)
 {
 	// check data type match
-	return (tag & TAG_MASK) == (*ptr & TAG_MASK);
+	return (tag & NODE_TYPE_MASK) == (*ptr & NODE_TYPE_MASK);
 }
 bool core::readInt(INT& out, const INT* node)
 {

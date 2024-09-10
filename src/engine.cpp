@@ -119,7 +119,6 @@ ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 {
 	LOG.println("Paula::newRun");
 
-	stack.init(NODE_STACK);
 	vars.init(NODE_SUBTREE);
 	bytecode.init(NODE_SUBTREE);
 
@@ -321,7 +320,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, bool _oneLiner, INT _byt
 
 	bytecodeIndex = _bytecodeIndex;
 
-	stack.init(NODE_STACK);
+	stack.clear();
 
 	if (lineType == LINE_ASSIGNMENT)
 	{
@@ -347,10 +346,12 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, bool _oneLiner, INT _byt
 
 			it.next(); // move to SRC
 			CHECK_CALL(pushExprArg(it));
-			TreeIterator src(stack, stack.stackTopIndex(0));
-			LOG.print("overwrite value: ").print(src).endl();
+			StackIterator src(stack);
+			LOG.print("overwrite value. new value: ").print(src.var()).endl();
 			if (src.type() == NODE_TEXT || data.type() == NODE_TEXT) return &TEXT_VARIABLE_OVERWRITE;
-			data.overwrite(src);
+			vars.print();
+			vars.printData();
+			data.overwrite(src.var());
 		}
 		else
 		{
@@ -361,10 +362,10 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, bool _oneLiner, INT _byt
 			vars.addData(kvIndex, it); // add variable name to KV
 			it.next(); // move to SRC
 			CHECK_CALL(pushExprArg(it));
-			TreeIterator src(stack, stack.stackTopIndex(0));
-			LOG.print("assign value: ").print(src).endl();
-			vars.addData(kvIndex, src); // add value to KV
-			stack.pop(0);
+			StackIterator src(stack);
+			LOG.print("assign value: ").print(src.var()).endl();
+			vars.addData(kvIndex, src.var()); // add value to KV
+			stack.pop();
 		}
 
 		VRB(vars.print();)
@@ -422,7 +423,7 @@ void core::Engine::startIf()
 
 void core::Engine::skipBlock()
 {
-	LOG.println("-------- SKIP BLOCK (TODO) --------");
+	LOG.println("-------- SKIP BLOCK --------");
 	
 	// skip lines with indentation equal or greater than skipIndentation
 	// eg. code in 'if' block.
@@ -455,13 +456,13 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 
 	// print args
 
-	if (stack.stackTopIndex(0) > 0)
+	if (stack.itemCount() > 0)
 	{
-		TreeIterator argIt(stack, stack.stackTopIndex(0));
+		StackIterator argIt(stack);
 		LOG.print("args stack");
 		do
 		{
-			LOG.print("\n - ").print(argIt);
+			LOG.print("\n - ").print(argIt.var());
 		}
 		while(argIt.next());
 		LOG.endl();
@@ -474,11 +475,11 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 
 	// pop function arguments after call and push return value
 	
-	while (numArgs-- > 0) stack.pop(0);
+	while (numArgs-- > 0) stack.pop();
 
 	if (args.hasReturnValue())
 	{
-		stack.pushData(0, args.returnValue.ptr());
+		stack.pushData( args.returnValue.ptr());
 	}
 
 	return NO_ERROR;
@@ -489,14 +490,14 @@ ERROR_STATUS core::Engine::pushAtomicValue(TreeIterator&_it)
 	// push a value in expression,
 	// eg. "1" in "f(1)" or "2" in "f(2+3)" or "(4+5)" in "f((4+5)+6)"
 
-	INT stackSizeBefore = stack.stackSize(0);
+	INT stackSizeBefore = stack.itemCount();
 	TreeIterator it(_it);
 
 	LOG.print("push atomic value: ").print(it).endl();
 
 	if (it.isType(NODE_INTEGER) || it.isType(NODE_DOUBLE) || it.isType(NODE_BOOL) || it.isType(NODE_TEXT))
 	{
-		stack.pushData(0,it);
+		stack.pushData(it);
 	}
 	else if(it.isType(NODE_SUBTREE))
 	{
@@ -519,7 +520,7 @@ ERROR_STATUS core::Engine::pushAtomicValue(TreeIterator&_it)
 		ASSERT(false);
 	}
 
-	INT stackSizeAfter = stack.stackSize(0);
+	INT stackSizeAfter = stack.itemCount();
 	CHECK(stackSizeBefore + 1 == stackSizeAfter, EMPTY_ARGUMENT_VALUE);
 	return NO_ERROR;
 }
@@ -568,7 +569,7 @@ INT core::Engine::findVariableIndex(INT* nameData, Tree& variableMap)
 
 ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 {
-	INT stackSizeBefore = stack.stackSize(0);
+	INT stackSizeBefore = stack.itemCount();
 	// 'it' now points to first element of the expression, eg. "x" in "x + 1"
 
 	if (!it.hasNext())
@@ -604,7 +605,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 			// get the first value
 
 			CHECK_CALL(pushAtomicValue(it));
-			INT a = stack.popInt(0);
+			INT a = stack.popInt();
 
 			// read the operator
 
@@ -617,7 +618,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 			it.next();
 			CHECK(!it.hasNext(), SYNTAX_ERROR);
 			CHECK_CALL(pushAtomicValue(it));
-			INT b = stack.popInt(0);
+			INT b = stack.popInt();
 
 			LOG.print("a=").print(a).print(" ").print(op).print(" b=").print(b).endl();
 			CHECK_CALL(operatorPush(op, a, b));
@@ -630,7 +631,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 
 	// check that one argument has actually been pushed
 
-	INT stackSizeAfter = stack.stackSize(0);
+	INT stackSizeAfter = stack.itemCount();
 	CHECK(stackSizeBefore + 1 == stackSizeAfter, EMPTY_ARGUMENT_VALUE);
 	return NO_ERROR;
 }
@@ -652,14 +653,14 @@ ERROR_STATUS core::Engine::operatorPush(CHAR op, INT a, INT b)
 {
 	switch(op)
 	{
-	case '<': stack.pushBool(0, a <  b); return NO_ERROR;
-	case '>': stack.pushBool(0, a >  b); return NO_ERROR;
-	case '=': stack.pushBool(0, a == b); return NO_ERROR;
+	case '<': stack.pushBool(a <  b); return NO_ERROR;
+	case '>': stack.pushBool(a >  b); return NO_ERROR;
+	case '=': stack.pushBool(a == b); return NO_ERROR;
 
-	case '+': stack.pushInt (0, a +  b); return NO_ERROR;
-	case '-': stack.pushInt (0, a -  b); return NO_ERROR;
-	case '*': stack.pushInt (0, a *  b); return NO_ERROR;
-	case '/': CHECK(b!=0, DIV_ZERO); stack.pushInt(0, a / b); return NO_ERROR;
+	case '+': stack.pushInt (a +  b); return NO_ERROR;
+	case '-': stack.pushInt (a -  b); return NO_ERROR;
+	case '*': stack.pushInt (a *  b); return NO_ERROR;
+	case '/': CHECK(b!=0, DIV_ZERO); stack.pushInt(a / b); return NO_ERROR;
 	}
 	ERR.printCharSymbol(op);
 	return &INVALID_OPERATOR;

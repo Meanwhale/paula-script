@@ -162,15 +162,14 @@ void core::treeTest()
 }
 void core::stackTest()
 {
-	Tree stack(1024);
-	stack.init(NODE_STACK);
-	stack.pushInt(0, 123);
-	stack.pushInt(0, 456);
-	stack.pop(0);
-	stack.pushInt(0, 789);
-	stack.pop(0);
-	stack.pop(0);
-	ASSERT(stack.stackSize(0) == 0);
+	Stack stack(1024);
+	stack.pushInt(123);
+	stack.pushInt(456);
+	stack.pop();
+	stack.pushInt(789);
+	stack.pop();
+	stack.pop();
+	ASSERT(stack.itemCount() == 0);
 }
 void core::reservedNameTest()
 {
@@ -193,7 +192,7 @@ void core::semicolonTest()
 	ERROR_TEST("b:true;if(b)\n\tb:false", CONDITION_LINE_WITH_SEMICOLON);
 	ERROR_TEST("b:true;while(b)\n\tb:false", CONDITION_LINE_WITH_SEMICOLON);
 }
-void core::runAll()
+void core::testAll()
 {
 	stackTest();
 	treeTest();

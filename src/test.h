@@ -30,7 +30,7 @@ namespace paula
 		void reservedNameTest();
         void semicolonTest();
 
-		void runAll();
+		void testAll();
 		//const Error* iteratorTest();
 	}
 }

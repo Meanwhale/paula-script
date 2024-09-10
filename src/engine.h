@@ -64,7 +64,8 @@ namespace paula
 
 			Block blockStack[MAX_BLOCK_DEPTH];
 
-			Tree stack, constants, bytecode;
+			Stack stack;
+			Tree constants, bytecode;
 
 			Args args;
 

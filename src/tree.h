@@ -22,21 +22,9 @@ namespace paula {
 			void addText(INT parentIndex, const unsigned char * bytes, INT first, INT last, INT nodeType);
 			void addData(INT parentIndex, Var src);
 			void addData(INT stackIndex, TreeIterator& src);
-			void pushData(INT stackIndex, INT* src);
 			INT addSubtree(INT parentIndex, INT type);
 			bool hasCapacity(INT size);
 
-			// stack functions
-
-			void pushInt(INT stackIndex, INT value);
-			void pushBool(INT stackIndex, bool value);
-			void pushData(INT stackIndex, TreeIterator&src);
-			INT stackTopIndex(INT stackIndex);
-			INT popInt(INT stackIndex);
-			void pop(INT stackIndex);
-			bool stackEmpty(INT stackIndex);
-
-			INT stackSize(INT stackIndex);
 
 			// map functions
 
@@ -57,7 +45,6 @@ namespace paula {
 			INT getType(INT index);
 			INT getNodeSize(INT index);
 			bool isSubtree(INT nodeIndex);
-			bool isStack(INT nodeIndex);
 			bool isSubtreeTag(INT tag);
 			INT nodeSize(INT node);
 
@@ -71,6 +58,8 @@ namespace paula {
 			void printSubtree(TreeIterator&);
 			void printCompact(TreeIterator&);
 
+			friend class Stack;
+			friend class StackIterator;
 			friend class TreeIterator;
 			friend class Engine;
 			friend class paula::Var;
@@ -80,15 +69,14 @@ namespace paula {
 			Array<INT> data;
 			INT top;
 			INT node(INT tag, INT size);
-			void pushStack(INT parentIndex, INT tag, INT size);
 			void insertToTree(INT parentIndex, INT tag, INT size);
-
 
 			//void printNode(INT index, INT depth);
 
 			Tree() = delete;
 			Tree& operator=(const Tree&) = delete;
 		};
+
 		class TreeIterator
 		{
 		public:
@@ -115,7 +103,7 @@ namespace paula {
 			INT type();
 			INT size();
 
-			void overwrite(TreeIterator& src);
+			void overwrite(Var src);
 
 			// data getters
 
@@ -123,6 +111,7 @@ namespace paula {
 
 			INT* getTextData();
 
+			friend class Stack;
 			friend class Tree;
 			friend class Engine;
 			friend class paula::Var;

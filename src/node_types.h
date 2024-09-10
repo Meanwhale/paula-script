@@ -14,7 +14,6 @@ namespace paula
 		NODE_EXPR				= 0x02000000,
 		NODE_STATEMENT			= 0x03000000,
 
-		NODE_STACK				= 0x05000000,
 		NODE_MAP				= 0x06000000, // like dictionary. list of KV nodes
 		NODE_KV					= 0x07000000, // key-value pairs for map: text key that has a link to data
 
@@ -28,6 +27,7 @@ namespace paula
 		NODE_TEXT				= 0x24000000, // string/const char*, e.g. "abc d"
 		NODE_BOOL				= 0x25000000, // true = 1, false = 0
 
+		NODE_STACK_ROOT			= 0x2e000000,
 		NODE_VOID				= 0x2f000000,
 
 		// controls tokens
@@ -37,6 +37,6 @@ namespace paula
 		NODE_RAW_TREE			= 0x41000000, // raw tree data. copy to a new Tree object
 
 		// masks
-		TAG_MASK				= 0xff000000,
+		NODE_TYPE_MASK				= 0xff000000,
 		SIZE_MASK				= 0x00ffffff;
 }

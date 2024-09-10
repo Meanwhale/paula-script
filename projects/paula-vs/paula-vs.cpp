@@ -13,6 +13,6 @@ int main()
 {
 	LOG.println("Paula unit tests\n");
 	
-	runAll();
+	testAll();
 }
 

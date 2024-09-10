@@ -34,11 +34,10 @@ return i == types.length();
 
 INT Args::emptyData = paula::NODE_VOID | 0; // size=0
 
-Args::Args(Tree& _tree) :
+Args::Args(Stack& _stack) :
 	returnValue(MAX_RETURN_VALUE_SIZE),
-	tree(_tree),
-	numArgs(0),
-	it(_tree)
+	stack(_stack),
+	numArgs(0)
 {
 }
 INT Args::count()
@@ -72,9 +71,9 @@ Var Args::get(INT dataIndex)
 		ERR.print("index out of range: ").print(dataIndex).print("/").print(numArgs).endl();
 		return Var(&NODE_VOID);
 	}
-	ASSERT(tree.stackTopIndex(0) > 0);
+	ASSERT(stack.itemCount() > 0);
 
-	it.index = tree.stackTopIndex(0); // iterator points to first element
+	StackIterator it(stack); // iterator points to first element
 
 	// go to data
 
@@ -82,9 +81,9 @@ Var Args::get(INT dataIndex)
 	{
 		it.next();
 	}
-	LOG.print("get: ").print(it).endl();
+	LOG.print("get: ").print(it.var()).endl();
 
-	return Var(tree.data.ptr(it.index)); // set pointer to the data
+	return it.var(); // set pointer to the data
 }
 
 void Args::reset(INT _numArgs)
@@ -104,7 +103,7 @@ Var::Var() : ptr(&Args::emptyData)
 
 INT Var::type() const
 {
-	return *ptr & TAG_MASK;
+	return *ptr & NODE_TYPE_MASK;
 }
 INT Var::size() const
 {
@@ -113,7 +112,7 @@ INT Var::size() const
 bool Var::match(INT tag) const
 {
 	// check data type match
-	return (tag & TAG_MASK) == (*ptr & TAG_MASK);
+	return (tag & NODE_TYPE_MASK) == (*ptr & NODE_TYPE_MASK);
 }
 bool Var::getInt(INT& out) const
 {

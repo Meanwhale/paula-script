@@ -203,7 +203,6 @@ void ByteAutomata::step()
 
 				bufferIndex++;
 				buffer[bufferIndex]     = '\n';
-				buffer[bufferIndex + 1] = '\x4'; // end of transmission
 				inputByte = '\n';
 			}
 			else
@@ -593,7 +592,6 @@ void ByteAutomata::defineTransitions()
 
 	BYTE ai; // action index
 
-	TRANSITION(stateNewLine, "\x4",										{ ba->eof(); })
 	TRANSITION(stateNewLine, "\t",										{ ba->indentation++; });
 	TRANSITION(stateNewLine, letters,									{ ba->startExpr(ba->stateFirstName); });
 	TRANSITION(stateNewLine, lineBreak,									{ ba->startNewLine(); });

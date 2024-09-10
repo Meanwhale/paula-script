@@ -2,6 +2,7 @@
 #include "defs.h"
 #include "array.h"
 #include "tree.h"
+#include "stack.h"
 
 using namespace paula::core;
 
@@ -72,6 +73,7 @@ namespace paula
 		friend class Args;
 		friend class core::Tree;
 		friend class core::TreeIterator;
+		friend class core::StackIterator;
 		friend class core::Engine;
 	private:
 		const INT* ptr; // pointer to a data tag in a tree. volatile, as data can change
@@ -114,14 +116,13 @@ namespace paula
 		friend class Engine;
 
 	private:
-		Args(Tree&_tree);
+		Args(Stack&_tree);
 		void reset(INT numArgs);
 
 		Array<INT> returnValue;
 
-		Tree& tree;
+		Stack& stack;
 		INT numArgs;
-		core::TreeIterator it;
 
 		Args() = delete;
 		static INT emptyData;
