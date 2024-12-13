@@ -74,7 +74,7 @@ Engine::Engine() : //buffer(BUFFER_SIZE), index(0)
 	stack(ARG_STACK_SIZE),
 	constants(CONSTANTS_SIZE),
 	bytecode(BYTECODE_SIZE),
-	args(stack),
+	args(stack), // args to give to processes are on stack
 	commands
 	{
 		Command("print", printAction),
@@ -159,7 +159,6 @@ ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 		it.toChild();
 		// read line data
 		INT lineNumber, indentation, commandType;
-		bool oneLiner;
 
 		it.var().getInt(lineNumber);  it.next();
 		it.var().getInt(indentation); it.next();
@@ -174,7 +173,7 @@ ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 		VRB(LOG.print("\nEXECUTE LINE\n"));
 		VRB(parsedCommand.print());
 
-		CHECK_CALL(executeLine(indentation, oneLiner, bytecodeIndex, commandType, parsedCommand));
+		CHECK_CALL(executeLine(indentation, bytecodeIndex, commandType, parsedCommand));
 
 		it.toParent();
 
@@ -310,9 +309,8 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 	return NO_ERROR;
 }
 
-ERROR_STATUS core::Engine::executeLine(INT indentation, bool _oneLiner, INT _bytecodeIndex, INT lineType, Tree& tree)
+ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT lineType, Tree& tree)
 {
-	oneLiner = _oneLiner;
 	bool executeLine = false;
 	CHECK_CALL(lineIndentationInit(indentation, executeLine));
 
@@ -479,7 +477,7 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 
 	if (args.hasReturnValue())
 	{
-		stack.pushData( args.returnValue.ptr());
+		stack.pushData(args.returnValue.ptr());
 	}
 
 	return NO_ERROR;

@@ -56,7 +56,7 @@ namespace paula
 			ERROR_STATUS pushExprSubtreeArg(TreeIterator&);
 			ERROR_STATUS operatorPush(CHAR op, INT a, INT b);
 			ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
-			ERROR_STATUS executeLine(INT indentation, bool oneLiner, INT _bytecodeIndex, INT lineType, Tree& tree);
+			ERROR_STATUS executeLine(INT indentation, INT _bytecodeIndex, INT lineType, Tree& tree);
 
 			INT currentIndentation, skipIndentation, blockStackSize, bytecodeIndex, numCallbacks, jumpIndex;
 

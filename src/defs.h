@@ -127,7 +127,7 @@ namespace paula
 		LINE_CALL = 10003;
 }
 
-// return value for error checked functions
+// return value for error-checked functions
 
 #define ERROR_STATUS [[nodiscard]] const Error*
 

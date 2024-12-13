@@ -110,7 +110,7 @@ const char* core::treeTypeName(INT tag)
 	case NODE_SUBTREE: return "<subtree>";
 	case NODE_EXPR: return "<expr>";
 	case NODE_STATEMENT: return "<statement>";
-	case NODE_MAP: return "<map>";
+	//case NODE_MAP: return "<map>";
 	case NODE_KV: return "<key-value>";
 	}
 	return "<! ! ! error ! ! !>";

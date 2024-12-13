@@ -223,7 +223,7 @@ void ByteAutomata::step()
 		stayNextStep = false;
 	}
 	VRB(LOG.print("[ ").printCharSymbol(inputByte).print(" ] state: ").print(stateNames[(INT)currentState]));
-	VRB(if (readIndex >= 0) LOG.print(" r: ").print(readIndex).print("/").print(bufferIndex););
+	//VRB(if (readIndex >= 0) LOG.print(" r: ").print(readIndex).print("/").print(bufferIndex););
 	VRB(LOG.endl(););
 
 	step(inputByte);
@@ -399,14 +399,14 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 	}
 	else if (currentState == stateNumber)
 	{
-		VRB(LOG.print("add integer token: ").print(lastStart).print(" -> ").print(readIndex).endl();)
+		VRB(LOG.print("add integer token: ").print(lastStart).print(" -> ").print(bufferIndex).endl();)
 		INT value = parseInt(buffer, lastStart, bufferIndex);
 		prepareAddToken();
 		tree.addInt(currentParent(), value);
 	}
 	else if (currentState == stateDecimal)
 	{
-		VRB(LOG.print("add decimal token: ").print(lastStart).print(" -> ").print(readIndex).endl();)
+		VRB(LOG.print("add decimal token: ").print(lastStart).print(" -> ").print(bufferIndex).endl();)
 		double value = parseDouble(buffer, lastStart, bufferIndex);
 		prepareAddToken();
 		tree.addDouble(currentParent(), value);
@@ -430,7 +430,7 @@ void ByteAutomata::addLiteralToken(INT nodeType)
 		error = &TEXT_TOO_LONG;
 		return;
 	}
-	VRB(LOG.print("add token: ").print(lastStart).print(" -> ").print(readIndex).endl();)
+	VRB(LOG.print("add token: ").print(lastStart).print(" -> ").print(bufferIndex).endl();)
 	VRB(LOG.print("addLiteralToken: ").printHex(nodeType).endl();)
 	prepareAddToken();
 	tree.addText(currentParent(), buffer.ptr(), lastStart, bufferIndex, nodeType);

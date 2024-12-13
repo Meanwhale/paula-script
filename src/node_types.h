@@ -14,7 +14,7 @@ namespace paula
 		NODE_EXPR				= 0x02000000,
 		NODE_STATEMENT			= 0x03000000,
 
-		NODE_MAP				= 0x06000000, // like dictionary. list of KV nodes
+		//NODE_MAP				= 0x06000000, // like dictionary. list of KV nodes
 		NODE_KV					= 0x07000000, // key-value pairs for map: text key that has a link to data
 
 		// data types
