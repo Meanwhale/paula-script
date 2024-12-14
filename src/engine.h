@@ -36,6 +36,7 @@ namespace paula
 			void skipBlock();
 			ERROR_STATUS addParsedLine();
 			ERROR_STATUS run(IInputStream&, bool handleError);
+			ERROR_STATUS run(IInputStream&, const char **args, int numArgs, bool handleError);
 			ERROR_STATUS returnHandleError(const Error* error, bool handleErrors);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 			ERROR_STATUS jump(INT bytecodeIndex);

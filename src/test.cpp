@@ -46,7 +46,7 @@ void core::doubleTest()
 
 void core::operatorTest()
 {
-	auto err = paula::run("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
+	auto err = paula::run("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\ne:1+(2-3)\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
 	ASSERT(err == NO_ERROR);
 	INT a;
 	bool b;
@@ -54,6 +54,7 @@ void core::operatorTest()
 	TEST_INT("b", 20);
 	TEST_INT("c", 4);
 	TEST_INT("d", 3);
+	TEST_INT("e", 0);
 	TEST_BOOL("vale", false);
 	TEST_BOOL("tosi", true);
 	TEST_BOOL("sama", true);
@@ -166,7 +167,26 @@ void core::stackTest()
 	stack.pushInt(123);
 	stack.pushInt(456);
 	stack.pop();
+	stack.pushText("hei");
+	stack.pushText("moi");
 	stack.pushInt(789);
+	stack.pop();
+
+	StackIterator src(stack);
+	LOG.print("stackTest: ").print(src.var()).endl();
+
+	stack.pop();
+	StackIterator src2(stack);
+	LOG.print("stackTest: ").print(src2.var()).endl();
+
+	char *t1, *t2;
+	if (src.var().getChars(t1) && src2.var().getChars(t2))
+	{
+		ASSERT(strcmp(t1, "moi") == 0);
+		ASSERT(strcmp(t2, "hei") == 0);
+	}
+	else ASSERT(false);
+
 	stack.pop();
 	stack.pop();
 	ASSERT(stack.itemCount() == 0);

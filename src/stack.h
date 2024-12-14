@@ -13,6 +13,7 @@ namespace paula {
 			void clear();
 			void addNode(INT tag, INT size);
 			void pushData(INT* src);
+			void pushText(const char* text);
 			void pushInt(INT value);
 			void pushBool(bool value);
 			void pushData(TreeIterator&src);

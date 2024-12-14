@@ -61,7 +61,7 @@ ERROR_STATUS ifAction (Engine&p,Args&args)
 Engine Engine::one = Engine();
 
 
-Engine::Engine() : //buffer(BUFFER_SIZE), index(0)
+Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 	vars(VARS_SIZE),
 	oneLiner(true),
 	currentIndentation(0),
@@ -86,8 +86,6 @@ Engine::Engine() : //buffer(BUFFER_SIZE), index(0)
 	constants.init(NODE_SUBTREE);
 
 	LOG.println("---------------- NEW PAULA ----------------");
-	log.print("toimii!").endl();
-
 
 	INT kvIndex = constants.addSubtree(0, NODE_KV);
 	constants.addText(kvIndex, "true");
@@ -115,9 +113,13 @@ ERROR_STATUS Engine::addParsedLine()
 }
 
 
-ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
+ERROR_STATUS Engine::run(IInputStream& input, bool handleError)
 {
-	LOG.println("Paula::newRun");
+	return run(input, nullptr, 0, handleError);
+}
+ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, int numArgs, bool handleError)
+{
+	LOG.println("Paula::run");
 
 	vars.init(NODE_SUBTREE);
 	bytecode.init(NODE_SUBTREE);
@@ -127,6 +129,14 @@ ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 	blockStackSize = 0;
 	const Error* error = nullptr; // NO_ERROR
 
+	// command-line args
+
+	stack.clear();
+	for (INT i=0; i<numArgs; i++)
+	{
+		//stack.push
+	}
+
 	// parse lines and add them to the bytecode list
 
 	automata.init(&input);
@@ -135,7 +145,7 @@ ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 	{
 		running = automata.parseLine(&input);
 		error = automata.getError();
-		if (error != nullptr) return returnHandleError(error, handleErrors);
+		if (error != nullptr) return returnHandleError(error, handleError);
 		CHECK_CALL(addParsedLine());	// add command to bytecode list
 		automata.resetCommand();		// prepare to another command
 
@@ -199,6 +209,7 @@ ERROR_STATUS Engine::run(IInputStream& input, bool handleErrors)
 
 	return NO_ERROR;
 }
+
 
 ERROR_STATUS Engine::returnHandleError(const Error* error, bool handleErrors)
 {
@@ -318,7 +329,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 
 	bytecodeIndex = _bytecodeIndex;
 
-	stack.clear();
+	//stack.clear();
 
 	if (lineType == LINE_ASSIGNMENT)
 	{

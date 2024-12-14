@@ -17,7 +17,7 @@ namespace paula {
 			clear();
 		}
 
-		core::Tree::Tree(INT* a, int s) : data(a, s)
+		core::Tree::Tree(INT* a, int s) : data(a, s), top(s)
 		{
 		}
 
@@ -28,6 +28,8 @@ namespace paula {
 
 		void core::Tree::insertToTree(INT parentIndex, INT tag, INT size)
 		{
+			// insert a tree node. insert data after calling this.
+
 			ASSERT(isSubtree(parentIndex));
 			INT previousLast = data[parentIndex + 4]; // save previous last child
 			data[parentIndex + 4] = top; // set the new node as new last child
@@ -87,8 +89,8 @@ namespace paula {
 
 		void core::Tree::addRawTree(INT parentIndex, Tree& tree)
 		{
-			VRB(LOG.print("addRawTree. size:").print(tree.top).endl();)
-				INT treeSize = tree.top;
+			VRB(LOG.print("addRawTree. size:").print(tree.top).endl(););
+			INT treeSize = tree.top;
 			insertToTree(parentIndex, NODE_RAW_TREE, treeSize + 2);
 
 			// copy tree data

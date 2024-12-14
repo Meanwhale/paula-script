@@ -12,12 +12,19 @@ using namespace paula::core;
 STACK STRUCTURE:
 Items have tag (type and size) and links to previous (higher index) and next (lower index).
 'top' points to the tag of last added item or root if the stack is empty.
+REASON: similar to Tree data structure.
 
-index		item
+		index		item
 
-i_0			ROOT	[previous=itemA, next=-1]
-i_1			itemA	[previous=itemB, next=ROOT]
-top		i_2			itemB	[previous=-1, next=itemA]
+		i_0			ROOT	[previous=itemA, next=-1]
+		i_1			itemA	[previous=itemB, next=ROOT]
+top		i_2			itemB	[previous=-1,	 next=itemA]
+
+Memory layout (" - - " is data)
+
+		ROOT - - -  item A tag - - - - - - - - item B tag - - - - - -| free space
+		^                                      ^
+index:	0                                      top
 
 DATA NODE:
 TAG (node type, size)
@@ -89,8 +96,6 @@ void Stack::pushBool(bool value)
 }
 void Stack::pushData(INT* src)
 {
-	// NOTE: almost same as below
-
 	INT type = (*src) & NODE_TYPE_MASK;
 	INT size = (*src) & SIZE_MASK;
 
@@ -99,6 +104,18 @@ void Stack::pushData(INT* src)
 	{
 		data[top+i] = *(src + i);
 	}
+}
+void Stack::pushText(const char* text)
+{
+	const unsigned char* bytes = (const unsigned char*)text;
+	INT numBytes = (INT)strlen(text);
+	INT intsSize = textDataSize(numBytes);
+
+	addNode(NODE_TEXT, 3 + intsSize);
+
+	data[top+3] = numBytes;
+
+	bytesToInts(bytes, 0, data, top+4, numBytes);
 }
 void Stack::pushData(TreeIterator& src)
 {
