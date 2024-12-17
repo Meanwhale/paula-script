@@ -12,7 +12,7 @@ namespace paula {
 
 			void clear();
 			void addNode(INT tag, INT size);
-			void pushData(INT* src);
+			void pushData(const INT* src);
 			void pushText(const char* text);
 			void pushInt(INT value);
 			void pushBool(bool value);
@@ -24,6 +24,7 @@ namespace paula {
 			bool stackEmpty();
 			INT itemCount();
 			INT* topPtr();
+			Var topVar();
 			void print();
 
 			friend class StackIterator;
@@ -39,6 +40,8 @@ namespace paula {
 		{
 		public:
 			StackIterator(Stack&);
+			StackIterator(Stack&, INT*);
+			StackIterator(StackIterator&);
 			Var var();
 			bool next();
 			INT type();

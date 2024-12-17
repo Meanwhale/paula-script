@@ -1,4 +1,5 @@
 #include "args.h"
+#include "engine.h"
 
 using namespace paula;
 using namespace paula::core;
@@ -34,11 +35,20 @@ return i == types.length();
 
 INT Args::emptyData = paula::NODE_VOID | 0; // size=0
 
-Args::Args(Stack& _stack) :
-	returnValue(MAX_RETURN_VALUE_SIZE),
-	stack(_stack),
-	numArgs(0)
+
+paula::Args::Args() :
+	engine(nullptr),
+	stackBase(nullptr),
+	numArgs(-1)
 {
+}
+
+paula::Args::Args(Engine*_engine, INT* _stackBase, int _numArgs) :
+	engine(_engine),
+	stackBase(_stackBase),
+	numArgs(_numArgs)
+{
+	engine->returnValue.clear();
 }
 INT Args::count()
 {
@@ -46,22 +56,28 @@ INT Args::count()
 }
 void Args::returnInt(INT value)
 {
-	returnValue[0] = NODE_INTEGER | 3;
-	returnValue[1] = -1; // no parent
-	returnValue[2] = -1; // no next
-	returnValue[3] = value;
+	engine->returnValue.pushInt(value);
+	//engine->returnValue[0] = NODE_INTEGER | 3;
+	//engine->returnValue[1] = -1; // no parent
+	//engine->returnValue[2] = -1; // no next
+	//engine->returnValue[3] = value;
 }
 
 bool Args::hasReturnValue()
 {
-	return returnValue[0] != -1;
+	return engine->returnValue.itemCount() > 0;
+}
+void Args::returnData(Var x)
+{
+	engine->returnValue.pushData(x.ptr);
 }
 void Args::returnBool(bool value)
 {
-	returnValue[0] = NODE_BOOL | 3;
-	returnValue[1] = -1; // no parent
-	returnValue[2] = -1; // no next
-	returnValue[3] = value ? 1 : 0;
+	engine->returnValue.pushBool(value);
+	//engine->returnValue[0] = NODE_BOOL | 3;
+	//engine->returnValue[1] = -1; // no parent
+	//engine->returnValue[2] = -1; // no next
+	//engine->returnValue[3] = value ? 1 : 0;
 }
 
 Var Args::get(INT dataIndex)
@@ -71,27 +87,22 @@ Var Args::get(INT dataIndex)
 		ERR.print("index out of range: ").print(dataIndex).print("/").print(numArgs).endl();
 		return Var(&NODE_VOID);
 	}
-	ASSERT(stack.itemCount() > 0);
 
-	StackIterator it(stack); // iterator points to first element
+	StackIterator it(engine->stack, stackBase); // iterator points to first element
 
-	// go to data
+	// go to data. it points to data before first argument
 
-	for(INT i=0; i< dataIndex; i++)
+	for(INT i=0; i<dataIndex; i++)
 	{
-		it.next();
+		bool hasNext = it.next();
+		ASSERT(hasNext);
 	}
 	LOG.print("get: ").print(it.var()).endl();
 
 	return it.var(); // set pointer to the data
 }
 
-void Args::reset(INT _numArgs)
-{
-	// _initIndex points one item before first arg.
-	numArgs = _numArgs;
-	returnValue[0] = -1;
-}
+//////////////// VAR
 
 Var::Var(const INT* _ptr) : ptr(_ptr)
 {

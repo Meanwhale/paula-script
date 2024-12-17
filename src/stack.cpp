@@ -94,7 +94,7 @@ void Stack::pushBool(bool value)
 	addNode(NODE_BOOL, 3);
 	data[top + 3] = value ? 1 : 0;
 }
-void Stack::pushData(INT* src)
+void Stack::pushData(const INT* src)
 {
 	INT type = (*src) & NODE_TYPE_MASK;
 	INT size = (*src) & SIZE_MASK;
@@ -145,6 +145,11 @@ INT* paula::core::Stack::topPtr()
 	return data.ptr(top);
 }
 
+Var paula::core::Stack::topVar()
+{
+	return Var(data.ptr(top));
+}
+
 void paula::core::Stack::print()
 {
 	INT i=0;
@@ -156,6 +161,12 @@ void paula::core::Stack::print()
 }
 
 StackIterator::StackIterator(Stack&_stack) : stack(_stack), ptr(_stack.topPtr())
+{
+}
+paula::core::StackIterator::StackIterator(Stack&_stack, INT*base) : stack(_stack), ptr(base)
+{
+}
+paula::core::StackIterator::StackIterator(StackIterator&src) : stack(src.stack), ptr(src.ptr)
 {
 }
 Var StackIterator::var()

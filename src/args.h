@@ -73,6 +73,7 @@ namespace paula
 		friend class Args;
 		friend class core::Tree;
 		friend class core::TreeIterator;
+		friend class core::Stack;
 		friend class core::StackIterator;
 		friend class core::Engine;
 	private:
@@ -106,6 +107,7 @@ namespace paula
 		 * @return True if a return value is set.
 		 */
 		bool hasReturnValue();
+		void returnData(Var x);
 		/**
 		 * @brief Get argument value, eg. get(2) to value of c if the call is "f(a, b, c)".
 		 * @param dataIndex Argument index, starting from 0. 0 <= dataIndex < count().
@@ -116,15 +118,13 @@ namespace paula
 		friend class Engine;
 
 	private:
-		Args(Stack&_tree);
-		void reset(INT numArgs);
+		Args();
+		Args(Engine*_engine, INT* _stackBase, int _numArgs);
 
-		Array<INT> returnValue;
-
-		Stack& stack;
+		Engine*engine;
+		INT*stackBase;
 		INT numArgs;
 
-		Args() = delete;
 		static INT emptyData;
 
 		friend class Var;

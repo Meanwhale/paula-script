@@ -9,6 +9,11 @@ void paula::printVersion()
 	pout.print(PAULA_VERSION);
 }
 
+const Error* paula::run(const char* code, const char** args, int numArgs)
+{
+	CharInput input(code);
+	return core::Engine::one.run(input, args, numArgs, false);
+}
 const Error* paula::run(const char* code)
 {
 	CharInput input(code);

@@ -33,5 +33,6 @@ int main()
 		std::cout<<"something went wrong..."<<std::endl;
 	}*/
 
-	core::testAll();
+	core::argTest();
+	//core::testAll();
 }

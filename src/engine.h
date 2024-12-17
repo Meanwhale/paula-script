@@ -15,7 +15,7 @@ namespace paula
 		class Tree;
 
 		constexpr int
-			NUM_COMMANDS = 4,
+			NUM_COMMANDS = 6,
 			MAX_USER_CALLBACKS = 16,
 			MAX_BLOCK_DEPTH = 16;
 
@@ -42,8 +42,10 @@ namespace paula
 			ERROR_STATUS jump(INT bytecodeIndex);
 			Tree vars;
 			bool oneLiner;
+			Args globalArgs;
 
 			friend class ByteAutomata;
+			friend class Args;
 
 		private:
 			Engine();
@@ -68,8 +70,7 @@ namespace paula
 			Stack stack;
 			Tree constants, bytecode;
 
-			Args args;
-
+			Stack returnValue;
 			Command commands[NUM_COMMANDS];
 			Callback callbacks[MAX_USER_CALLBACKS];
 

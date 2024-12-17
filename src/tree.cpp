@@ -116,7 +116,6 @@ namespace paula {
 			addText(parentIndex, (const unsigned char*)text, 0, numBytes, NODE_NAME);
 		}
 
-
 		void Tree::addText(INT parentIndex, const unsigned char* bytes, INT firstByte, INT lastByte, INT nodeType)
 		{
 			// TEXT NODE:		TAG (node type, size), PARENT, NEXT, CHAR COUNT, TEXT DATA[n]

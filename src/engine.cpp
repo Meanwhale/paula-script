@@ -29,6 +29,28 @@ ERROR_STATUS notAction (Engine&p,Args&args)
 	}
 	return &TYPE_MISMATCH;
 }
+ERROR_STATUS getArgAction (Engine&p,Args&args)
+{
+	LOG.println("-------- GET ARG ACTION --------");
+	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	INT argIndex = false;
+	if(args.get(0).getInt(argIndex))
+	{
+		INT numArgs = p.globalArgs.count();
+		CHECK (argIndex >= 0 && argIndex < numArgs, ARRAY_OUT_OF_RANGE);
+		args.returnData(p.globalArgs.get(numArgs - argIndex - 1)); // reverse order
+		return NO_ERROR;
+	}
+	return &TYPE_MISMATCH;
+}
+ERROR_STATUS numArgsAction (Engine&p,Args&args)
+{
+	LOG.println("-------- NUM ARGS ACTION --------");
+	CHECK(args.count() == 0, WRONG_NUMBER_OF_ARGUMENTS);
+	ASSERT(false); // TODO
+	args.returnInt(-1);
+	return NO_ERROR;
+}
 ERROR_STATUS whileAction (Engine&p,Args&args)
 {
 	LOG.println("-------- WHILE ACTION --------");
@@ -74,24 +96,27 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 	stack(ARG_STACK_SIZE),
 	constants(CONSTANTS_SIZE),
 	bytecode(BYTECODE_SIZE),
-	args(stack), // args to give to processes are on stack
+	globalArgs(),
+	returnValue(MAX_RETURN_VALUE_SIZE),
 	commands
 	{
 		Command("print", printAction),
 		Command("not", notAction),
 		Command("while", whileAction),
-		Command("if", ifAction)
+		Command("if", ifAction),
+		Command("arg", getArgAction),
+		Command("argc", numArgsAction)
 	}
 {
 	constants.init(NODE_SUBTREE);
 
 	LOG.println("---------------- NEW PAULA ----------------");
 
-	INT kvIndex = constants.addSubtree(0, NODE_KV);
+	INT kvIndex = constants.addSubtree(0, NODE_KV_TREE);
 	constants.addText(kvIndex, "true");
 	constants.addBool(kvIndex, true);
 	
-	kvIndex = constants.addSubtree(0, NODE_KV);
+	kvIndex = constants.addSubtree(0, NODE_KV_TREE);
 	constants.addText(kvIndex, "false");
 	constants.addBool(kvIndex, false);
 }
@@ -134,8 +159,9 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 	stack.clear();
 	for (INT i=0; i<numArgs; i++)
 	{
-		//stack.push
+		stack.pushText(args[i]);
 	}
+	globalArgs = Args(this, stack.topPtr(), numArgs);
 
 	// parse lines and add them to the bytecode list
 
@@ -366,7 +392,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 		{
 			LOG.println("-------- NEW VAR --------");
 			if (isReservedName(it.getTextData())) return &RESERVED_NAME;
-			INT kvIndex = vars.addSubtree(0, NODE_KV);
+			INT kvIndex = vars.addSubtree(0, NODE_KV_TREE);
 			// new
 			vars.addData(kvIndex, it); // add variable name to KV
 			it.next(); // move to SRC
@@ -445,16 +471,17 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 	// push list of expressions, eg. ( 1, f(x), y )
 	// --> pushExprArg("1"), pushExprArg("f(x)"), pushExprArg("y")
 
-	INT numArgs = 0;
 
 	TreeIterator it(_it);
 	CHECK(it.isType(NODE_SUBTREE), SYNTAX_ERROR);
 
 	if (!it.hasChild())
 	{
-		args.reset(0);
 		return NO_ERROR; // empty ()
 	}
+
+	INT numArgs = 0;
+
 	it.toChild();
 	do
 	{
@@ -478,7 +505,7 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 	}
 	else LOG.println("empty stack");
 
-	args.reset(numArgs);
+	Args args(this, stack.topPtr(), numArgs);
 
 	CHECK_CALL(cmd->execute(*this, args));
 
@@ -488,7 +515,7 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 
 	if (args.hasReturnValue())
 	{
-		stack.pushData(args.returnValue.ptr());
+		stack.pushData(returnValue.topPtr());
 	}
 
 	return NO_ERROR;
@@ -651,7 +678,7 @@ ERROR_STATUS core::Engine::pushExprSubtreeArg(TreeIterator& _it)
 
 	TreeIterator it(_it);
 
-	CHECK(it.isType(NODE_EXPR), SYNTAX_ERROR);
+	CHECK(it.isType(NODE_EXPR_TREE), SYNTAX_ERROR);
 	CHECK(it.hasChild(), SYNTAX_ERROR);
 	it.toChild(); // 'it' now points to first element of the expression, eg. "x" in "x + 1"
 	CHECK_CALL(pushExprArg(it));

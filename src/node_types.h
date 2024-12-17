@@ -9,13 +9,12 @@ namespace paula
 		NODE_UNDEFINED			= 0xff000000,
 
 		// tree types
+		// subtree tag mask		= 0x0f000000  --> tree.cpp
 
 		NODE_SUBTREE			= 0x01000000, // parser decides what kind or tree is it
-		NODE_EXPR				= 0x02000000,
-		NODE_STATEMENT			= 0x03000000,
-
-		//NODE_MAP				= 0x06000000, // like dictionary. list of KV nodes
-		NODE_KV					= 0x07000000, // key-value pairs for map: text key that has a link to data
+		NODE_EXPR_TREE			= 0x02000000,
+		NODE_STATEMENT_TREE		= 0x03000000,
+		NODE_KV_TREE			= 0x07000000, // key-value pairs for map: text key that has a link to data
 
 		// data types
 
@@ -37,6 +36,6 @@ namespace paula
 		NODE_RAW_TREE			= 0x41000000, // raw tree data. copy to a new Tree object
 
 		// masks
-		NODE_TYPE_MASK				= 0xff000000,
+		NODE_TYPE_MASK			= 0xff000000,
 		SIZE_MASK				= 0x00ffffff;
 }

@@ -371,7 +371,7 @@ void ByteAutomata::prepareAddToken()
 	{
 		// parent is a subtree "(...)", start a new expr after "(" or ","
 		VRB(LOG.println("addToken: new expr");)
-		pushTree(NODE_EXPR);
+		pushTree(NODE_EXPR_TREE);
 	}
 }
 void ByteAutomata::addOperatorToken()
@@ -473,7 +473,7 @@ void ByteAutomata::comma()
 {
 	printTreeStack();
 	VRB(LOG.println("comma");)
-	if (tree.getType(currentParent()) == NODE_EXPR)
+	if (tree.getType(currentParent()) == NODE_EXPR_TREE)
 	{
 		// pop from expr first
 
@@ -490,7 +490,7 @@ void ByteAutomata::endBlock()
 	VRB(LOG.println("endBlock");)
 		tree.print();
 
-	if (tree.getType(currentParent()) == NODE_EXPR)
+	if (tree.getType(currentParent()) == NODE_EXPR_TREE)
 	{
 		// pop from expr first
 		VRB(LOG.println("pop expr");)
@@ -553,7 +553,7 @@ void ByteAutomata::resetCommand()
 	
 	// tree node to the top of the stack
 
-	tree.init(NODE_STATEMENT);
+	tree.init(NODE_STATEMENT_TREE);
 	treeStack[0] = 0;
 	treeStackTop = 0;
 }

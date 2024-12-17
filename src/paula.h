@@ -14,6 +14,11 @@ namespace paula
 	void printVersion();
 
 	/**
+	*  @brief Run a script with arguments and return error, or NO_ERROR, if everything went well.
+	*/
+	[[nodiscard]] const Error* run(const char* code, const char** args, int numArgs);
+
+	/**
 	*  @brief Run a script and return error, or NO_ERROR, if everything went well.
 	*/
 	[[nodiscard]] const Error * run(const char*);

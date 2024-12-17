@@ -202,6 +202,12 @@ void core::reservedNameTest()
 	error = paula::addCallback("true", testCallback);
 	ASSERT(Error::equal(error, &RESERVED_NAME));
 }
+void core::argTest()
+{
+	const char* args[] = { "Hello", "World" };
+	auto error = paula::run("hello:arg(0)\nworld:arg(1)", args, 2);
+	ASSERT(error == NO_ERROR);
+}
 void core::semicolonTest()
 {
 	auto error = paula::run("i:5;i:i+1");
@@ -225,6 +231,7 @@ void core::testAll()
 	parenthesisErrorTest();
 	operatorTest();
 	reservedNameTest();
+	argTest();
 	semicolonTest();
 	callbackTest();
 
