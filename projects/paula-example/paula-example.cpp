@@ -33,6 +33,7 @@ int main()
 		std::cout<<"something went wrong..."<<std::endl;
 	}*/
 
-	core::argTest();
+	core::procTest();
+	//core::argTest();
 	//core::testAll();
 }

@@ -47,3 +47,18 @@ core::Callback::Callback() :
 	action(0)
 {
 }
+
+const Error* paula::core::ProcedureCallback::execute(Engine&engine, Args&args)
+{
+	return engine.callProcedure(scriptAddress, args);
+}
+
+paula::core::ProcedureCallback::ProcedureCallback(): scriptAddress(-1)
+{
+}
+
+paula::core::ProcedureCallback::ProcedureCallback(char* str, INT _scriptAddress): scriptAddress(_scriptAddress)
+{
+	Array<INT> nameData (name, MAX_VAR_NAME_DATA_LENGTH);
+	charsToNameData(str, nameData);
+}

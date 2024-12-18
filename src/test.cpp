@@ -21,6 +21,7 @@ void core::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 }
 
 #define ERROR_TEST(code,error) runErrorCheck([]() { return paula::run(code); }, &error);
+#define ASSERT_NO_ERROR(error) {if (error != NO_ERROR) {ERR.print("UNEXPECTED ERROR: ").print(error).endl(); ASSERT(false);}}
 
 void core::doubleTest()
 {
@@ -207,6 +208,13 @@ void core::argTest()
 	const char* args[] = { "Hello", "World" };
 	auto error = paula::run("hello:arg(0)\nworld:arg(1)", args, 2);
 	ASSERT(error == NO_ERROR);
+}
+void core::procTest()
+{
+	auto error = paula::run("proc (\"adder\")\n\ta:a+3\na:2\nadder()");
+	ASSERT_NO_ERROR(error);
+	INT a;
+	TEST_INT("a", 5);
 }
 void core::semicolonTest()
 {

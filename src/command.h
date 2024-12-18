@@ -15,20 +15,27 @@ namespace paula
 			INT name[MAX_VAR_NAME_DATA_LENGTH];
 		};
 
+		class ProcedureCallback : public ICallback
+		{
+		public:
+			ProcedureCallback();
+			ProcedureCallback(char* name, INT _scriptAddress);
+			const Error * execute(Engine&,Args&) override;
+			INT scriptAddress;
+		};
 		class Callback : public ICallback
 		{
+		private:
 			// user-defined callback
 
 			const Error * execute(Engine&,Args&) override;
 
 			friend class Engine;
 
-		private:
 			void setup(Array<INT>& _nameData, const Error* (*_action)(Args&));
 			Callback();
 
 			const Error * (*action) (Args&); // pointer to callback function
-
 		};
 
 

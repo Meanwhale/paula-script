@@ -80,6 +80,27 @@ ERROR_STATUS ifAction (Engine&p,Args&args)
 	return &TYPE_MISMATCH;
 }
 
+ERROR_STATUS createProcedureAction (Engine&p,Args&args)
+{
+	LOG.println("-------- CREATE PROCEDURE ACTION --------");
+	CHECK(p.oneLiner, CONDITION_LINE_WITH_SEMICOLON);
+	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	char* procedureName;
+	if(args.get(0).getChars(procedureName))
+	{
+		// create _proc_ variable that points to procedure bytecode
+
+		// TODO: check if reserved name
+		//if (isReservedName(it.getTextData())) return &RESERVED_NAME;
+		
+		LOG.print("add procedure: ").print(procedureName).print(", address ").print(p.bytecodeIndex).endl();
+
+		p.skipBlock(); // skip the procedure code after creating it
+		return p.addProcedure(procedureName, p.bytecodeIndex);
+	}
+	return &TYPE_MISMATCH;
+}
+
 Engine Engine::one = Engine();
 
 
@@ -91,6 +112,7 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 	blockStackSize(0),
 	bytecodeIndex(0),
 	numCallbacks(0),
+	numProcedures(0),
 	jumpIndex(-1),
 	automata(*this),
 	stack(ARG_STACK_SIZE),
@@ -105,7 +127,8 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 		Command("while", whileAction),
 		Command("if", ifAction),
 		Command("arg", getArgAction),
-		Command("argc", numArgsAction)
+		Command("argc", numArgsAction),
+		Command("proc", createProcedureAction)
 	}
 {
 	constants.init(NODE_SUBTREE);
@@ -265,7 +288,6 @@ ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (
 	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
 	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
 	charsToNameData(callbackName, nameData);
-
 	if (isReservedName(nameData.ptr())) return &RESERVED_NAME;
 	
 	if (numCallbacks >= MAX_USER_CALLBACKS) return &CALLBACK_ERROR;
@@ -273,6 +295,25 @@ ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (
 	numCallbacks++;
 	return NO_ERROR;
 }
+ERROR_STATUS paula::core::Engine::callProcedure(INT address, Args& args)
+{
+	ASSERT(false);
+	return NO_ERROR;
+}
+
+ERROR_STATUS paula::core::Engine::addProcedure(char* procedureName, INT address)
+{
+	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
+	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
+	charsToNameData(procedureName, nameData);
+	if (isReservedName(nameData.ptr())) return &RESERVED_NAME;
+
+	if (numProcedures >= MAX_SCRIPT_PROCEDURES) return &CALLBACK_ERROR;
+	procedures[numProcedures] = ProcedureCallback(procedureName, address);
+	numProcedures++;
+	return NO_ERROR;
+}
+
 
 ERROR_STATUS core::Engine::jump(INT bytecodeIndex)
 {
@@ -475,36 +516,33 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 	TreeIterator it(_it);
 	CHECK(it.isType(NODE_SUBTREE), SYNTAX_ERROR);
 
-	if (!it.hasChild())
-	{
-		return NO_ERROR; // empty ()
-	}
-
 	INT numArgs = 0;
 
-	it.toChild();
-	do
+	if (it.hasChild()) // else empty ()
 	{
-		CHECK_CALL(pushExprSubtreeArg(it));
-		numArgs ++;
-	}
-	while(it.next());
-
-	// print args
-
-	if (stack.itemCount() > 0)
-	{
-		StackIterator argIt(stack);
-		LOG.print("args stack");
+		it.toChild();
 		do
 		{
-			LOG.print("\n - ").print(argIt.var());
+			CHECK_CALL(pushExprSubtreeArg(it));
+			numArgs ++;
 		}
-		while(argIt.next());
-		LOG.endl();
-	}
-	else LOG.println("empty stack");
+		while(it.next());
 
+		// print args
+
+		if (stack.itemCount() > 0)
+		{
+			StackIterator argIt(stack);
+			LOG.print("args stack");
+			do
+			{
+				LOG.print("\n - ").print(argIt.var());
+			}
+			while(argIt.next());
+			LOG.endl();
+		}
+		else LOG.println("empty stack");
+	}
 	Args args(this, stack.topPtr(), numArgs);
 
 	CHECK_CALL(cmd->execute(*this, args));
@@ -713,7 +751,11 @@ ICallback * core::Engine::findCommand(INT * textData)
 	{
 		if (matchTextData(textData, callbacks[i].name)) return &callbacks[i];
 	}
-	return 0;
+	for (i=0; i<numProcedures; i++)
+	{
+		if (matchTextData(textData, procedures[i].name)) return &procedures[i];
+	}
+	return nullptr;
 }
 bool core::Engine::isReservedName(INT * textData)
 {

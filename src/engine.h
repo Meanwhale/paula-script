@@ -15,8 +15,9 @@ namespace paula
 		class Tree;
 
 		constexpr int
-			NUM_COMMANDS = 6,
+			NUM_COMMANDS = 7,
 			MAX_USER_CALLBACKS = 16,
+			MAX_SCRIPT_PROCEDURES = 16,
 			MAX_BLOCK_DEPTH = 16;
 
 		struct Block
@@ -40,9 +41,14 @@ namespace paula
 			ERROR_STATUS returnHandleError(const Error* error, bool handleErrors);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 			ERROR_STATUS jump(INT bytecodeIndex);
+			ERROR_STATUS callProcedure(INT address, Args&args);
+			ERROR_STATUS addProcedure(char*name, INT address);
+
 			Tree vars;
 			bool oneLiner;
 			Args globalArgs;
+
+			INT currentIndentation, skipIndentation, blockStackSize, bytecodeIndex, numCallbacks, numProcedures, jumpIndex;
 
 			friend class ByteAutomata;
 			friend class Args;
@@ -61,7 +67,6 @@ namespace paula
 			ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
 			ERROR_STATUS executeLine(INT indentation, INT _bytecodeIndex, INT lineType, Tree& tree);
 
-			INT currentIndentation, skipIndentation, blockStackSize, bytecodeIndex, numCallbacks, jumpIndex;
 
 			ByteAutomata automata;
 
@@ -73,6 +78,7 @@ namespace paula
 			Stack returnValue;
 			Command commands[NUM_COMMANDS];
 			Callback callbacks[MAX_USER_CALLBACKS];
+			ProcedureCallback procedures[MAX_SCRIPT_PROCEDURES];
 
 			ICallback* findCommand(INT* textData);
 
