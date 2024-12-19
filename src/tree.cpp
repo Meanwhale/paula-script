@@ -12,6 +12,14 @@ namespace paula {
 		//		DATA NODE:		TAG (node type, size), PARENT, NEXT, DATA [...]
 		// size = number of ints after the tag
 
+		//		subtree     -->   next
+		//		|
+		//		|--------------------------------------
+		//		|                                      |
+		//		first_child -->   next  -->  . . . --> last_child
+
+
+
 		core::Tree::Tree(INT size) : data(size)
 		{
 			clear();

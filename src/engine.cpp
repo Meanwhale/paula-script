@@ -83,6 +83,7 @@ ERROR_STATUS ifAction (Engine&p,Args&args)
 ERROR_STATUS createProcedureAction (Engine&p,Args&args)
 {
 	LOG.println("-------- CREATE PROCEDURE ACTION --------");
+	CHECK(p.currentIndentation == 0, INDENTATION_ERROR);
 	CHECK(p.oneLiner, CONDITION_LINE_WITH_SEMICOLON);
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	char* procedureName;
@@ -107,6 +108,7 @@ Engine Engine::one = Engine();
 Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 	vars(VARS_SIZE),
 	oneLiner(true),
+	skipNextAfterJump(false),
 	currentIndentation(0),
 	skipIndentation(-1),
 	blockStackSize(0),
@@ -236,7 +238,7 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 
 		it.toParent();
 
-		if (!it.hasNext())
+		if (!it.hasNext() && jumpIndex < 0)
 		{
 			// end of file. make a call to end if's and loops. possibly jump back by moving bytecode index.
 			bool executeLine = false;
@@ -248,6 +250,12 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 			ASSERT(it.isType(NODE_SUBTREE));
 			jumpIndex = -1;
 			hasNextLine = true;
+
+			if (skipNextAfterJump)
+			{
+				hasNextLine = it.next();
+				skipNextAfterJump = false;
+			}
 		}
 		else
 		{
@@ -297,7 +305,9 @@ ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (
 }
 ERROR_STATUS paula::core::Engine::callProcedure(INT address, Args& args)
 {
-	ASSERT(false);
+	CHECK_CALL(jump(address));
+	startProcedure();
+	skipNextAfterJump = true;
 	return NO_ERROR;
 }
 
@@ -328,7 +338,7 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 	executeLine = true;
 	currentIndentation = indentation;
 
-	if (skipIndentation > 0)
+	if (skipIndentation >= 0)
 	{
 		LOG.println("-------- SKIP INDENTATION --------");
 		if (indentation >= skipIndentation)
@@ -356,7 +366,7 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 		else while (indentation < block.indentation)
 		{
 			LOG.println("end of the block");
-			if (block.loop)
+			if (block.blockType == BLOCK_TYPE_LOOP)
 			{
 				LOG.println("-------- JUMP BACK --------");
 				LOG.print("address: ").print(block.startBytecodeIndex).endl();
@@ -368,7 +378,7 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 				executeLine = false;
 				return NO_ERROR;
 			}
-			else
+			else if (block.blockType == BLOCK_TYPE_CONDITIONAL)
 			{
 				LOG.println("-------- END IF BLOCK --------");
 				blockStackSize--;
@@ -382,6 +392,24 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 					return NO_ERROR;
 				}
 			}
+			else if (block.blockType == BLOCK_TYPE_PROCEDURE)
+			{
+				LOG.println("-------- END OF PROCEDURE --------");
+				blockStackSize--;
+				if (blockStackSize > 0)
+				{
+					// continue as several blocks might have ended
+					block = blockStack[blockStackSize-1];
+				}
+				else
+				{
+					CHECK_CALL(jump(block.startBytecodeIndex));
+					executeLine = false;
+					skipNextAfterJump = true;
+					return NO_ERROR;
+				}
+			}
+			else ASSERT(false);
 		}
 	}
 	return NO_ERROR;
@@ -471,7 +499,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 	{
 		ASSERT(false);
 	}
-	if (blockStackSize == 0 && skipIndentation <= 0)
+	if (blockStackSize == 0 && skipIndentation < 0)
 	{
 		automata.clearBuffer();
 	}
@@ -484,7 +512,7 @@ void core::Engine::startLoop()
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
 	blockStack[blockStackSize].startBytecodeIndex = bytecodeIndex;
 	blockStack[blockStackSize].indentation = currentIndentation+1;
-	blockStack[blockStackSize].loop = true;
+	blockStack[blockStackSize].blockType = BLOCK_TYPE_LOOP;
 	blockStackSize++;
 }
 void core::Engine::startIf()
@@ -493,7 +521,16 @@ void core::Engine::startIf()
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
 	blockStack[blockStackSize].startBytecodeIndex = -123456; // not needed
 	blockStack[blockStackSize].indentation = currentIndentation+1;
-	blockStack[blockStackSize].loop = false;
+	blockStack[blockStackSize].blockType = BLOCK_TYPE_CONDITIONAL;
+	blockStackSize++;
+}
+void core::Engine::startProcedure()
+{
+	LOG.println("-------- START PROCEDURE --------");
+	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
+	blockStack[blockStackSize].startBytecodeIndex = bytecodeIndex; // not needed
+	blockStack[blockStackSize].indentation = 1;
+	blockStack[blockStackSize].blockType = BLOCK_TYPE_PROCEDURE;
 	blockStackSize++;
 }
 

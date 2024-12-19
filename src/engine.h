@@ -14,16 +14,20 @@ namespace paula
 	{
 		class Tree;
 
-		constexpr int
+		constexpr INT
 			NUM_COMMANDS = 7,
 			MAX_USER_CALLBACKS = 16,
 			MAX_SCRIPT_PROCEDURES = 16,
 			MAX_BLOCK_DEPTH = 16;
 
+		constexpr INT
+			BLOCK_TYPE_LOOP = 1001,
+			BLOCK_TYPE_CONDITIONAL = 1002,
+			BLOCK_TYPE_PROCEDURE = 1003;
+
 		struct Block
 		{
-			INT startBytecodeIndex, indentation;
-			bool loop;
+			INT startBytecodeIndex, indentation, blockType;
 		};
 
 		class Engine
@@ -34,6 +38,7 @@ namespace paula
 
 			void startLoop();
 			void startIf();
+			void startProcedure();
 			void skipBlock();
 			ERROR_STATUS addParsedLine();
 			ERROR_STATUS run(IInputStream&, bool handleError);
@@ -45,7 +50,7 @@ namespace paula
 			ERROR_STATUS addProcedure(char*name, INT address);
 
 			Tree vars;
-			bool oneLiner;
+			bool oneLiner, skipNextAfterJump;
 			Args globalArgs;
 
 			INT currentIndentation, skipIndentation, blockStackSize, bytecodeIndex, numCallbacks, numProcedures, jumpIndex;
