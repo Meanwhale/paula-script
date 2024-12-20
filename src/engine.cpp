@@ -32,6 +32,7 @@ ERROR_STATUS notAction (Engine&p,Args&args)
 ERROR_STATUS getArgAction (Engine&p,Args&args)
 {
 	LOG.println("-------- GET ARG ACTION --------");
+	p.stack.printData();
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	INT argIndex = false;
 	if(args.get(0).getInt(argIndex))
@@ -47,8 +48,7 @@ ERROR_STATUS numArgsAction (Engine&p,Args&args)
 {
 	LOG.println("-------- NUM ARGS ACTION --------");
 	CHECK(args.count() == 0, WRONG_NUMBER_OF_ARGUMENTS);
-	ASSERT(false); // TODO
-	args.returnInt(-1);
+	args.returnInt(p.globalArgs.count());
 	return NO_ERROR;
 }
 ERROR_STATUS whileAction (Engine&p,Args&args)
@@ -186,7 +186,8 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 	{
 		stack.pushText(args[i]);
 	}
-	globalArgs = Args(this, stack.topPtr(), numArgs);
+	stack.pushInt(numArgs); // TODO: tee oma datatyyppi
+	globalArgs = Args(this, stack.topPtr());
 
 	// parse lines and add them to the bytecode list
 
@@ -406,6 +407,11 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 					CHECK_CALL(jump(block.startBytecodeIndex));
 					executeLine = false;
 					skipNextAfterJump = true;
+
+					// set callers args
+					//blockStack[blockStackSize].argsBasePtr = globalArgs.stackBase;
+					globalArgs = Args(this, block.argsBasePtr);
+
 					return NO_ERROR;
 				}
 			}
@@ -513,6 +519,7 @@ void core::Engine::startLoop()
 	blockStack[blockStackSize].startBytecodeIndex = bytecodeIndex;
 	blockStack[blockStackSize].indentation = currentIndentation+1;
 	blockStack[blockStackSize].blockType = BLOCK_TYPE_LOOP;
+	blockStack[blockStackSize].argsBasePtr = nullptr;
 	blockStackSize++;
 }
 void core::Engine::startIf()
@@ -522,6 +529,7 @@ void core::Engine::startIf()
 	blockStack[blockStackSize].startBytecodeIndex = -123456; // not needed
 	blockStack[blockStackSize].indentation = currentIndentation+1;
 	blockStack[blockStackSize].blockType = BLOCK_TYPE_CONDITIONAL;
+	blockStack[blockStackSize].argsBasePtr = nullptr;
 	blockStackSize++;
 }
 void core::Engine::startProcedure()
@@ -531,7 +539,10 @@ void core::Engine::startProcedure()
 	blockStack[blockStackSize].startBytecodeIndex = bytecodeIndex; // not needed
 	blockStack[blockStackSize].indentation = 1;
 	blockStack[blockStackSize].blockType = BLOCK_TYPE_PROCEDURE;
+	blockStack[blockStackSize].argsBasePtr = globalArgs.stackBase;
 	blockStackSize++;
+
+	globalArgs = Args(this, stack.topPtr()); // set globalArgs to point procedure call args
 }
 
 void core::Engine::skipBlock()
@@ -565,32 +576,25 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 		}
 		while(it.next());
 
-		// print args
-
-		if (stack.itemCount() > 0)
-		{
-			StackIterator argIt(stack);
-			LOG.print("args stack");
-			do
-			{
-				LOG.print("\n - ").print(argIt.var());
-			}
-			while(argIt.next());
-			LOG.endl();
-		}
-		else LOG.println("empty stack");
 	}
-	Args args(this, stack.topPtr(), numArgs);
+	stack.pushInt(numArgs); // TODO: oma datatyyppi
+	Args args(this, stack.topPtr());
+
+	stack.printValues();
 
 	CHECK_CALL(cmd->execute(*this, args));
 
 	// pop function arguments after call and push return value
 	
-	while (numArgs-- > 0) stack.pop();
-
-	if (args.hasReturnValue())
+	// TODO: tarkista ilman typeid:tä
+	if (typeid(*cmd) != typeid(ProcedureCallback))
 	{
-		stack.pushData(returnValue.topPtr());
+		while (numArgs-- >= 0) stack.pop();
+
+		if (args.hasReturnValue())
+		{
+			stack.pushData(returnValue.topPtr());
+		}
 	}
 
 	return NO_ERROR;

@@ -73,7 +73,7 @@ INT Stack::next(INT index)
 }
 void Stack::pop()
 {
-	VRB(LOG.print("-------- pop").endl();print(););
+	VRB(LOG.print("-------- pop").endl();printData(););
 	ASSERT((data[top] & NODE_TYPE_MASK) != NODE_STACK_ROOT);
 	ASSERT(previous(top) < 0); // check there's not previous
 	ASSERT(next(top) >= 0); // check there's next
@@ -87,7 +87,7 @@ void Stack::pushInt(INT value)
 {
 	addNode(NODE_INTEGER, 3);
 	data[top + 3] = value;
-	VRB(LOG.print("-------- push int").endl();print(););
+	VRB(LOG.print("-------- push int").endl();printData(););
 }
 void Stack::pushBool(bool value)
 {
@@ -150,7 +150,7 @@ Var paula::core::Stack::topVar()
 	return Var(data.ptr(top));
 }
 
-void paula::core::Stack::print()
+void paula::core::Stack::printData()
 {
 	INT i=0;
 	INT topSize = data[top] & SIZE_MASK;
@@ -158,6 +158,18 @@ void paula::core::Stack::print()
 	{
 		LOG.print(i).print(": ").print(data[i]).endl();
 	}
+}
+
+void paula::core::Stack::printValues()
+{
+	StackIterator argIt(*this);
+	LOG.print("args stack");
+	do
+	{
+		LOG.print("\n - ").print(argIt.var());
+	}
+	while(argIt.next());
+	LOG.endl();
 }
 
 StackIterator::StackIterator(Stack&_stack) : stack(_stack), ptr(_stack.topPtr())

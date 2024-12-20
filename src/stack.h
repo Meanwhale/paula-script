@@ -25,7 +25,8 @@ namespace paula {
 			INT itemCount();
 			INT* topPtr();
 			Var topVar();
-			void print();
+			void printData();
+			void printValues();
 
 			friend class StackIterator;
 		private:

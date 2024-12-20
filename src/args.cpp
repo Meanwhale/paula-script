@@ -38,21 +38,23 @@ INT Args::emptyData = paula::NODE_VOID | 0; // size=0
 
 paula::Args::Args() :
 	engine(nullptr),
-	stackBase(nullptr),
-	numArgs(-1)
+	stackBase(nullptr)
 {
 }
 
-paula::Args::Args(Engine*_engine, INT* _stackBase, int _numArgs) :
+paula::Args::Args(Engine*_engine, INT* _stackBase) :
 	engine(_engine),
-	stackBase(_stackBase),
-	numArgs(_numArgs)
+	stackBase(_stackBase)
 {
 	engine->returnValue.clear();
 }
 INT Args::count()
 {
-	return numArgs;
+	// read number of args on top of the args stack
+	INT numArgs;
+	if (readInt(numArgs, stackBase)) return numArgs;
+	ASSERT(false);
+	return 0;	
 }
 void Args::returnInt(INT value)
 {
@@ -82,17 +84,18 @@ void Args::returnBool(bool value)
 
 Var Args::get(INT dataIndex)
 {
+	INT numArgs = count();
 	if (dataIndex < 0 || dataIndex >= numArgs)
 	{
 		ERR.print("index out of range: ").print(dataIndex).print("/").print(numArgs).endl();
 		return Var(&NODE_VOID);
 	}
 
-	StackIterator it(engine->stack, stackBase); // iterator points to first element
+	StackIterator it(engine->stack, stackBase); // iterator points to top = arg. count
 
 	// go to data. it points to data before first argument
 
-	for(INT i=0; i<dataIndex; i++)
+	for(INT i=0; i<=dataIndex; i++)
 	{
 		bool hasNext = it.next();
 		ASSERT(hasNext);

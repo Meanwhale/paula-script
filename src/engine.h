@@ -28,6 +28,7 @@ namespace paula
 		struct Block
 		{
 			INT startBytecodeIndex, indentation, blockType;
+			INT* argsBasePtr;
 		};
 
 		class Engine
@@ -51,14 +52,14 @@ namespace paula
 
 			Tree vars;
 			bool oneLiner, skipNextAfterJump;
-			Args globalArgs;
+			Args globalArgs; // args of current script procedure (function) = CLI args on base level
 
 			INT currentIndentation, skipIndentation, blockStackSize, bytecodeIndex, numCallbacks, numProcedures, jumpIndex;
 
 			friend class ByteAutomata;
 			friend class Args;
 
-		private:
+		//private:
 			Engine();
 
 			ERROR_STATUS pushArgListAndExecute(TreeIterator&, ICallback * cmd);

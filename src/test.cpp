@@ -34,7 +34,7 @@ void core::doubleTest()
 	// script test
 
 	auto err = paula::run("a:123.456 ");
-	ASSERT(err == NO_ERROR);
+	ASSERT_NO_ERROR(err);
 	DOUBLE a;
 	//ASSERT(Paula::one.vars.getDouble(a, "a"));
 	ASSERT(paula::get("a").getDouble(a));
@@ -48,7 +48,7 @@ void core::doubleTest()
 void core::operatorTest()
 {
 	auto err = paula::run("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\ne:1+(2-3)\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
-	ASSERT(err == NO_ERROR);
+	ASSERT_NO_ERROR(err);
 	INT a;
 	bool b;
 	TEST_INT("a", 10);
@@ -65,14 +65,14 @@ void core::operatorTest()
 void core::variableTest()
 {
 	auto err = paula::run("a:5");
-	ASSERT(err == NO_ERROR);
+	ASSERT_NO_ERROR(err);
 	INT a;
 	TEST_INT("a", 5);
 }
 void core::functionTest()
 {
 	auto err = paula::run("b:true\ntmp:not(b)");
-	ASSERT(err == NO_ERROR);
+	ASSERT_NO_ERROR(err);
 	bool b;
 	TEST_BOOL("b", true);
 	TEST_BOOL("tmp", false);
@@ -81,17 +81,17 @@ void core::functionTest()
 void core::loopTest()
 {
 	auto err = paula::run("b:true\nwhile(b)\n\tb:false");
-	ASSERT(err == NO_ERROR);
+	ASSERT_NO_ERROR(err);
 
 	err = paula::run("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
-	ASSERT(err == NO_ERROR);
+	ASSERT_NO_ERROR(err);
 	INT a;
 	TEST_INT("a", 5);
 }
 void core::ifTest()
 {
 	auto err = paula::run("a:1\nb:1\nwhile(a<5)\n\ta:a+1\n\tif(a>4)\n\t\tb:b+10\n\t\tif(a>4)\n\t\t\tb:b+10");
-	ASSERT(err == NO_ERROR);
+	ASSERT_NO_ERROR(err);
 	INT a;
 	TEST_INT("a", 5);
 	TEST_INT("b", 21);
@@ -118,16 +118,16 @@ const Error* core::testCallback (Args&args)
 void core::textTest()
 {
 	auto error = paula::run("t:\"hello!\"");
-	ASSERT(error == NO_ERROR);
+	ASSERT_NO_ERROR(error);
 	char * t;
 	TEST_TEXT("t", "hello!");
 
 	error = paula::run("t:\"\\x7E\"");
-	ASSERT(error == NO_ERROR);
+	ASSERT_NO_ERROR(error);
 	TEST_TEXT("t", "~");
 
 	error = paula::run("t:\"\\n\"");
-	ASSERT(error == NO_ERROR);
+	ASSERT_NO_ERROR(error);
 	TEST_TEXT("t", "\n");
 
 	ERROR_TEST("t:\"hello!\"\nt:\"a\"", TEXT_VARIABLE_OVERWRITE);
@@ -138,9 +138,9 @@ void core::textTest()
 void core::callbackTest()
 {
 	auto error = paula::addCallback("testCallback", testCallback);
-	ASSERT(error == NO_ERROR);
+	ASSERT_NO_ERROR(error);
 	auto err = paula::run("a:3\na:testCallback(3)");
-	ASSERT(error == NO_ERROR);
+	ASSERT_NO_ERROR(error);
 	INT a;
 	TEST_INT("a", 6);
 }
@@ -207,11 +207,11 @@ void core::argTest()
 {
 	const char* args[] = { "Hello", "World" };
 	auto error = paula::run("hello:arg(0)\nworld:arg(1)", args, 2);
-	ASSERT(error == NO_ERROR);
+	ASSERT_NO_ERROR(error);
 }
 void core::procTest()
 {
-	auto error = paula::run("proc (\"adder\")\n\ta:a+3\na:2\nadder()");
+	auto error = paula::run("proc (\"adder\")\n\ta:arg(0)\n\ta:a+2\na:1\nadder(3)");
 	ASSERT_NO_ERROR(error);
 	INT a;
 	TEST_INT("a", 5);
@@ -219,7 +219,7 @@ void core::procTest()
 void core::semicolonTest()
 {
 	auto error = paula::run("i:5;i:i+1");
-	ASSERT(error == NO_ERROR);
+	ASSERT_NO_ERROR(error);
 	INT a;
 	TEST_INT("i", 6);
 
@@ -246,5 +246,6 @@ void core::testAll()
 	loopTest();
 	ifTest();
 
+	LOG.println("\n\n---------------- ALL TESTS DONE ----------------\n");
 }
 #endif

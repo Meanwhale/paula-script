@@ -119,11 +119,10 @@ namespace paula
 
 	private:
 		Args();
-		Args(Engine*_engine, INT* _stackBase, int _numArgs);
+		Args(Engine*_engine, INT* _stackBase);
 
 		Engine*engine;
 		INT*stackBase;
-		INT numArgs;
 
 		static INT emptyData;
 
