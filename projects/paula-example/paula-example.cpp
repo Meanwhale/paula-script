@@ -20,20 +20,20 @@ const paula::Error* doubler (paula::Args&args)
 
 int main()
 {
-	/*auto error = paula::addCallback("doubler", doubler);
-    paula::runSafe("six: doubler(3)");
-	INT value;
-	Var v = paula::get("six");
-	if (v.getInt(value))
-	{
-		std::cout<<"six = "<<value<<std::endl;
-	}
-	else
-	{
-		std::cout<<"something went wrong..."<<std::endl;
-	}*/
+	//auto error = paula::addCallback("doubler", doubler);
+ //   paula::runSafe("six: doubler(3)");
+	//INT value;
+	//Var v = paula::get("six");
+	//if (v.getInt(value))
+	//{
+	//	std::cout<<"six = "<<value<<std::endl;
+	//}
+	//else
+	//{
+	//	std::cout<<"something went wrong..."<<std::endl;
+	//}
 
-	core::procTest();
-	//core::argTest();
-	//core::testAll();
+	////core::procTest();
+	////core::argTest();
+	core::testAll();
 }

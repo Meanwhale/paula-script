@@ -12,27 +12,27 @@ void paula::printVersion()
 const Error* paula::run(const char* code, const char** args, int numArgs)
 {
 	CharInput input(code);
-	return core::Engine::one.run(input, args, numArgs, false);
+	return core::Engine::one.run(input, args, numArgs);
 }
 const Error* paula::run(const char* code)
 {
 	CharInput input(code);
-	return core::Engine::one.run(input, false);
+	return core::Engine::one.run(input);
 }
 const Error* paula::run(IInputStream&str)
 {
-	return core::Engine::one.run(str, false);
+	return core::Engine::one.run(str);
 }
 
 void paula::runSafe(const char*code)
 {
 	CharInput input(code);
-	auto tmp = core::Engine::one.run(input, true);
+	core::Engine::one.runSafe(input);
 }
 
 void paula::runSafe(IInputStream&str)
 {
-	auto tmp = core::Engine::one.run(str, true);
+	core::Engine::one.runSafe(str);
 }
 
 Var paula::get(const char* varName)

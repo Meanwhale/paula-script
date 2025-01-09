@@ -169,31 +169,6 @@ namespace paula {
 			return Var(data.ptr(dataIndex));
 		}
 
-		/*bool Tree::getBool(bool& out, const char* varName)
-		{
-			INT index = getIndexOfData(varName, NODE_BOOL);
-			if (index < 0) return false;
-			return readBool(out, data.ptr(index));
-		}
-		bool Tree::getDouble(double& out, const char* varName)
-		{
-			INT index = getIndexOfData(varName, NODE_DOUBLE);
-			if (index < 0) return false;
-			return readDouble(out, data.ptr(index));
-		}
-		bool Tree::getInt(int& out, const char* varName)
-		{
-			INT index = getIndexOfData(varName, NODE_INTEGER);
-			if (index < 0) return false;
-			return readInt(out, data.ptr(index));
-		}
-		bool Tree::getChars(char*&out, const char* varName)
-		{
-			INT index = getIndexOfData(varName, NODE_TEXT);
-			if (index < 0) return false;
-			return readChars(out, data.ptr(index));
-		}*/
-
 		INT Tree::getIndexOfData(const char* varName)
 		{
 			// assume tree is a _map_ i.e. list of name-value pairs.

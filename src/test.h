@@ -21,8 +21,6 @@ namespace paula
 		void operatorTest();
 		void variableTest();
 		void functionTest();
-		void loopTest();
-		void ifTest();
 		void parenthesisErrorTest();
 		void callbackTest();
 		void treeTest();
@@ -32,7 +30,12 @@ namespace paula
         void procTest();
         void semicolonTest();
 
-		void testAll();
+		void loopTest();
+		void ifTest();
+
+        void safeTest();
+
+        void testAll();
 		//const Error* iteratorTest();
 	}
 }

@@ -78,25 +78,6 @@ void core::functionTest()
 	TEST_BOOL("tmp", false);
 }
 
-void core::loopTest()
-{
-	auto err = paula::run("b:true\nwhile(b)\n\tb:false");
-	ASSERT_NO_ERROR(err);
-
-	err = paula::run("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
-	ASSERT_NO_ERROR(err);
-	INT a;
-	TEST_INT("a", 5);
-}
-void core::ifTest()
-{
-	auto err = paula::run("a:1\nb:1\nwhile(a<5)\n\ta:a+1\n\tif(a>4)\n\t\tb:b+10\n\t\tif(a>4)\n\t\t\tb:b+10");
-	ASSERT_NO_ERROR(err);
-	INT a;
-	TEST_INT("a", 5);
-	TEST_INT("b", 21);
-}
-
 void core::parenthesisErrorTest()
 {
 	ERROR_TEST("foo (12, (34, 56)", PARENTHESIS);
@@ -226,6 +207,29 @@ void core::semicolonTest()
 	ERROR_TEST("b:true;if(b)\n\tb:false", CONDITION_LINE_WITH_SEMICOLON);
 	ERROR_TEST("b:true;while(b)\n\tb:false", CONDITION_LINE_WITH_SEMICOLON);
 }
+void core::loopTest()
+{
+	auto err = paula::run("b:true\nwhile(b)\n\tb:false");
+	ASSERT_NO_ERROR(err);
+
+	err = paula::run("a:1\nb:true\nwhile(b)\n\tb:false\n\twhile(a<5)\n\t\ta:a+1");
+	ASSERT_NO_ERROR(err);
+	INT a;
+	TEST_INT("a", 5);
+}
+void core::ifTest()
+{
+	auto err = paula::run("a:1\nb:1\nwhile(a<5)\n\ta:a+1\n\tif(a>4)\n\t\tb:b+10\n\t\tif(a>4)\n\t\t\tb:b+10");
+	ASSERT_NO_ERROR(err);
+	INT a;
+	TEST_INT("a", 5);
+	TEST_INT("b", 21);
+}
+
+void core::safeTest()
+{
+	paula::runSafe("a:!");
+}
 void core::testAll()
 {
 	stackTest();
@@ -245,6 +249,8 @@ void core::testAll()
 
 	loopTest();
 	ifTest();
+
+	safeTest();
 
 	LOG.println("\n\n---------------- ALL TESTS DONE ----------------\n");
 }

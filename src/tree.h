@@ -32,11 +32,6 @@ namespace paula {
 
 			Var getAt(INT dataIndex);
 
-			//bool getBool(bool& out, const char* varName);
-	  //      bool getDouble(double& out, const char* varName);
-			//bool getInt(int& out, const char* varName);
-	  //      bool getChars(char*& out, const char* varName);
-
 			INT getIndexOfData(const char * varName);
 
 
@@ -70,8 +65,6 @@ namespace paula {
 			INT top;
 			INT node(INT tag, INT size);
 			void insertToTree(INT parentIndex, INT tag, INT size);
-
-			//void printNode(INT index, INT depth);
 
 			Tree() = delete;
 			Tree& operator=(const Tree&) = delete;

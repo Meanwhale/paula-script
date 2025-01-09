@@ -144,6 +144,7 @@ const NullPrint& NullPrint::printCharSymbol(CHAR c) const { return *this; }
 const NullPrint& NullPrint::print(const Error* a) const { return *this; }
 const NullPrint& NullPrint::println(const char*) const { return *this; }
 const NullPrint& NullPrint::print(const TreeIterator& x) const { return *this; }
+const NullPrint& NullPrint::print(const Var& x) const { return *this; }
 const NullPrint& NullPrint::endl() const { return *this; }
 
 

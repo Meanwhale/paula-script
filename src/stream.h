@@ -70,6 +70,7 @@ namespace paula
 		const NullPrint& print(const Error* a) const;
 		const NullPrint& println(const char*) const;
 		const NullPrint& print(const core::TreeIterator& x) const;
+		const NullPrint& print(const Var& x) const;
 		const NullPrint& endl() const;
 	};
 	/**

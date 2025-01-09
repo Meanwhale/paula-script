@@ -162,12 +162,31 @@ ERROR_STATUS Engine::addParsedLine()
 	return NO_ERROR;
 }
 
-
-ERROR_STATUS Engine::run(IInputStream& input, bool handleError)
+void paula::core::Engine::runSafe(IInputStream& input)
 {
-	return run(input, nullptr, 0, handleError);
+	runSafe(input, nullptr, 0);
 }
-ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, int numArgs, bool handleError)
+
+void paula::core::Engine::runSafe(IInputStream& input, const char** args, int numArgs)
+{
+	auto error = run(input, args, numArgs);
+	if (error != NO_ERROR)
+	{
+#ifndef PAULA_MINI
+		ERR.print("RUN SAFE Caught an exception: ").print(error->name).print(" (id=").print(error->id).print(")").endl();
+		ERR.flush();
+#else
+		log.endl().print("ERROR: L").print(error->id).endl(); // L = line
+#endif
+	}
+	log.flush();
+}
+
+ERROR_STATUS Engine::run(IInputStream& input)
+{
+	return run(input, nullptr, 0);
+}
+ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, int numArgs)
 {
 	LOG.println("Paula::run");
 
@@ -197,7 +216,7 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 	{
 		running = automata.parseLine(&input);
 		error = automata.getError();
-		if (error != nullptr) return returnHandleError(error, handleError);
+		if (error != nullptr) return error; //returnHandleError(error, handleError);
 		CHECK_CALL(addParsedLine());	// add command to bytecode list
 		automata.resetCommand();		// prepare to another command
 
@@ -266,30 +285,6 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 	while(hasNextLine);
 
 	return NO_ERROR;
-}
-
-
-ERROR_STATUS Engine::returnHandleError(const Error* error, bool handleErrors)
-{
-	error = automata.getError();
-	if (handleErrors && error != NO_ERROR)
-	{
-#ifndef PAULA_MINI
-		ERR
-			.print("Caught an exception: ")
-			.print(error->name)
-			.print(" (id=")
-			.print(error->id)
-			.print(")")
-			.endl();
-		ERR.flush();
-#else
-		log.endl().print("ERROR: L").print(error->id).endl(); // L = line
-#endif
-		error = NO_ERROR;
-	}
-	log.flush();
-	return error;
 }
 
 ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (* _action)(Args&))
