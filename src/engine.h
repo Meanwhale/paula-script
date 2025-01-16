@@ -50,6 +50,8 @@ namespace paula
 			ERROR_STATUS jump(INT bytecodeIndex);
 			ERROR_STATUS callProcedure(INT address, Args&args);
 			ERROR_STATUS addProcedure(char*name, INT address);
+			void printInfo();
+			const char * blockTypeName(INT);
 
 			Tree vars;
 			bool oneLiner, skipNextAfterJump;

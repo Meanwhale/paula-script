@@ -471,7 +471,7 @@ void ByteAutomata::escapeChar()
 }
 void ByteAutomata::comma()
 {
-	printTreeStack();
+	VRB(printTreeStack(););
 	VRB(LOG.println("comma");)
 	if (tree.getType(currentParent()) == NODE_EXPR_TREE)
 	{
@@ -482,13 +482,13 @@ void ByteAutomata::comma()
 }
 void ByteAutomata::startBlock()
 {
-	VRB(LOG.println("addBlock");)
-		pushTree(NODE_SUBTREE);
+	VRB(LOG.println("addBlock"););
+	pushTree(NODE_SUBTREE);
 }
 void ByteAutomata::endBlock()
 {
-	VRB(LOG.println("endBlock");)
-		tree.print();
+	VRB(LOG.println("endBlock"););
+	VRB(tree.print(););
 
 	if (tree.getType(currentParent()) == NODE_EXPR_TREE)
 	{
@@ -502,7 +502,7 @@ void ByteAutomata::endBlock()
 }
 void ByteAutomata::breakCommand()
 {
-	LOG.println("breakCommand: finish command");
+	VRB(LOG.println("breakCommand: finish command"););
 
 	oneLiner = false;
 	finishCommand();
@@ -510,7 +510,7 @@ void ByteAutomata::breakCommand()
 }
 void ByteAutomata::breakLine()
 {
-	LOG.println("breakLine: finish command");
+	VRB(LOG.println("breakLine: finish command"););
 
 	finishCommand();
 	startNewLine();
@@ -521,7 +521,7 @@ void ByteAutomata::startNewLine()
 }
 void ByteAutomata::eof()
 {
-	LOG.println("---------------- EOF ----------------");
+	LOG.println("---------------- ByteAutomata EOF ----------------");
 }
 void ByteAutomata::finishCommand()
 {

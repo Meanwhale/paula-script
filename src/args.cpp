@@ -100,9 +100,18 @@ Var Args::get(INT dataIndex)
 		bool hasNext = it.next();
 		ASSERT(hasNext);
 	}
-	LOG.print("get: ").print(it.var()).endl();
+	//LOG.print("get: ").print(it.var()).endl();
 
 	return it.var(); // set pointer to the data
+}
+
+void Args::print()
+{
+	LOG.print("ARGS: count ").print(count()).endl();
+	for(INT i=0; i<count(); i++)
+	{
+		LOG.print("  ").print(i).print(": ").print(get(i)).endl();
+	}
 }
 
 //////////////// VAR

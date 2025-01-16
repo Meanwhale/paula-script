@@ -190,13 +190,6 @@ void core::argTest()
 	auto error = paula::run("hello:arg(0)\nworld:arg(1)", args, 2);
 	ASSERT_NO_ERROR(error);
 }
-void core::procTest()
-{
-	auto error = paula::run("proc (\"adder\")\n\ta:arg(0)\n\ta:a+2\na:1\nadder(3)");
-	ASSERT_NO_ERROR(error);
-	INT a;
-	TEST_INT("a", 5);
-}
 void core::semicolonTest()
 {
 	auto error = paula::run("i:5;i:i+1");
@@ -225,10 +218,38 @@ void core::ifTest()
 	TEST_INT("a", 5);
 	TEST_INT("b", 21);
 }
+void core::procTest()
+{
+	auto error = paula::run("proc (\"adder\")\n\ta:arg(0)\n\ta:a+2\na:1\nadder(3)");
+	ASSERT_NO_ERROR(error);
+	INT a;
+	TEST_INT("a", 5);
+}
+void core::fiboTest()
+{
+	const char * code = 
+
+"proc (\"fibo\")\n"
+"\ta: arg(1)\n"
+"\tb: (arg(0)) + (arg(1))\n"
+"N: 10\n"
+"a: 0\n"
+"b: 1\n"
+"while(N > 0)\n"
+"\tfibo(a, b)\n"
+"\tN: N-1";
+
+	//const char * code = "proc (\"fibo\")\n\tf: (arg(0)) + (arg(1))\nN: 5\nf: 0\nwhile(N > 0)\n\tfibo(f, f+1)\n\tN: N-1";
+	LOG.println(code);
+	auto error = paula::run(code);
+	ASSERT_NO_ERROR(error);
+	INT a;
+	TEST_INT("b", 89); // N=10, number 89 is 12th, first two are initialized
+}
 
 void core::safeTest()
 {
-	paula::runSafe("a:!");
+	paula::runSafe("a:!"); // engine handles error
 }
 void core::testAll()
 {

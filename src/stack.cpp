@@ -163,13 +163,13 @@ void paula::core::Stack::printData()
 void paula::core::Stack::printValues()
 {
 	StackIterator argIt(*this);
-	LOG.print("args stack");
+	LOG.print("stack: (top) ");
 	do
 	{
-		LOG.print("\n - ").print(argIt.var());
+		LOG.print(argIt.var()).print(" / ");
 	}
 	while(argIt.next());
-	LOG.endl();
+	LOG.print(" (base)").endl();
 }
 
 StackIterator::StackIterator(Stack&_stack) : stack(_stack), ptr(_stack.topPtr())

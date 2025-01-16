@@ -290,18 +290,24 @@ namespace paula {
 			} while (it.next());
 			it.toParent();
 		}
+		void Tree::printCompact()
+		{
+			TreeIterator it(*this);
+			printCompact(it);
+			LOG.endl();
+		}
 		void Tree::printCompact(TreeIterator& it)
 		{
 			if (!it.hasChild()) return;
 			it.toChild();
-			LOG.print("(");
+			LOG.print("{");
 			do
 			{
-				LOG.print(it).endl();
+				LOG.print(it);
 				if (it.hasChild()) printCompact(it);
 				if (it.hasNext()) LOG.print(" ");
 			} while (it.next());
-			LOG.print(")");
+			LOG.print("}");
 			it.toParent();
 		}
 

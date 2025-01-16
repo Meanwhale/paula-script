@@ -115,6 +115,8 @@ namespace paula
 		 */
 		Var get(INT dataIndex);
 
+        void print();
+
 		friend class Engine;
 
 	private:

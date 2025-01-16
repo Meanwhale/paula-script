@@ -28,6 +28,7 @@ namespace paula
 		void reservedNameTest();
         void argTest();
         void procTest();
+		void fiboTest();
         void semicolonTest();
 
 		void loopTest();

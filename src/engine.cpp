@@ -32,7 +32,7 @@ ERROR_STATUS notAction (Engine&p,Args&args)
 ERROR_STATUS getArgAction (Engine&p,Args&args)
 {
 	LOG.println("-------- GET ARG ACTION --------");
-	p.stack.printData();
+	VRB(p.stack.printData());
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
 	INT argIndex = false;
 	if(args.get(0).getInt(argIndex))
@@ -156,9 +156,9 @@ ERROR_STATUS Engine::addParsedLine()
 	bytecode.addInt(nodeIndex, automata.commandType);
 	bytecode.addBool(nodeIndex, automata.oneLiner);
 	bytecode.addRawTree(nodeIndex, automata.tree);
-	LOG.print("PARSED TREE ADDED:\n");
-	automata.tree.print();
-	LOG.endl();
+	VRB(LOG.print("PARSED TREE ADDED:\n"));
+	VRB(automata.tree.print());
+	VRB(LOG.endl());
 	return NO_ERROR;
 }
 
@@ -226,7 +226,7 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 	
 	// all lines parsed --> execute bytecode
 
-	bytecode.print();
+	VRB(bytecode.print(););
 
 	TreeIterator it(bytecode);
 	if (!it.hasChild())	return NO_ERROR;
@@ -235,6 +235,8 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 	bool hasNextLine;
 	do
 	{
+		printInfo();
+
 		INT bytecodeIndex = it.index;
 
 		it.toChild();
@@ -251,8 +253,8 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 		INT  rawTreeDataSize = it.var().size() - 2;
 		Tree parsedCommand(rawTreeDataPtr, rawTreeDataSize);
 
-		VRB(LOG.print("\nEXECUTE LINE\n"));
-		VRB(parsedCommand.print());
+		LOG.print("\nEXECUTE LINE\n");
+		parsedCommand.printCompact();
 
 		CHECK_CALL(executeLine(indentation, bytecodeIndex, commandType, parsedCommand));
 
@@ -320,6 +322,40 @@ ERROR_STATUS paula::core::Engine::addProcedure(char* procedureName, INT address)
 	return NO_ERROR;
 }
 
+void paula::core::Engine::printInfo()
+{
+	LOG.println("-------- INFO --------");
+	LOG.println("stack");
+	stack.printValues();
+	LOG.println("global args");
+	globalArgs.print();
+	LOG.print("blockStackSize: ").print(blockStackSize).endl();
+	for(INT i=0; i<blockStackSize; i++)
+	{
+		Block& block = blockStack[i];
+		LOG.print("block[").print(i).print("] type: ").print(blockTypeName(block.blockType)).print(", indentation: ").print(block.indentation).endl();
+		if (block.argsBasePtr != nullptr)
+		{
+			LOG.println("---- BLOCK ARGS ----");
+			Args a(this, block.argsBasePtr);
+			a.print();
+			LOG.println("--------------------");
+		}
+	}
+	LOG.println("----------------------");
+}
+
+const char * paula::core::Engine::blockTypeName(INT blockType)
+{
+	switch(blockType)
+	{
+	case BLOCK_TYPE_LOOP: return "LOOP";
+	case BLOCK_TYPE_CONDITIONAL: return "CONDITIONAL";
+	case BLOCK_TYPE_PROCEDURE: return "PROCEDURE";
+	}
+	return " -.- ERROR -.-";
+}
+
 
 ERROR_STATUS core::Engine::jump(INT bytecodeIndex)
 {
@@ -331,6 +367,8 @@ ERROR_STATUS core::Engine::jump(INT bytecodeIndex)
 
 ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLine)
 {
+	// handle code block start and end according to previous and current line indentation
+
 	executeLine = true;
 	currentIndentation = indentation;
 
@@ -391,13 +429,22 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 			else if (block.blockType == BLOCK_TYPE_PROCEDURE)
 			{
 				LOG.println("-------- END OF PROCEDURE --------");
-				blockStackSize--;
-				if (blockStackSize > 0)
+
+				while (stack.topPtr() != block.argsBasePtr)
 				{
-					// continue as several blocks might have ended
-					block = blockStack[blockStackSize-1];
+					LOG.println("--------      pop         --------");
+					stack.pop();
 				}
-				else
+
+				blockStackSize--;
+				//if (blockStackSize > 0)
+				//{
+				//	// continue as several blocks might have ended
+				//	block = blockStack[blockStackSize-1];
+				//}
+				//else
+
+				//stack.printValues();
 				{
 					CHECK_CALL(jump(block.startBytecodeIndex));
 					executeLine = false;
@@ -431,7 +478,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 	{
 		// TRG : SRC
 
-		LOG.print("execute ASSIGNMENT: indentation=").print(indentation).endl();
+		LOG.println("--------- ASSIGN  VAR ---------");
 		TreeIterator it(tree);
 		it.toChild(); // points to variable name
 		LOG.print("variable name: ").print(it).endl();
@@ -444,7 +491,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 
 		if (index >= 0)
 		{
-			LOG.println("-------- OVERWRITE VAR --------");
+			LOG.println("OVERWRITE");
 			// variable already exists
 			TreeIterator data(vars, index); // points to the data
 			LOG.print("old value: ").print(data).endl();
@@ -454,13 +501,14 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 			StackIterator src(stack);
 			LOG.print("overwrite value. new value: ").print(src.var()).endl();
 			if (src.type() == NODE_TEXT || data.type() == NODE_TEXT) return &TEXT_VARIABLE_OVERWRITE;
-			vars.print();
-			vars.printData();
+			LOG.println("-------- VARIABLES");
+			//vars.printData();
 			data.overwrite(src.var());
+			stack.pop();
 		}
 		else
 		{
-			LOG.println("-------- NEW VAR --------");
+			LOG.println("NEW VAR");
 			if (isReservedName(it.getTextData())) return &RESERVED_NAME;
 			INT kvIndex = vars.addSubtree(0, NODE_KV_TREE);
 			// new
@@ -472,8 +520,9 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 			vars.addData(kvIndex, src.var()); // add value to KV
 			stack.pop();
 		}
-
-		VRB(vars.print();)
+		vars.print();
+		// VRB(vars.print();)
+		LOG.println("--------- ASSIGN  END ---------");
 	}
 	else if (lineType == LINE_CALL)
 	{
@@ -538,6 +587,8 @@ void core::Engine::startProcedure()
 	blockStackSize++;
 
 	globalArgs = Args(this, stack.topPtr()); // set globalArgs to point procedure call args
+	
+	globalArgs.print();
 }
 
 void core::Engine::skipBlock()

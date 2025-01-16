@@ -51,6 +51,7 @@ namespace paula {
 			void printData();
 			void print();
 			void printSubtree(TreeIterator&);
+            void printCompact();
 			void printCompact(TreeIterator&);
 
 			friend class Stack;
