@@ -90,6 +90,7 @@ Var Args::get(INT dataIndex)
 		ERR.print("index out of range: ").print(dataIndex).print("/").print(numArgs).endl();
 		return Var(&NODE_VOID);
 	}
+	dataIndex = numArgs - dataIndex - 1; // reverse order 
 
 	StackIterator it(engine->stack, stackBase); // iterator points to top = arg. count
 

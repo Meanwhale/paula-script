@@ -29,6 +29,8 @@ namespace paula
         void argTest();
         void procTest();
 		void fiboTest();
+		void returnTest();
+        void recursiveProcedureTest();
         void semicolonTest();
 
 		void loopTest();
@@ -41,3 +43,4 @@ namespace paula
 	}
 }
 #endif
+

@@ -15,7 +15,7 @@ namespace paula
 		class Tree;
 
 		constexpr INT
-			NUM_COMMANDS = 7,
+			NUM_COMMANDS = 8,
 			MAX_USER_CALLBACKS = 16,
 			MAX_SCRIPT_PROCEDURES = 16,
 			MAX_BLOCK_DEPTH = 16;
@@ -44,10 +44,13 @@ namespace paula
 			ERROR_STATUS addParsedLine();
 			void runSafe(IInputStream&);
 			void runSafe(IInputStream&, const char **args, int numArgs);
+			ERROR_STATUS runBytecode();
+			ERROR_STATUS parse(IInputStream&);
 			ERROR_STATUS run(IInputStream&);
 			ERROR_STATUS run(IInputStream&, const char **args, int numArgs);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 			ERROR_STATUS jump(INT bytecodeIndex);
+			ERROR_STATUS returnProcedure();
 			ERROR_STATUS callProcedure(INT address, Args&args);
 			ERROR_STATUS addProcedure(char*name, INT address);
 			void printInfo();

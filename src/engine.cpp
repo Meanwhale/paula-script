@@ -101,6 +101,20 @@ ERROR_STATUS createProcedureAction (Engine&p,Args&args)
 	}
 	return &TYPE_MISMATCH;
 }
+ERROR_STATUS returnAction (Engine&p,Args&args)
+{
+	LOG.println("-------- RETURN ACTION --------");
+	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
+	INT value; // TODO: return any type
+	if (args.get(0).getInt(value))
+	{
+		p.returnValue.clear();
+		p.returnValue.pushInt(value);
+		return p.returnProcedure();
+	}
+	return &TYPE_MISMATCH;
+}
+
 
 Engine Engine::one = Engine();
 
@@ -130,7 +144,8 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 		Command("if", ifAction),
 		Command("arg", getArgAction),
 		Command("argc", numArgsAction),
-		Command("proc", createProcedureAction)
+		Command("proc", createProcedureAction),
+		Command("return", returnAction)
 	}
 {
 	constants.init(NODE_SUBTREE);
@@ -182,52 +197,8 @@ void paula::core::Engine::runSafe(IInputStream& input, const char** args, int nu
 	log.flush();
 }
 
-ERROR_STATUS Engine::run(IInputStream& input)
+ERROR_STATUS Engine::runBytecode()
 {
-	return run(input, nullptr, 0);
-}
-ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, int numArgs)
-{
-	LOG.println("Paula::run");
-
-	vars.init(NODE_SUBTREE);
-	bytecode.init(NODE_SUBTREE);
-
-	currentIndentation = 0;
-	skipIndentation = -1;
-	blockStackSize = 0;
-	const Error* error = nullptr; // NO_ERROR
-
-	// command-line args
-
-	stack.clear();
-	for (INT i=0; i<numArgs; i++)
-	{
-		stack.pushText(args[i]);
-	}
-	stack.pushInt(numArgs); // TODO: tee oma datatyyppi
-	globalArgs = Args(this, stack.topPtr());
-
-	// parse lines and add them to the bytecode list
-
-	automata.init(&input);
-	bool running = true;
-	while(running)
-	{
-		running = automata.parseLine(&input);
-		error = automata.getError();
-		if (error != nullptr) return error; //returnHandleError(error, handleError);
-		CHECK_CALL(addParsedLine());	// add command to bytecode list
-		automata.resetCommand();		// prepare to another command
-
-		// reset line here so that addParsedLine has correct values
-		if (automata.currentState == automata.stateNewLine) automata.resetNewLine();
-	}
-	
-	// all lines parsed --> execute bytecode
-
-	VRB(bytecode.print(););
-
 	TreeIterator it(bytecode);
 	if (!it.hasChild())	return NO_ERROR;
 	it.toChild();
@@ -285,6 +256,62 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 		}
 	}
 	while(hasNextLine);
+
+	return NO_ERROR;
+}
+
+ERROR_STATUS Engine::parse(IInputStream& input)
+{
+	automata.init(&input);
+	bool running = true;
+	while(running)
+	{
+		running = automata.parseLine(&input);
+		const Error* error = automata.getError();
+		if (error != nullptr) return error;
+		CHECK_CALL(addParsedLine());	// add command to bytecode list
+		automata.resetCommand();		// prepare to another command
+
+		// reset line here so that addParsedLine has correct values
+		if (automata.currentState == automata.stateNewLine) automata.resetNewLine();
+	}
+	return NO_ERROR;
+}
+
+ERROR_STATUS Engine::run(IInputStream& input)
+{
+	return run(input, nullptr, 0);
+}
+ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, int numArgs)
+{
+	LOG.println("Paula::run");
+
+	vars.init(NODE_SUBTREE);
+	bytecode.init(NODE_SUBTREE);
+
+	currentIndentation = 0;
+	skipIndentation = -1;
+	blockStackSize = 0;
+	const Error* error = nullptr; // NO_ERROR
+
+	// command-line args
+
+	stack.clear();
+	for (INT i=0; i<numArgs; i++)
+	{
+		stack.pushText(args[i]);
+	}
+	stack.pushInt(numArgs); // TODO: tee oma datatyyppi
+	globalArgs = Args(this, stack.topPtr());
+
+	// parse lines and add them to the bytecode list
+	CHECK_CALL(parse(input));
+	
+	// all lines parsed --> execute bytecode
+
+	VRB(bytecode.print());
+
+	CHECK_CALL(runBytecode());
 
 	return NO_ERROR;
 }
@@ -365,6 +392,11 @@ ERROR_STATUS core::Engine::jump(INT bytecodeIndex)
 	return NO_ERROR;
 }
 
+ERROR_STATUS paula::core::Engine::returnProcedure()
+{
+	return NO_ERROR;
+}
+
 ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLine)
 {
 	// handle code block start and end according to previous and current line indentation
@@ -437,25 +469,16 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 				}
 
 				blockStackSize--;
-				//if (blockStackSize > 0)
-				//{
-				//	// continue as several blocks might have ended
-				//	block = blockStack[blockStackSize-1];
-				//}
-				//else
 
-				//stack.printValues();
-				{
-					CHECK_CALL(jump(block.startBytecodeIndex));
-					executeLine = false;
-					skipNextAfterJump = true;
+				CHECK_CALL(jump(block.startBytecodeIndex));
+				executeLine = false;
+				skipNextAfterJump = true;
 
-					// set callers args
-					//blockStack[blockStackSize].argsBasePtr = globalArgs.stackBase;
-					globalArgs = Args(this, block.argsBasePtr);
+				// set callers args
+				//blockStack[blockStackSize].argsBasePtr = globalArgs.stackBase;
+				globalArgs = Args(this, block.argsBasePtr);
 
-					return NO_ERROR;
-				}
+				return NO_ERROR;
 			}
 			else ASSERT(false);
 		}

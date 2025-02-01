@@ -229,15 +229,15 @@ void core::fiboTest()
 {
 	const char * code = 
 
-"proc (\"fibo\")\n"
-"\ta: arg(1)\n"
-"\tb: (arg(0)) + (arg(1))\n"
-"N: 10\n"
-"a: 0\n"
-"b: 1\n"
-"while(N > 0)\n"
-"\tfibo(a, b)\n"
-"\tN: N-1";
+		"proc (\"fibo\")\n"
+		"\ta: arg(0)\n"
+		"\tb: (arg(0)) + (arg(1))\n"
+		"N: 10\n"
+		"a: 0\n"
+		"b: 1\n"
+		"while(N > 0)\n"
+		"\tfibo(a, b)\n"
+		"\tN: N-1";
 
 	//const char * code = "proc (\"fibo\")\n\tf: (arg(0)) + (arg(1))\nN: 5\nf: 0\nwhile(N > 0)\n\tfibo(f, f+1)\n\tN: N-1";
 	LOG.println(code);
@@ -245,6 +245,27 @@ void core::fiboTest()
 	ASSERT_NO_ERROR(error);
 	INT a;
 	TEST_INT("b", 89); // N=10, number 89 is 12th, first two are initialized
+}
+void core::returnTest()
+{
+	//auto error = paula::run("proc (\"five\")\n\treturn(5)\na:five()");
+	//ASSERT_NO_ERROR(error);
+	//INT a;
+	//TEST_INT("a", 5);
+}
+void core::recursiveProcedureTest()
+{
+//	const char * code = 
+//
+//		"proc (\"fibo\")\n"
+//		"\tn: arg(0)\n";
+//
+//	//const char * code = "proc (\"fibo\")\n\tf: (arg(0)) + (arg(1))\nN: 5\nf: 0\nwhile(N > 0)\n\tfibo(f, f+1)\n\tN: N-1";
+//	LOG.println(code);
+//	auto error = paula::run(code);
+//	ASSERT_NO_ERROR(error);
+//	INT a;
+//	TEST_INT("b", 89); // N=10, number 89 is 12th, first two are initialized
 }
 
 void core::safeTest()
@@ -270,6 +291,10 @@ void core::testAll()
 
 	loopTest();
 	ifTest();
+	procTest();
+	fiboTest();
+	returnTest();
+	recursiveProcedureTest();
 
 	safeTest();
 
