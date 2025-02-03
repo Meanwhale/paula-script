@@ -12,6 +12,7 @@ namespace paula
 		{
 		public:
 			virtual const Error * execute(Engine& paula, Args& args) = 0;
+			virtual const bool retunsValue() = 0;
 			INT name[MAX_VAR_NAME_DATA_LENGTH];
 		};
 
@@ -19,9 +20,11 @@ namespace paula
 		{
 		public:
 			ProcedureCallback();
-			ProcedureCallback(char* name, INT _scriptAddress);
+			ProcedureCallback(char* name, INT _scriptAddress, bool _function);
 			const Error * execute(Engine&,Args&) override;
+			const bool retunsValue() override;
 			INT scriptAddress;
+			bool function; // function can return a value and blocks execution
 		};
 		class Callback : public ICallback
 		{
@@ -29,6 +32,7 @@ namespace paula
 			// user-defined callback
 
 			const Error * execute(Engine&,Args&) override;
+			const bool retunsValue() override;
 
 			friend class Engine;
 
@@ -48,6 +52,7 @@ namespace paula
 			void setup(Array<INT>& _nameData, const Error* (*_action)(Engine&, Args&));
 
 			const Error * execute(Engine&,Args&) override;
+			const bool retunsValue() override;
 
 			friend class Engine;
 

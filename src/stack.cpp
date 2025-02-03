@@ -105,6 +105,15 @@ void Stack::pushData(const INT* src)
 		data[top+i] = *(src + i);
 	}
 }
+void Stack::pushData(TreeIterator& src)
+{
+	auto ptr = src.tree.data.ptr(src.index);
+	pushData(ptr);
+}
+void Stack::pushData(Var x)
+{
+	pushData(x.ptr);
+}
 void Stack::pushText(const char* text)
 {
 	const unsigned char* bytes = (const unsigned char*)text;
@@ -116,11 +125,6 @@ void Stack::pushText(const char* text)
 	data[top+3] = numBytes;
 
 	bytesToInts(bytes, 0, data, top+4, numBytes);
-}
-void Stack::pushData(TreeIterator& src)
-{
-	auto ptr = src.tree.data.ptr(src.index);
-	pushData(ptr);
 }
 INT Stack::popInt()
 {

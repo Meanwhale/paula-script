@@ -20,7 +20,8 @@ namespace paula
 		void doubleTest();
 		void operatorTest();
 		void variableTest();
-		void functionTest();
+		void commandTest();
+		void callbackTest();
 		void parenthesisErrorTest();
 		void callbackTest();
 		void treeTest();
@@ -29,7 +30,8 @@ namespace paula
         void argTest();
         void procTest();
 		void fiboTest();
-		void returnTest();
+		void procedureBackTest();
+		void scriptFunctionTest();
         void recursiveProcedureTest();
         void semicolonTest();
 

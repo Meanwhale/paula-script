@@ -79,10 +79,9 @@ ERROR_STATUS ifAction (Engine&p,Args&args)
 	}
 	return &TYPE_MISMATCH;
 }
-
-ERROR_STATUS createProcedureAction (Engine&p,Args&args)
+ERROR_STATUS createProcedureOrFunctionAction (Engine&p,Args&args, bool function)
 {
-	LOG.println("-------- CREATE PROCEDURE ACTION --------");
+	LOG.println("-------- CREATE PROCEDURE/FUNCTION ACTION --------");
 	CHECK(p.currentIndentation == 0, INDENTATION_ERROR);
 	CHECK(p.oneLiner, CONDITION_LINE_WITH_SEMICOLON);
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
@@ -91,28 +90,38 @@ ERROR_STATUS createProcedureAction (Engine&p,Args&args)
 	{
 		// create _proc_ variable that points to procedure bytecode
 
-		// TODO: check if reserved name
-		//if (isReservedName(it.getTextData())) return &RESERVED_NAME;
-		
-		LOG.print("add procedure: ").print(procedureName).print(", address ").print(p.bytecodeIndex).endl();
+		LOG.print("add ").print(function?"FUNCTION":"PROCEDURE").print(": ").print(procedureName).print(", address ").print(p.bytecodeIndex).endl();
 
 		p.skipBlock(); // skip the procedure code after creating it
-		return p.addProcedure(procedureName, p.bytecodeIndex);
+		return p.addProcedure(procedureName, p.bytecodeIndex, function);
 	}
 	return &TYPE_MISMATCH;
 }
-ERROR_STATUS returnAction (Engine&p,Args&args)
+ERROR_STATUS createProcedureAction (Engine&p,Args&args)
 {
-	LOG.println("-------- RETURN ACTION --------");
+	return createProcedureOrFunctionAction(p,args,false);
+}
+
+ERROR_STATUS createScriptFunctionAction (Engine&p,Args&args)
+{
+	return createProcedureOrFunctionAction(p,args,true);
+}
+
+ERROR_STATUS procedureBackAction (Engine&p,Args&args)
+{
+	LOG.println("-------- PROCEDURE BACK ACTION --------");
+	CHECK(args.count() == 0, WRONG_NUMBER_OF_ARGUMENTS);
+	return p.backFromProcedureOrFunction(false);
+}
+
+
+ERROR_STATUS scriptFunctionReturnAction (Engine&p,Args&args)
+{
+	LOG.println("-------- FUNCTION RETURN ACTION --------");
 	CHECK(args.count() == 1, WRONG_NUMBER_OF_ARGUMENTS);
-	INT value; // TODO: return any type
-	if (args.get(0).getInt(value))
-	{
-		p.returnValue.clear();
-		p.returnValue.pushInt(value);
-		return p.returnProcedure();
-	}
-	return &TYPE_MISMATCH;
+	p.stack.pushData(args.get(0));
+	// args.returnData(args.get(0));
+	return p.backFromProcedureOrFunction(true);
 }
 
 
@@ -123,6 +132,7 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 	vars(VARS_SIZE),
 	oneLiner(true),
 	skipNextAfterJump(false),
+	returnCalled(false),
 	currentIndentation(0),
 	skipIndentation(-1),
 	blockStackSize(0),
@@ -145,7 +155,9 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 		Command("arg", getArgAction),
 		Command("argc", numArgsAction),
 		Command("proc", createProcedureAction),
-		Command("return", returnAction)
+		Command("func", createScriptFunctionAction),
+		Command("back", procedureBackAction),
+		Command("return", scriptFunctionReturnAction)
 	}
 {
 	constants.init(NODE_SUBTREE);
@@ -197,68 +209,6 @@ void paula::core::Engine::runSafe(IInputStream& input, const char** args, int nu
 	log.flush();
 }
 
-ERROR_STATUS Engine::runBytecode()
-{
-	TreeIterator it(bytecode);
-	if (!it.hasChild())	return NO_ERROR;
-	it.toChild();
-
-	bool hasNextLine;
-	do
-	{
-		printInfo();
-
-		INT bytecodeIndex = it.index;
-
-		it.toChild();
-		// read line data
-		INT lineNumber, indentation, commandType;
-
-		it.var().getInt(lineNumber);  it.next();
-		it.var().getInt(indentation); it.next();
-		it.var().getInt(commandType); it.next();
-		it.var().getBool(oneLiner); it.next();
-
-		// assign parsed tree from bytecode
-		INT* rawTreeDataPtr  = it.tree.data.ptr(it.index + 3);
-		INT  rawTreeDataSize = it.var().size() - 2;
-		Tree parsedCommand(rawTreeDataPtr, rawTreeDataSize);
-
-		LOG.print("\nEXECUTE LINE\n");
-		parsedCommand.printCompact();
-
-		CHECK_CALL(executeLine(indentation, bytecodeIndex, commandType, parsedCommand));
-
-		it.toParent();
-
-		if (!it.hasNext() && jumpIndex < 0)
-		{
-			// end of file. make a call to end if's and loops. possibly jump back by moving bytecode index.
-			bool executeLine = false;
-			CHECK_CALL(lineIndentationInit(0, executeLine));
-		}
-		if (jumpIndex >= 0)
-		{
-			it.jumpTo(jumpIndex);
-			ASSERT(it.isType(NODE_SUBTREE));
-			jumpIndex = -1;
-			hasNextLine = true;
-
-			if (skipNextAfterJump)
-			{
-				hasNextLine = it.next();
-				skipNextAfterJump = false;
-			}
-		}
-		else
-		{
-			hasNextLine = it.next();
-		}
-	}
-	while(hasNextLine);
-
-	return NO_ERROR;
-}
 
 ERROR_STATUS Engine::parse(IInputStream& input)
 {
@@ -289,6 +239,9 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 	vars.init(NODE_SUBTREE);
 	bytecode.init(NODE_SUBTREE);
 
+	oneLiner = true;
+	skipNextAfterJump = false;
+	returnCalled = false;
 	currentIndentation = 0;
 	skipIndentation = -1;
 	blockStackSize = 0;
@@ -311,11 +264,80 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 
 	VRB(bytecode.print());
 
-	CHECK_CALL(runBytecode());
+	CHECK_CALL(runBytecode(-1));
 
 	return NO_ERROR;
 }
 
+ERROR_STATUS Engine::runBytecode(INT startIndex)
+{
+	TreeIterator it(bytecode);
+	if (!it.hasChild())	return NO_ERROR;
+	it.toChild();
+
+	if (startIndex >= 0) it.jumpTo(startIndex);
+
+	bool hasNextLine;
+	do
+	{
+		if (skipNextAfterJump)
+		{
+			if (!it.next()) break;
+			skipNextAfterJump = false;
+		}
+
+		printInfo();
+
+		INT bytecodeIndex = it.index;
+
+		it.toChild();
+		// read line data
+		INT lineNumber, indentation, commandType;
+
+		it.var().getInt(lineNumber);  it.next();
+		it.var().getInt(indentation); it.next();
+		it.var().getInt(commandType); it.next();
+		it.var().getBool(oneLiner); it.next();
+
+		// assign parsed tree from bytecode
+		INT* rawTreeDataPtr  = it.tree.data.ptr(it.index + 3);
+		INT  rawTreeDataSize = it.var().size() - 2;
+		Tree parsedCommand(rawTreeDataPtr, rawTreeDataSize);
+
+		LOG.print("\nEXECUTE LINE\n");
+		parsedCommand.printCompact();
+
+		CHECK_CALL(executeLine(indentation, bytecodeIndex, commandType, parsedCommand));
+
+		it.toParent();
+
+		if (returnCalled)
+		{
+			returnCalled = false;
+			return NO_ERROR;
+		}
+		if (!it.hasNext() && jumpIndex < 0)
+		{
+			// end of file. make a call to end if's and loops. possibly jump back by moving bytecode index.
+			bool executeLine = false;
+			CHECK_CALL(lineIndentationInit(0, executeLine));
+		}
+		if (jumpIndex >= 0)
+		{
+			it.jumpTo(jumpIndex);
+			ASSERT(it.isType(NODE_SUBTREE));
+			jumpIndex = -1;
+			hasNextLine = true;
+		}
+		else
+		{
+			hasNextLine = it.next();
+		}
+	}
+	while(hasNextLine);
+
+	return NO_ERROR;
+}
 ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (* _action)(Args&))
 {
 	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
@@ -328,15 +350,69 @@ ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (
 	numCallbacks++;
 	return NO_ERROR;
 }
-ERROR_STATUS paula::core::Engine::callProcedure(INT address, Args& args)
+ERROR_STATUS paula::core::Engine::callProcedure(INT address, Args& args, bool function)
 {
-	CHECK_CALL(jump(address));
-	startProcedure();
+	INT savedBytecodeIndex = bytecodeIndex;
+	INT savedIndetation = currentIndentation;
 	skipNextAfterJump = true;
+	if (function)
+	{
+		// block execution
+		startProcedureOrFunction(function);
+		currentIndentation = 1;
+		CHECK_CALL(runBytecode(address));
+		bytecodeIndex = savedBytecodeIndex; // reset
+		currentIndentation = savedIndetation;
+		args.returnData(stack.topVar());
+		stack.pop();		
+	}
+	else
+	{
+		CHECK_CALL(jump(address));
+		startProcedureOrFunction(function);
+	}
 	return NO_ERROR;
 }
 
-ERROR_STATUS paula::core::Engine::addProcedure(char* procedureName, INT address)
+ERROR_STATUS core::Engine::jump(INT bytecodeIndex)
+{
+	// move bytecode iterator
+	ASSERT(jumpIndex < 0);
+	jumpIndex = bytecodeIndex;
+	return NO_ERROR;
+}
+
+ERROR_STATUS paula::core::Engine::backFromProcedureOrFunction(bool function)
+{
+	// pop until reach function/procedure block base
+	Block& block = blockStack[blockStackSize];
+
+	while(block.blockType != (function ? BLOCK_TYPE_FUNCTION : BLOCK_TYPE_PROCEDURE))
+	{
+		blockStackSize--;
+		block = blockStack[blockStackSize];
+	}
+
+	// NOTE: similar to line indentation check
+
+	//blockStackSize--;
+
+	if (!function)
+	{
+		CHECK_CALL(jump(block.startBytecodeIndex)); // blocking function call handles bytecodeIndex
+	}
+	else
+	{
+		returnCalled = true;
+	}
+	// skipNextAfterJump = true;
+
+	// set callers args
+	//blockStack[blockStackSize].argsBasePtr = globalArgs.stackBase;
+	globalArgs = Args(this, block.argsBasePtr);
+	return NO_ERROR;
+}
+ERROR_STATUS paula::core::Engine::addProcedure(char* procedureName, INT address, bool function)
 {
 	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
 	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
@@ -344,7 +420,7 @@ ERROR_STATUS paula::core::Engine::addProcedure(char* procedureName, INT address)
 	if (isReservedName(nameData.ptr())) return &RESERVED_NAME;
 
 	if (numProcedures >= MAX_SCRIPT_PROCEDURES) return &CALLBACK_ERROR;
-	procedures[numProcedures] = ProcedureCallback(procedureName, address);
+	procedures[numProcedures] = ProcedureCallback(procedureName, address, function);
 	numProcedures++;
 	return NO_ERROR;
 }
@@ -379,23 +455,12 @@ const char * paula::core::Engine::blockTypeName(INT blockType)
 	case BLOCK_TYPE_LOOP: return "LOOP";
 	case BLOCK_TYPE_CONDITIONAL: return "CONDITIONAL";
 	case BLOCK_TYPE_PROCEDURE: return "PROCEDURE";
+	case BLOCK_TYPE_FUNCTION: return "SCRIPT FUNCTION";
 	}
 	return " -.- ERROR -.-";
 }
 
 
-ERROR_STATUS core::Engine::jump(INT bytecodeIndex)
-{
-	// move bytecode iterator
-	ASSERT(jumpIndex < 0);
-	jumpIndex = bytecodeIndex;
-	return NO_ERROR;
-}
-
-ERROR_STATUS paula::core::Engine::returnProcedure()
-{
-	return NO_ERROR;
-}
 
 ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLine)
 {
@@ -480,7 +545,15 @@ ERROR_STATUS core::Engine::lineIndentationInit(INT indentation, bool& executeLin
 
 				return NO_ERROR;
 			}
-			else ASSERT(false);
+			else if (block.blockType == BLOCK_TYPE_FUNCTION)
+			{
+				return &FUNCTION_WITHOUT_RETURN;
+			}
+			else
+			{
+				ERR.print("block type: ").print(block.blockType).endl();
+				ASSERT(false);
+			}
 		}
 	}
 	return NO_ERROR;
@@ -556,17 +629,10 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 		it.toChild(); // points to command name
 
 		auto cmd = findCommand(it.getTextData());
-		if (cmd)
-		{
-			it.next();
-			CHECK(!it.hasNext(), SYNTAX_ERROR); // extra tokens after ()
-
-			CHECK_CALL(pushArgListAndExecute(it, cmd));
-		}
-		else
-		{
-			CHECK(false, UNKNOWN_COMMAND);
-		}
+		CHECK_ERR(cmd != nullptr, UNKNOWN_COMMAND, it);
+		it.next();
+		CHECK(!it.hasNext(), SYNTAX_ERROR); // extra tokens after ()
+		CHECK_CALL(pushArgListAndExecute(it, cmd));
 	}
 	else
 	{
@@ -599,13 +665,13 @@ void core::Engine::startIf()
 	blockStack[blockStackSize].argsBasePtr = nullptr;
 	blockStackSize++;
 }
-void core::Engine::startProcedure()
+void core::Engine::startProcedureOrFunction(bool function)
 {
-	LOG.println("-------- START PROCEDURE --------");
+	LOG.println("-------- START PROCEDURE/FUNCTION --------");
 	ASSERT(blockStackSize>=0 && blockStackSize<MAX_BLOCK_DEPTH);
 	blockStack[blockStackSize].startBytecodeIndex = bytecodeIndex; // not needed
 	blockStack[blockStackSize].indentation = 1;
-	blockStack[blockStackSize].blockType = BLOCK_TYPE_PROCEDURE;
+	blockStack[blockStackSize].blockType = function ? BLOCK_TYPE_FUNCTION : BLOCK_TYPE_PROCEDURE;
 	blockStack[blockStackSize].argsBasePtr = globalArgs.stackBase;
 	blockStackSize++;
 
@@ -655,8 +721,7 @@ ERROR_STATUS core::Engine::pushArgListAndExecute(TreeIterator& _it, ICallback * 
 
 	// pop function arguments after call and push return value
 	
-	// TODO: tarkista ilman typeid:tä
-	if (typeid(*cmd) != typeid(ProcedureCallback))
+	if (cmd->retunsValue())
 	{
 		while (numArgs-- >= 0) stack.pop();
 
@@ -771,16 +836,10 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 		{
 			LOG.println("push function return value");
 			auto cmd = findCommand(it.getTextData());
-			if (cmd)
-			{
-				it.next(); // it points to "(...)" in "f(...)"
-				CHECK(!it.hasNext(), SYNTAX_ERROR);
-				CHECK_CALL(pushArgListAndExecute(it, cmd));
-			}
-			else
-			{
-				CHECK(false, UNKNOWN_COMMAND);
-			}
+			CHECK_ERR(cmd != nullptr, UNKNOWN_COMMAND, it);
+			it.next(); // it points to "(...)" in "f(...)"
+			CHECK(!it.hasNext(), SYNTAX_ERROR);
+			CHECK_CALL(pushArgListAndExecute(it, cmd));
 		}
 		else if (it.isNextType(NODE_OPERATOR))
 		{

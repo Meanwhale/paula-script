@@ -17,6 +17,7 @@ namespace paula {
 			void pushInt(INT value);
 			void pushBool(bool value);
 			void pushData(TreeIterator&src);
+            void pushData(Var x);
 			INT popInt();
 			INT previous(INT index);
 			INT next(INT index);

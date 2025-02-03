@@ -15,7 +15,7 @@ namespace paula
 		class Tree;
 
 		constexpr INT
-			NUM_COMMANDS = 8,
+			NUM_COMMANDS = 10,
 			MAX_USER_CALLBACKS = 16,
 			MAX_SCRIPT_PROCEDURES = 16,
 			MAX_BLOCK_DEPTH = 16;
@@ -23,7 +23,8 @@ namespace paula
 		constexpr INT
 			BLOCK_TYPE_LOOP = 1001,
 			BLOCK_TYPE_CONDITIONAL = 1002,
-			BLOCK_TYPE_PROCEDURE = 1003;
+			BLOCK_TYPE_PROCEDURE = 1003,
+			BLOCK_TYPE_FUNCTION = 1004;
 
 		struct Block
 		{
@@ -39,25 +40,25 @@ namespace paula
 
 			void startLoop();
 			void startIf();
-			void startProcedure();
+			void startProcedureOrFunction(bool function);
 			void skipBlock();
 			ERROR_STATUS addParsedLine();
 			void runSafe(IInputStream&);
 			void runSafe(IInputStream&, const char **args, int numArgs);
-			ERROR_STATUS runBytecode();
+			ERROR_STATUS runBytecode(INT startIndex);
 			ERROR_STATUS parse(IInputStream&);
 			ERROR_STATUS run(IInputStream&);
 			ERROR_STATUS run(IInputStream&, const char **args, int numArgs);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 			ERROR_STATUS jump(INT bytecodeIndex);
-			ERROR_STATUS returnProcedure();
-			ERROR_STATUS callProcedure(INT address, Args&args);
-			ERROR_STATUS addProcedure(char*name, INT address);
+			ERROR_STATUS backFromProcedureOrFunction(bool function);
+			ERROR_STATUS callProcedure(INT address, Args&args, bool function);
+			ERROR_STATUS addProcedure(char*name, INT address, bool function);
 			void printInfo();
 			const char * blockTypeName(INT);
 
 			Tree vars;
-			bool oneLiner, skipNextAfterJump;
+			bool oneLiner, skipNextAfterJump, returnCalled;
 			Args globalArgs; // args of current script procedure (function) = CLI args on base level
 
 			INT currentIndentation, skipIndentation, blockStackSize, bytecodeIndex, numCallbacks, numProcedures, jumpIndex;

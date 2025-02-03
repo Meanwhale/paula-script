@@ -21,7 +21,7 @@ void core::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 }
 
 #define ERROR_TEST(code,error) runErrorCheck([]() { return paula::run(code); }, &error);
-#define ASSERT_NO_ERROR(error) {if (error != NO_ERROR) {ERR.print("UNEXPECTED ERROR: ").print(error).endl(); ASSERT(false);}}
+#define ASSERT_NO_ERROR(error) {if (error != NO_ERROR) {ERR.print("ERROR: ").print(error).endl(); ASSERT(false);}}
 
 void core::doubleTest()
 {
@@ -69,7 +69,7 @@ void core::variableTest()
 	INT a;
 	TEST_INT("a", 5);
 }
-void core::functionTest()
+void core::commandTest()
 {
 	auto err = paula::run("b:true\ntmp:not(b)");
 	ASSERT_NO_ERROR(err);
@@ -246,12 +246,19 @@ void core::fiboTest()
 	INT a;
 	TEST_INT("b", 89); // N=10, number 89 is 12th, first two are initialized
 }
-void core::returnTest()
+void core::procedureBackTest()
 {
-	//auto error = paula::run("proc (\"five\")\n\treturn(5)\na:five()");
-	//ASSERT_NO_ERROR(error);
-	//INT a;
-	//TEST_INT("a", 5);
+	auto error = paula::run("proc (\"five\")\n\ta:a+4\n\tback()\na:1\nfive()");
+	ASSERT_NO_ERROR(error);
+	INT a;
+	TEST_INT("a", 5);
+}
+void core::scriptFunctionTest()
+{
+	auto error = paula::run("func (\"five\")\n\treturn(5)\na:five()");
+	ASSERT_NO_ERROR(error);
+	INT a;
+	TEST_INT("a", 5);
 }
 void core::recursiveProcedureTest()
 {
@@ -278,22 +285,22 @@ void core::testAll()
 	treeTest();
 
 	variableTest();
+	commandTest();
 	textTest();
 	doubleTest();
 
-	functionTest();
+	callbackTest();
 	parenthesisErrorTest();
 	operatorTest();
 	reservedNameTest();
 	argTest();
 	semicolonTest();
-	callbackTest();
 
 	loopTest();
 	ifTest();
 	procTest();
 	fiboTest();
-	returnTest();
+	procedureBackTest();
 	recursiveProcedureTest();
 
 	safeTest();

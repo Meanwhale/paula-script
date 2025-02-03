@@ -102,6 +102,7 @@ namespace paula
 	ERROR_TYPE (QUOTE_ERROR);
 	ERROR_TYPE (CONDITION_LINE_WITH_SEMICOLON);
 	ERROR_TYPE (INVALID_HEXADECIMAL_CHARACTER);
+	ERROR_TYPE (FUNCTION_WITHOUT_RETURN);
 
 	// tree + interator
 
@@ -131,9 +132,10 @@ namespace paula
 
 #define ERROR_STATUS [[nodiscard]] const Error*
 
-// return error if needed
+// return error if needed.
 
 #define CHECK(x,e) { if (!(x)) { return &e; } }
+#define CHECK_ERR(x,e,err) { if (!(x)) { ERR.print("ERROR: ").print(err).endl(); return &e; } }
 
 #define NO_ERROR nullptr
 
