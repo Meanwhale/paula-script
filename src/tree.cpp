@@ -426,6 +426,11 @@ namespace paula {
 			return tree.getNodeSize(index);
 		}
 
+		INT TreeIterator::getIndex()
+		{
+			return index;
+		}
+
 		void TreeIterator::overwrite(Var src)
 		{
 			ASSERT(type() == src.type() && size() == src.size());

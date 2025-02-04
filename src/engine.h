@@ -47,6 +47,7 @@ namespace paula
 			void runSafe(IInputStream&, const char **args, int numArgs);
 			ERROR_STATUS runBytecode(INT startIndex);
 			ERROR_STATUS parse(IInputStream&);
+            void reset();
 			ERROR_STATUS run(IInputStream&);
 			ERROR_STATUS run(IInputStream&, const char **args, int numArgs);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));

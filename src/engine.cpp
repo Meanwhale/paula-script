@@ -172,6 +172,23 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 	constants.addText(kvIndex, "false");
 	constants.addBool(kvIndex, false);
 }
+void Engine::reset()
+{
+	vars.init(NODE_SUBTREE);
+	bytecode.init(NODE_SUBTREE);
+
+	oneLiner = true;
+	skipNextAfterJump = false;
+	returnCalled = false;
+	currentIndentation = 0;
+	skipIndentation = -1;
+	blockStackSize = 0;
+	// numCallbacks: won't reset
+	numProcedures = 0;
+	jumpIndex = -1;
+	returnValue.clear();
+	const Error* error = nullptr; // NO_ERROR
+}
 
 
 ERROR_STATUS Engine::addParsedLine()
@@ -183,9 +200,12 @@ ERROR_STATUS Engine::addParsedLine()
 	bytecode.addInt(nodeIndex, automata.commandType);
 	bytecode.addBool(nodeIndex, automata.oneLiner);
 	bytecode.addRawTree(nodeIndex, automata.tree);
-	VRB(LOG.print("PARSED TREE ADDED:\n"));
-	VRB(automata.tree.print());
-	VRB(LOG.endl());
+	//VRB(LOG.print("PARSED TREE ADDED:\n"));
+	//VRB(automata.tree.print());
+	//VRB(LOG.endl());
+	LOG.print("PARSED TREE ADDED:\n");
+	automata.tree.print();
+	LOG.endl();
 	return NO_ERROR;
 }
 
@@ -227,7 +247,6 @@ ERROR_STATUS Engine::parse(IInputStream& input)
 	}
 	return NO_ERROR;
 }
-
 ERROR_STATUS Engine::run(IInputStream& input)
 {
 	return run(input, nullptr, 0);
@@ -236,16 +255,7 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 {
 	LOG.println("Paula::run");
 
-	vars.init(NODE_SUBTREE);
-	bytecode.init(NODE_SUBTREE);
-
-	oneLiner = true;
-	skipNextAfterJump = false;
-	returnCalled = false;
-	currentIndentation = 0;
-	skipIndentation = -1;
-	blockStackSize = 0;
-	const Error* error = nullptr; // NO_ERROR
+	reset();
 
 	// command-line args
 
@@ -263,7 +273,7 @@ ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, in
 	// all lines parsed --> execute bytecode
 
 	VRB(bytecode.print());
-
+	
 	CHECK_CALL(runBytecode(-1));
 
 	return NO_ERROR;
@@ -280,13 +290,15 @@ ERROR_STATUS Engine::runBytecode(INT startIndex)
 	bool hasNextLine;
 	do
 	{
+		LOG.print("line index: ").print(it.getIndex()).endl();
+
 		if (skipNextAfterJump)
 		{
 			if (!it.next()) break;
 			skipNextAfterJump = false;
 		}
 
-		printInfo();
+		VRB(printInfo());
 
 		INT bytecodeIndex = it.index;
 
@@ -303,9 +315,6 @@ ERROR_STATUS Engine::runBytecode(INT startIndex)
 		INT* rawTreeDataPtr  = it.tree.data.ptr(it.index + 3);
 		INT  rawTreeDataSize = it.var().size() - 2;
 		Tree parsedCommand(rawTreeDataPtr, rawTreeDataSize);
-
-		LOG.print("\nEXECUTE LINE\n");
-		parsedCommand.printCompact();
 
 		CHECK_CALL(executeLine(indentation, bytecodeIndex, commandType, parsedCommand));
 
@@ -385,12 +394,12 @@ ERROR_STATUS core::Engine::jump(INT bytecodeIndex)
 ERROR_STATUS paula::core::Engine::backFromProcedureOrFunction(bool function)
 {
 	// pop until reach function/procedure block base
-	Block& block = blockStack[blockStackSize];
+	Block& block = blockStack[blockStackSize-1];
 
 	while(block.blockType != (function ? BLOCK_TYPE_FUNCTION : BLOCK_TYPE_PROCEDURE))
 	{
 		blockStackSize--;
-		block = blockStack[blockStackSize];
+		block = blockStack[blockStackSize-1];
 	}
 
 	// NOTE: similar to line indentation check
@@ -400,13 +409,14 @@ ERROR_STATUS paula::core::Engine::backFromProcedureOrFunction(bool function)
 	if (!function)
 	{
 		CHECK_CALL(jump(block.startBytecodeIndex)); // blocking function call handles bytecodeIndex
+		skipNextAfterJump = true;
 	}
 	else
 	{
 		returnCalled = true;
+		skipNextAfterJump = false;
 	}
-	// skipNextAfterJump = true;
-
+	
 	// set callers args
 	//blockStack[blockStackSize].argsBasePtr = globalArgs.stackBase;
 	globalArgs = Args(this, block.argsBasePtr);
@@ -566,6 +576,9 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 
 	if (!executeLine) return NO_ERROR;
 
+	LOG.print("\nEXECUTE LINE >> ").print(indentation).print(" ");
+	tree.printCompact();
+
 	bytecodeIndex = _bytecodeIndex;
 
 	//stack.clear();
@@ -574,10 +587,10 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 	{
 		// TRG : SRC
 
-		LOG.println("--------- ASSIGN  VAR ---------");
+		VRB(LOG.println("--------- ASSIGN  VAR ---------"));
 		TreeIterator it(tree);
 		it.toChild(); // points to variable name
-		LOG.print("variable name: ").print(it).endl();
+		LOG.print("variable name: ").print(it).print(" ");
 
 		// new or override?
 
@@ -587,24 +600,22 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 
 		if (index >= 0)
 		{
-			LOG.println("OVERWRITE");
+			VRB(LOG.println("OVERWRITE"));
 			// variable already exists
 			TreeIterator data(vars, index); // points to the data
-			LOG.print("old value: ").print(data).endl();
+			VRB(LOG.print("old value: ").print(data).endl());
 
 			it.next(); // move to SRC
 			CHECK_CALL(pushExprArg(it));
 			StackIterator src(stack);
-			LOG.print("overwrite value. new value: ").print(src.var()).endl();
+			LOG.print("overwrite: ").print(src.var()).endl();
 			if (src.type() == NODE_TEXT || data.type() == NODE_TEXT) return &TEXT_VARIABLE_OVERWRITE;
-			LOG.println("-------- VARIABLES");
-			//vars.printData();
 			data.overwrite(src.var());
 			stack.pop();
 		}
 		else
 		{
-			LOG.println("NEW VAR");
+			VRB(LOG.println("NEW VAR"));
 			if (isReservedName(it.getTextData())) return &RESERVED_NAME;
 			INT kvIndex = vars.addSubtree(0, NODE_KV_TREE);
 			// new
@@ -612,7 +623,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 			it.next(); // move to SRC
 			CHECK_CALL(pushExprArg(it));
 			StackIterator src(stack);
-			LOG.print("assign value: ").print(src.var()).endl();
+			LOG.print(" new: ").print(src.var()).endl();
 			vars.addData(kvIndex, src.var()); // add value to KV
 			stack.pop();
 		}
@@ -624,7 +635,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 	{
 		// COMMAND { funcName ( args ) }
 
-		LOG.print("execute COMMAND: indentation=").print(indentation).endl();
+		VRB(LOG.print("execute COMMAND: indentation=").print(indentation).endl());
 		TreeIterator it(tree);
 		it.toChild(); // points to command name
 
@@ -742,7 +753,7 @@ ERROR_STATUS core::Engine::pushAtomicValue(TreeIterator&_it)
 	INT stackSizeBefore = stack.itemCount();
 	TreeIterator it(_it);
 
-	LOG.print("push atomic value: ").print(it).endl();
+	VRB(LOG.print("push atomic value: ").print(it).endl());
 
 	if (it.isType(NODE_INTEGER) || it.isType(NODE_DOUBLE) || it.isType(NODE_BOOL) || it.isType(NODE_TEXT))
 	{
@@ -759,7 +770,7 @@ ERROR_STATUS core::Engine::pushAtomicValue(TreeIterator&_it)
 	}
 	else if(it.isType(NODE_NAME))
 	{
-		LOG.print("find variable: ").print(it).endl();
+		VRB(LOG.print("find variable: ").print(it).endl());
 
 		CHECK_CALL(pushVariable(it));
 
@@ -834,7 +845,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 
 		if (it.isNextType(NODE_SUBTREE))
 		{
-			LOG.println("push function return value");
+			VRB(LOG.println("push function return value"));
 			auto cmd = findCommand(it.getTextData());
 			CHECK_ERR(cmd != nullptr, UNKNOWN_COMMAND, it);
 			it.next(); // it points to "(...)" in "f(...)"
@@ -843,7 +854,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 		}
 		else if (it.isNextType(NODE_OPERATOR))
 		{
-			LOG.println("int [op] int operator"); // eg. "a + b"
+			VRB(LOG.println("int [op] int operator")); // eg. "a + b"
 
 			// get the first value
 
@@ -863,7 +874,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 			CHECK_CALL(pushAtomicValue(it));
 			INT b = stack.popInt();
 
-			LOG.print("a=").print(a).print(" ").print(op).print(" b=").print(b).endl();
+			VRB(LOG.print("a=").print(a).print(" ").print(op).print(" b=").print(b).endl());
 			CHECK_CALL(operatorPush(op, a, b));
 		}
 		else

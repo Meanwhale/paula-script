@@ -96,6 +96,7 @@ namespace paula {
 			bool isTextType();
 			INT type();
 			INT size();
+			INT getIndex();
 
 			void overwrite(Var src);
 

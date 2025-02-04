@@ -52,7 +52,8 @@ int main()
 	//}
 
 	//core::fiboTest();
-	//core::testAll();
-	core::scriptFunctionTest();
+	core::testAll();
+	//core::procedureBackTest();
+	//core::scriptFunctionTest();
 	//recursiveProcedureTest();
 }
