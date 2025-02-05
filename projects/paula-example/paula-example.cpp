@@ -32,12 +32,12 @@ const paula::Error* myCallback (paula::Args&args)
 }
 
 int main()
-{
+{/*
 	// register a callback for Paula engine
-	//auto error = paula::addCallback("test", myCallback);
+	auto error = paula::addCallback("test", myCallback);
 	// call it from a script
-	//error = paula::run("test(\"foo\", \"bar\")");
-
+	error = paula::run("test(\"foo\", \"bar\")");
+*/
 	//auto error = paula::addCallback("doubler", doubler);
  //   paula::runSafe("six: doubler(3)");
 	//INT value;

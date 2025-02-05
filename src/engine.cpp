@@ -193,6 +193,8 @@ void Engine::reset()
 
 ERROR_STATUS Engine::addParsedLine()
 {
+	if (automata.commandType == LINE_UNDEFINED) return NO_ERROR; // empty line
+
 	// add line info and parsed tree
 	INT nodeIndex = bytecode.addSubtree(0, NODE_SUBTREE);
 	bytecode.addInt(nodeIndex, automata.lineNumber);

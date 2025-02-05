@@ -9,7 +9,7 @@ MINI_FLAGS = -Os -s -DPAULA_RELEASE -DPAULA_MINI
 DEBUG_FLAGS = -fsanitize=leak -fsanitize=address -DPAULA_DEBUG
 
 all:
-	@echo Define target: \'release\', \'debug\', or \'mini\'
+	@echo Define target: \'release\', \'debug\', \'mini\', or \'example\'
 
 release: $(SRC) $(CMD_SRC)
 	@echo --- Paula CLI RELEASE ---

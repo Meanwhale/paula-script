@@ -3,6 +3,8 @@
 #include "args.h"
 #include "node_types.h"
 
+#include <cstring>
+
 using namespace paula;
 using namespace paula::core;
 

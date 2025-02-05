@@ -18,7 +18,11 @@ inline char separator()
 }
 void info()
 {
+#ifdef PAULA_MINI
+	pout.print("Paula Script MINI CLI, v. ").print(PAULA_VERSION).endl();
+#else
 	pout.print("Paula Script command line interface, version ").print(PAULA_VERSION).endl();
+#endif
 }
 void error()
 {

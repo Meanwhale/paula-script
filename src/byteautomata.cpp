@@ -260,6 +260,8 @@ bool ByteAutomata::parseLine (IInputStream * _input)
 	while(!commandReady && error == NO_ERROR)
 	{
 		step();
+
+		if (input == nullptr) return false;
 	}
 	return input != nullptr; // end wasn't reached so keep parsing
 }

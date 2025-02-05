@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <cstdint>
 
 #define LOG paula::log
 #define ERR paula::err
