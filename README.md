@@ -8,9 +8,8 @@
 
 **Project status:** work-in-progress. 
 
-🌏 [https://meanwhale.github.io/](https://meanwhale.github.io/)<br>
-🐦 [https://x.com/TheMeanwhale](https://x.com/TheMeanwhale)
-
+🌏 <a href=https://meanwhale.github.io/paula>Paula Script's web page</a><br>
+📄 <a href=https://meanwhale.github.io/paula/api/html/namespacepaula.html>C++ API</a>
 ## Examples
 
 Run Paula Script from your source code. 
@@ -71,7 +70,7 @@ fact: true                    | boolean
 
 #### Operators
 
-Operator expression can have two operards and the operator (+-*/<>=) between them:<p>
+Operator expression has two operands and the operator (+-*/<>=) between them:<p>
 _operand1 operator operand2_<p>
 An operand can be a _literal_ value (eg. _123_), a variable, or an expression in parenthesis.
 ```
@@ -95,7 +94,7 @@ foo(b<3, sum(1, 2))           | expression arguments
 
 ```
 if (value)
-    print("It's true!")       | define code block by indentation. Execute code block if the 'value' is true
+    print("value is true!")       | define code block by tab indentation
 ```
 
 #### Loop
@@ -141,40 +140,6 @@ void main()
  - Run a script that calls the callback (``doubler(3)``) and assign the return value (6) to a variable ``six``.
  - Get the value of the variable: ``paula::get("six").getInt(value)`` and print it.
 
-# C++ API
-
-<a href="https://meanwhale.github.io/paula/api/html/namespacepaula.html" target="blank">meanwhale.github.io/paula/api/html/namespacepaula.html</a>
-
-<!--
-Global functions in ``paula`` namespace:
-```cpp
-const Error * run(const char*);      // run a script and return error (NO_ERROR if everything's OK)
-const Error * run(IInputStream&);    // run a script from a stream (see stream.h)
-void runAndCatch(const char*);       // run script and print error if any
-void runAndCatch(IInputStream&);
-Var get(const char * varName);       // get a variable that is assigned in the script. See about Var below.
-const Error * addCallback(const char* name, const Error* (*_action)(Args&)); // register a callback to call from a script
-```
-``Var`` class is basically a pointer (int*) to a Paula variable or empty data by default.
-Getters assign the variable's value to reference argument.
-They return true of the variable is found, or false if not.
-```cpp
-bool getInt(INT& out) const;
-bool getDouble(DOUBLE& out) const;
-bool getBool(bool& out) const;
-bool getOp(char& out) const;
-bool getChars(char*&out) const;
-```
-For example:
-```cpp
-paula::runAndCatch("six: 6");
-INT value;
-Var v = paula::get("six");
-if (v.getInt(value)) std::cout<<"six = "<<value<<std::endl;
-else std::cout<<"variable not found..."<<std::endl;
-```
--->
-
 # Build
 
 #### Visual Studio
@@ -198,7 +163,7 @@ Run _make_ with a target option in project root. Build target is _bin_ folder. M
 ```
 make release    # CLI release build
 make debug      # Debug test build
-make mini       # experimental, minimal  CLI
+make mini       # experimental, minimal CLI
 make example    # example project to try out Paula script. Main source file: projects/paula-example/paula-example.cpp
 ```
 
