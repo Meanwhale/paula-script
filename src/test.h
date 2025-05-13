@@ -32,7 +32,8 @@ namespace paula
 		void fiboTest();
 		void procedureBackTest();
 		void scriptFunctionTest();
-        void recursiveProcedureTest();
+        void functionArgTest();
+		void recursiveFunctionTest();
         void semicolonTest();
 
 		void loopTest();

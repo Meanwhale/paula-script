@@ -415,6 +415,7 @@ ERROR_STATUS paula::core::Engine::backFromProcedureOrFunction(bool function)
 	}
 	else
 	{
+		blockStackSize--;
 		returnCalled = true;
 		skipNextAfterJump = false;
 	}

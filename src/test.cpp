@@ -18,6 +18,10 @@ void core::runErrorCheck(const Error* (*test)(), const Error* expectedError)
 		ERR.print("catch: ").print(error).print(" expected: ").print(expectedError).endl();
 		ASSERT_MSG(false, "error don't match");
 	}
+	else
+	{
+		LOG.println("Succesful error test!");
+	}
 }
 
 #define ERROR_TEST(code,error) runErrorCheck([]() { return paula::run(code); }, &error);
@@ -260,24 +264,40 @@ void core::scriptFunctionTest()
 	INT a;
 	TEST_INT("a", 5);
 }
-void core::recursiveProcedureTest()
+void core::functionArgTest()
 {
-//	const char * code = 
-//
-//		"proc (\"fibo\")\n"
-//		"\tn: arg(0)\n";
-//
-//	//const char * code = "proc (\"fibo\")\n\tf: (arg(0)) + (arg(1))\nN: 5\nf: 0\nwhile(N > 0)\n\tfibo(f, f+1)\n\tN: N-1";
-//	LOG.println(code);
-//	auto error = paula::run(code);
-//	ASSERT_NO_ERROR(error);
-//	INT a;
-//	TEST_INT("b", 89); // N=10, number 89 is 12th, first two are initialized
+	const char * code =
+		"func (\"dbl\")\n"
+		"\tx: arg(0)\n"
+		"\tx: x * 2\n"
+		"\treturn(x)\n"
+		"a:dbl(7)";
+
+	auto error = paula::run(code);
+	ASSERT_NO_ERROR(error);
+	INT a;
+	TEST_INT("a", 14);
+}
+void core::recursiveFunctionTest()
+{
+	const char * code =
+		"func (\"rec\")\n"
+		"\tx: arg(0)\n"
+		"\tif (x > 4)\n"
+		"\t\treturn(x)\n"
+		"\treturn(x + 1)\n"
+		"a:rec(1)";
+
+	auto error = paula::run(code);
+	ASSERT_NO_ERROR(error);
+	INT a;
+	TEST_INT("a", 5);
 }
 
 void core::safeTest()
 {
 	paula::runSafe("a:!"); // engine handles error
+	LOG.println("Succesfully catched error in 'safeTest'!");
 }
 void core::testAll()
 {
@@ -301,7 +321,7 @@ void core::testAll()
 	procTest();
 	fiboTest();
 	procedureBackTest();
-	recursiveProcedureTest();
+	functionArgTest();
 
 	safeTest();
 
