@@ -108,6 +108,35 @@ while (i > 0)
 For conditions and loops, code blocks are defined by tab indentation.
 Line can't start with other whitespace characters.
 
+#### Scripted Procedures and Functions
+
+There's two different ways to make callable scripts:
+
+- Procedures: non-blocking, doesn't return a value.
+- Functions: blocking, returns a value.
+
+You can pass both of them any number of arguments, and then read the arguments by calling _arg(i)_ where _i_ is the index of the argument, starting from _0_.
+
+For example, define a procedure and call it:
+
+```
+proc("printTwo")
+    print(arg(0))
+    print(arg(1))
+
+printTwo("Hello", "World")       | prints "HelloWorld"
+```
+
+Define a function that returns a value, a number multiplied by two:
+
+```
+func("doubler")
+    x: arg(0)
+    return (x * 2)
+
+print(doubler(7))                | prints "14"
+```
+
 ## Callbacks
 
 Define a callback function and call it from a script:
