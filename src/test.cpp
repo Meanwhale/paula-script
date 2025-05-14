@@ -45,7 +45,7 @@ void core::doubleTest()
 	ASSERT(a == 123.456);
 }
 
-#define TEST_INT(name,value) a = -123456; ASSERT(paula::get(name).getInt(a)); LOG.print("a:").print(a).endl(); ASSERT(a == value);
+#define TEST_INT(name,value) a = -123456; ASSERT(paula::get(name).getInt(a)); LOG.print(name).print(":").print(a).endl(); ASSERT(a == value);
 #define TEST_BOOL(name,value) b = false; ASSERT(paula::get(name).getBool(b)); LOG.print("b:").print(b).endl(); ASSERT(b == value);
 #define TEST_TEXT(name,value) t = nullptr; ASSERT(paula::get(name).getChars(t)); LOG.print("t:").print(t).endl(); ASSERT(strcmp(t, value) == 0);
 
@@ -283,15 +283,19 @@ void core::recursiveFunctionTest()
 	const char * code =
 		"func (\"rec\")\n"
 		"\tx: arg(0)\n"
-		"\tif (x > 4)\n"
+		"\tif (x > top)\n"
 		"\t\treturn(x)\n"
-		"\treturn(x + 1)\n"
-		"a:rec(1)";
+		"\treturn(rec(x + 1))\n"
+		"top:4\n"
+		"a:rec(1)\n"
+		"top:5\n"
+		"b:rec(1)\n";
 
 	auto error = paula::run(code);
 	ASSERT_NO_ERROR(error);
 	INT a;
 	TEST_INT("a", 5);
+	TEST_INT("b", 6);
 }
 
 void core::safeTest()
