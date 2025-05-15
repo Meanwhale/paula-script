@@ -160,17 +160,4 @@ namespace paula
 		const bool found;
 	};
 #endif
-	//template <class CHAR> class Array;
-
-	//class BufferInputStream : public IInputStream
-	//{
-	//public:
-	//	BufferInputStream(Array<CHAR>&, INT start, INT last);
-	//	CHAR read() override;
-	//	bool end() override;
-	//	void close() override;
-	//private:
-	//	Array<CHAR> str;
-	//	INT i, last;
-	//};
 }

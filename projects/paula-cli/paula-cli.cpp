@@ -38,9 +38,14 @@ int runScript (IInputStream&input)
 	auto error = Engine::one.run(input);
 	if (error != NO_ERROR)
 	{
+#ifdef PAULA_MINI
+		pout.print("ERROR #").print(error).endl(); // error print disabled for MINI
+#else
 		err.println("ERROR: ").print(error).endl();
+#endif
 		return -1;
 	}
+	pout.endl();
 	return 0;
 }
 int main(int argc, char* argv[])

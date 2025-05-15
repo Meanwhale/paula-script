@@ -154,16 +154,6 @@ void ByteAutomata::init (IInputStream * _input)
 	error = NO_ERROR;
 	resetCommand();
 }
-//bool ByteAutomata::running()
-//{
-//	if (error != NO_ERROR)
-//	{
-//		ERR.print("ERROR in ByteAutomata: ").print(error).endl();
-//		closeInput();
-//		return false;
-//	}
-//	return input != nullptr || stayNextStep;
-//}
 void ByteAutomata::closeInput()
 {
 	if (input != nullptr)

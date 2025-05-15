@@ -9,7 +9,7 @@ namespace paula
 
 	// user interface
 
-	constexpr const char * PAULA_VERSION = "0.1";
+	constexpr const char * PAULA_VERSION = "0.2";
 
 	void printVersion();
 

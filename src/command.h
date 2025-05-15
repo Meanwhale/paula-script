@@ -13,7 +13,7 @@ namespace paula
 		public:
 			virtual const Error * execute(Engine& paula, Args& args) = 0;
 			virtual const bool retunsValue() = 0;
-			INT name[MAX_VAR_NAME_DATA_LENGTH];
+			INT name[MAX_VAR_NAME_DATA_LENGTH]; // NOTE: unnecessary warning about 'name' initialization
 		};
 
 		class ProcedureCallback : public ICallback
