@@ -97,6 +97,9 @@ if (value)
     print("value is true!")       | define code block by tab indentation
 ```
 
+For conditions, loops, procedures, and functions, *code blocks* are defined by tab indentation.
+Line can't start with other whitespace characters.
+
 #### Loop
 
 ```
@@ -105,15 +108,13 @@ while (i > 0)
     print(i)
     i:i-1
 ```
-For conditions and loops, code blocks are defined by tab indentation.
-Line can't start with other whitespace characters.
 
 #### Scripted Procedures and Functions
 
 There's two different ways to make callable scripts:
 
-- Procedures: non-blocking, doesn't return a value.
-- Functions: blocking, returns a value.
+- *Procedures* don't return a value, and are non-blocking, meaning that you can still execute line-by-line even when jumping into a procedure.
+- *Functions* return a value, and are blocking i.e. function script is execute in a busy loop, not line-be-line.
 
 You can pass both of them any number of arguments, and then read the arguments by calling _arg(i)_ where _i_ is the index of the argument, starting from _0_.
 
@@ -195,6 +196,22 @@ make debug      # Debug test build
 make mini       # experimental, minimal CLI
 make example    # example project to try out Paula script. Main source file: projects/paula-example/paula-example.cpp
 ```
+
+Test CLI by running a script:
+```
+bin/paula -f projects/test.pa
+```
+
+Test debug build to see if there's memory or other issues:
+```
+bin/pauladbg
+```
+
+Test mini version that doesn't have file input. Give script by CLI:
+```
+echo "print(5)" | bin/paulamini -i
+```
+
 
 <hr>
 Copyright © Meanwhale
