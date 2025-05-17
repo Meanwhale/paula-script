@@ -1,5 +1,5 @@
 **Paula Script** is a lightweight scripting language written in C++.
- - **Small** but easy to expand. Currently minimum CLI build size is about 35 KB.
+ - **Small** but easy to expand. Currently minimum CLI build size is about 50 kB.
  - **No runtime memory allocation:** everything runs in buffers that are initialized at the start.
  - **Stand-alone:** minimal external dependencies. Built-in parser.
  - **Line-by-line, non-blocking execution:** Paula executes the code on the fly while reading the input. It can take input from an endless stream and execute the code from a buffer without memory issues (no runtime memory allocation).
