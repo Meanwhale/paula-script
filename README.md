@@ -2,7 +2,7 @@
  - **Small** but easy to expand. Currently minimum CLI build size is about 50 kB.
  - **No runtime memory allocation:** everything runs in buffers that are initialized at the start.
  - **Stand-alone:** minimal external dependencies. Built-in parser.
- - **Line-by-line, non-blocking execution:** Paula executes the code on the fly while reading the input. It can take input from an endless stream and execute the code from a buffer without memory issues (no runtime memory allocation).
+ - **Line-by-line, non-blocking execution**
  - Compiles for Windows (Visual Studio) and Linux (GCC).
  - Command line interface (CLI) and a static library.
 
