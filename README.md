@@ -179,17 +179,17 @@ void main()
  #### Script execution process
 
 - The script is read from an input stream (*IInputStream*), which can be a file, standard input, or any other source that implements the input interface.
-- The script is parsed using the *ByteAutomata* state machine, based on its own [project](https://github.com/Meanwhale/ByteAutomata).  
+- The script is parsed using the *ByteAutomata* state machine, based on its own [project](https://github.com/Meanwhale/ByteAutomata).
   *ByteAutomata* outputs a token tree. The tree data (*Tree* class) is stored in a fixed-size *int* array to avoid memory allocations.
 - The Paula engine (*Engine* class) then executes the parsed script by iterating over the token tree and interpreting the commands.
-- Command-line arguments are saved on the stack and accessed using the *arg(i)* function, where *i* is the index of the argument.  
+- Command-line arguments are saved on the stack and accessed using the *arg(i)* function, where *i* is the index of the argument.
   To support minimalism, the same *arg(i)* function is used to read parameters inside scripted functions—i.e., it reads from the stack within the current script block context.
-- Script execution is non-blocking, meaning you can execute the script line by line, doing other things in between, as the Paula engine maintains its execution state.  
-  The only exception is scripted functions that return a value. Since the return value might be needed within the current line, functions are executed in a busy loop before the Paula engine exits.  
+- Script execution is non-blocking, meaning you can execute the script line by line, doing other things in between, as the Paula engine maintains its execution state.
+  The only exception is scripted functions that return a value. Since the return value might be needed within the current line, functions are executed in a busy loop before the Paula engine exits.
   Procedures (which do not return values) are a non-blocking alternative for scripted subroutines. See examples for syntax.
-- Paula script functionality is executed via callbacks—C++ functions registered in the Paula engine by name.  
-  When a callback is invoked from the script, the Paula engine calls the corresponding C++ function.  
-  Call parameters are passed using an *Args* object, which provides access to the parameter array by index.  
+- Paula script functionality is executed via callbacks—C++ functions registered in the Paula engine by name.
+  When a callback is invoked from the script, the Paula engine calls the corresponding C++ function.
+  Call parameters are passed using an *Args* object, which provides access to the parameter array by index.
   Parameter values are accessed via a *Var* object, which wraps a pointer to the data (*int* pointer) and provides the value’s type and contents (*int*, *float*, text, etc.).
 - Typed data in variables and the stack is stored in an *int* array format, which includes the data type and size along with the data itself.
 - Paula variables are stored in a fixed-size array containing name-value pairs.
