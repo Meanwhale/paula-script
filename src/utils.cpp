@@ -145,6 +145,12 @@ bool core::readBool(bool& out, const INT* node)
 	out = (*(node + 3)) != 0;
 	return true;
 }
+bool core::readLogical(INT& out, const INT* node)
+{
+	if (!match(node, NODE_LOGICAL)) return false;
+	out = *(node + 3);
+	return true;
+}
 bool core::readOp(char& out, const INT* node)
 {
 	if (!match(node, NODE_OPERATOR)) return false;

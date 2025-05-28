@@ -23,8 +23,8 @@ const CHAR
 	*blockEnd = ")"; //")]}";
 
 
-ByteAutomata::ByteAutomata(Engine& p) :
-	paula(p),
+ByteAutomata::ByteAutomata(Engine& e) :
+	engine(e),
 	input(nullptr),
 	error(NO_ERROR),
 	tree(TREE_ARRAY_SIZE),
@@ -369,8 +369,14 @@ void ByteAutomata::prepareAddToken()
 void ByteAutomata::addOperatorToken()
 {
 	VRB(LOG.println("addOperatorToken");)
-	prepareAddToken();
+		prepareAddToken();
 	tree.addOperatorNode(currentParent(), (char)currentInput);
+}
+void ByteAutomata::addLogicalToken(INT id)
+{
+	VRB(LOG.println("addLogicalToken");)
+		prepareAddToken();
+	tree.addLogicalNode(currentParent(), id);
 }
 void ByteAutomata::addFirstNameAndTransit()
 {
@@ -412,16 +418,41 @@ void ByteAutomata::addTokenAndTransitionToSpace()
 }
 void ByteAutomata::addLiteralToken(INT nodeType)
 {
-	if (nodeType == NODE_NAME && bufferIndex - lastStart >= MAX_VAR_NAME_LENGTH)
+	INT length = bufferIndex - lastStart;
+	if (nodeType == NODE_NAME &&  length >= MAX_VAR_NAME_LENGTH)
 	{
 		error = &VARIABLE_NAME_TOO_LONG;
 		return;
 	}
-	if (nodeType == NODE_TEXT && bufferIndex - lastStart >= MAX_TEXT_SIZE)
+	if (nodeType == NODE_TEXT && length >= MAX_TEXT_SIZE)
 	{
 		error = &TEXT_TOO_LONG;
 		return;
 	}
+
+	// hard-coded logical operator read
+	if (length == 2)
+	{
+		if (buffer[lastStart] == 'o' && buffer[lastStart+1] == 'r')
+		{
+			addLogicalToken(LOGICAL_OR);
+			return;
+		}
+	}
+	if (length == 3)
+	{
+		if (buffer[lastStart] == 'a' && buffer[lastStart+1] == 'n' && buffer[lastStart+2] == 'd')
+		{
+			addLogicalToken(LOGICAL_AND);
+			return;
+		}
+		if (buffer[lastStart] == 'x' && buffer[lastStart+1] == 'o' && buffer[lastStart+2] == 'r')
+		{
+			addLogicalToken(LOGICAL_XOR);
+			return;
+		}
+	}
+
 	VRB(LOG.print("add token: ").print(lastStart).print(" -> ").print(bufferIndex).endl();)
 	VRB(LOG.print("addLiteralToken: ").printHex(nodeType).endl();)
 	prepareAddToken();

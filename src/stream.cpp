@@ -62,6 +62,10 @@ const POut& POut::print(const Var& x) const
 	{
 		print("<RAW TREE>");
 	}
+	else if (t == NODE_LOGICAL)
+	{
+		print("<LOGICAL>");
+	}
 	else if (t == NODE_OPERATOR)
 	{
 		char op; if (x.getOp(op)) print(op);

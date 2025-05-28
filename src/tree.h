@@ -16,6 +16,7 @@ namespace paula {
 			void addInt(INT parentIndex, INT data);
 			void addBool(INT parentIndex, bool data);
 			void addOperatorNode(INT parentIndex, CHAR op);
+            void addLogicalNode(INT parentIndex, INT op);
 			void addDouble(INT parentIndex, double value);
 			void addRawTree(INT parentIndex, Tree& tree);
 			void addText(INT parentIndex, const char* text);

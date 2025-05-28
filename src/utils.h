@@ -32,6 +32,7 @@ namespace paula { namespace core
 	bool readInt(INT& out, const INT* node);
 	bool readDouble(DOUBLE& out, const INT* node);
 	bool readBool(bool& out, const INT* node);
+	bool readLogical(INT& out, const INT* node);
 	bool readOp(char& out, const INT* node);
 	bool readChars(char*&out, const INT* node);
 }}

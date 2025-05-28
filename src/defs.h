@@ -126,7 +126,11 @@ namespace paula
 
 		LINE_UNDEFINED = 10001,
 		LINE_ASSIGNMENT = 10002,
-		LINE_CALL = 10003;
+		LINE_CALL = 10003,
+
+		LOGICAL_AND = 20002,
+		LOGICAL_OR = 20003,
+		LOGICAL_XOR = 20004;
 }
 
 // return value for error-checked functions

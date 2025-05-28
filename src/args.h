@@ -59,6 +59,12 @@ namespace paula
 		*/
 		bool getOp(char& out) const;
 		/**
+		* @brief Write variable's logical operation (eg. integer code of 'and' or 'xor') to reference, if variable is of correct type.
+		* @param out Write target. If type doesn't match, the value is not changed.
+		* @return True if type is correct and the value is written.
+		*/
+		bool getLogical(INT& out) const;
+		/**
 		* @brief Write variable's text value (char*) to reference, if variable is of correct type.
 		* @param out Write target. If type doesn't match, the value is not changed.
 		* @return True if type is correct and the value is written.

@@ -31,7 +31,8 @@ namespace paula
 
 		// controls tokens
 
-		NODE_OPERATOR			= 0x31000000,
+		NODE_OPERATOR			= 0x31000000, // + - / *
+		NODE_LOGICAL			= 0x32000000, // and or xor
 
 		NODE_RAW_TREE			= 0x41000000, // raw tree data. copy to a new Tree object
 

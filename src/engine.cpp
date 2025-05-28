@@ -171,6 +171,18 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 	kvIndex = constants.addSubtree(0, NODE_KV_TREE);
 	constants.addText(kvIndex, "false");
 	constants.addBool(kvIndex, false);
+
+	/*
+			INT andKeywordData[KEYWORD_DATA_SIZE],
+				 orKeywordData[KEYWORD_DATA_SIZE],
+				xprKeywordData[KEYWORD_DATA_SIZE];*/
+
+	Array<INT> andNameData (andKeywordData, MAX_VAR_NAME_DATA_LENGTH);
+	charsToNameData("and", andNameData);
+	Array<INT> orNameData (orKeywordData, MAX_VAR_NAME_DATA_LENGTH);
+	charsToNameData("or", orNameData);
+	Array<INT> xorNameData (xorKeywordData, MAX_VAR_NAME_DATA_LENGTH);
+	charsToNameData("xor", xorNameData);
 }
 void Engine::reset()
 {
@@ -774,9 +786,7 @@ ERROR_STATUS core::Engine::pushAtomicValue(TreeIterator&_it)
 	else if(it.isType(NODE_NAME))
 	{
 		VRB(LOG.print("find variable: ").print(it).endl());
-
 		CHECK_CALL(pushVariable(it));
-
 	}
 	else
 	{
@@ -854,6 +864,39 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 			it.next(); // it points to "(...)" in "f(...)"
 			CHECK(!it.hasNext(), SYNTAX_ERROR);
 			CHECK_CALL(pushArgListAndExecute(it, cmd));
+		}
+		else if (it.isNextType(NODE_LOGICAL))
+		{
+			VRB(LOG.println("bool [logical] bool")); // eg. "a xor b"
+
+			// read logical operands a and b. push value, read from top, and pop.
+
+			CHECK_CALL(pushAtomicValue(it));
+			bool a = false;
+			CHECK_ERR(stack.topVar().getBool(a), SYNTAX_ERROR, it);
+			stack.pop();
+
+			// read the logical operator
+
+			it.next();
+			INT op=-1;
+			it.var().getLogical(op);
+
+			it.next();
+			CHECK(!it.hasNext(), SYNTAX_ERROR);
+			CHECK_CALL(pushAtomicValue(it));
+			bool b = false;
+			CHECK_ERR(stack.topVar().getBool(b), SYNTAX_ERROR, it);
+			stack.pop();
+
+			LOG.print("LOGICAL: ").print(a).print(" x ").print(b).endl();
+
+			// push result
+
+			     if (op == LOGICAL_AND) stack.pushBool(a && b);
+			else if (op == LOGICAL_OR)  stack.pushBool(a || b);
+			else if (op == LOGICAL_XOR) stack.pushBool(a != b);
+			else return &SYNTAX_ERROR;
 		}
 		else if (it.isNextType(NODE_OPERATOR))
 		{
@@ -942,6 +985,9 @@ ICallback * core::Engine::findCommand(INT * textData)
 }
 bool core::Engine::isReservedName(INT * textData)
 {
+	if (matchTextData(textData, andKeywordData)) return true;
+	if (matchTextData(textData,  orKeywordData)) return true;
+	if (matchTextData(textData, xorKeywordData)) return true;
 	if (findCommand(textData) != nullptr) return true;
 	if (findVariableIndex(textData, constants) >= 0) return true;
 	if (findVariableIndex(textData, vars) >= 0) return true;

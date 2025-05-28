@@ -31,7 +31,7 @@ namespace paula { namespace core
 		void closeInput();
 		void uninit();
 
-		Engine& paula;
+		Engine& engine;
 		IInputStream* input;
 		const Error* error;
 		Tree tree;
@@ -74,6 +74,7 @@ namespace paula { namespace core
         void addTokenAndTransitionToSpace();
 		void prepareAddToken();
         void addOperatorToken();
+		void addLogicalToken(INT id);
 		void addFirstNameAndTransit();
 		void next(BYTE nextState);
         void nextCont(BYTE nextState);

@@ -51,7 +51,7 @@ void core::doubleTest()
 
 void core::operatorTest()
 {
-	auto err = paula::run("a:5+5\nb:(a*2)\nc:b/5\nd:c-1\ne:1+(2-3)\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5");
+	auto err = paula::run("taastosi:true and true\na:5+5\nb:(a*2)\nc:b/5\nd:c-1\ne:1+(2-3)\nvale:a>1000\ntosi:a>0\nsama:1=1\neisama:4=5\ntaassama:(1=0) or true\ntaaseisama:4=5");
 	ASSERT_NO_ERROR(err);
 	INT a;
 	bool b;
@@ -64,6 +64,9 @@ void core::operatorTest()
 	TEST_BOOL("tosi", true);
 	TEST_BOOL("sama", true);
 	TEST_BOOL("eisama", false);
+	TEST_BOOL("taastosi", true);
+	TEST_BOOL("taassama", true);
+	TEST_BOOL("taaseisama", false);
 }
 
 void core::variableTest()

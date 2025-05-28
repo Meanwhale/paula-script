@@ -56,5 +56,6 @@ int main()
 	//core::procedureBackTest();
 	//core::scriptFunctionTest();
 	//core::functionArgTest();
-	core::recursiveFunctionTest();
+	//core::recursiveFunctionTest();
+	core::operatorTest();
 }

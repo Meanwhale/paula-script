@@ -84,6 +84,12 @@ namespace paula {
 			data[top++] = charToInt(op);
 		}
 
+		void core::Tree::addLogicalNode(INT parentIndex, INT op)
+		{
+			insertToTree(parentIndex, NODE_LOGICAL, 3);
+			data[top++] = op;
+		}
+
 		void core::Tree::addDouble(INT parentIndex, double value)
 		{
 			insertToTree(parentIndex, NODE_DOUBLE, 4);

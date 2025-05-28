@@ -154,6 +154,10 @@ bool Var::getOp(char& out) const
 {
 	return readOp(out, ptr);
 }
+bool Var::getLogical(INT& out) const
+{
+	return readLogical(out, ptr);
+}
 bool Var::getChars(char*&out) const
 {
 	// out: reference to a pointer.

@@ -94,6 +94,10 @@ namespace paula
 			Callback callbacks[MAX_USER_CALLBACKS];
 			ProcedureCallback procedures[MAX_SCRIPT_PROCEDURES];
 
+			INT andKeywordData[MAX_VAR_NAME_DATA_LENGTH],
+				 orKeywordData[MAX_VAR_NAME_DATA_LENGTH],
+				xorKeywordData[MAX_VAR_NAME_DATA_LENGTH];
+
 			ICallback* findCommand(INT* textData);
 
 			bool isReservedName(INT* textData);
