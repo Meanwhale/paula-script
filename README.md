@@ -1,12 +1,14 @@
 **Paula Script** is a lightweight scripting language written in C++.
- - **Small** but easy to expand. Currently minimum CLI build size is about 35 KB.
+ - **Small** but easy to expand. Currently minimum CLI build size is about 50 kB.
  - **No runtime memory allocation:** everything runs in buffers that are initialized at the start.
  - **Stand-alone:** minimal external dependencies. Built-in parser.
- - **Line-by-line, non-blocking execution:** Paula executes the code on the fly while reading the input. It can take input from an endless stream and execute the code from a buffer without memory issues (no runtime memory allocation).
+ - **Line-by-line, non-blocking execution**
  - Compiles for Windows (Visual Studio) and Linux (GCC).
  - Command line interface (CLI) and a static library.
 
 **Project status:** work-in-progress. 
+
+Read more about the language details, design, and builds below! 👇
 
 🌏 <a href=https://meanwhale.github.io/paula>Paula Script's web page</a><br>
 📄 <a href=https://meanwhale.github.io/paula/api/html/namespacepaula.html>C++ API</a>
@@ -169,6 +171,29 @@ void main()
  - Register the callback to the Paula engine (``addCallback``).
  - Run a script that calls the callback (``doubler(3)``) and assign the return value (6) to a variable ``six``.
  - Get the value of the variable: ``paula::get("six").getInt(value)`` and print it.
+
+# Design
+
+ Paula script’s design goal is to be small, stand-alone, with no implicit runtime memory allocation, targeted for scripting in memory-constrained environments, and to have minimal overhead.
+
+ #### Script execution process
+
+- The script is read from an input stream (*IInputStream*), which can be a file, standard input, or any other source that implements the input interface.
+- The script is parsed using the *ByteAutomata* state machine, based on its own [project](https://github.com/Meanwhale/ByteAutomata).
+  *ByteAutomata* outputs a token tree. The tree data (*Tree* class) is stored in a fixed-size *int* array to avoid memory allocations.
+- The Paula engine (*Engine* class) then executes the parsed script by iterating over the token tree and interpreting the commands.
+- Command-line arguments are saved on the stack and accessed using the *arg(i)* function, where *i* is the index of the argument.
+  To support minimalism, the same *arg(i)* function is used to read parameters inside scripted functions—i.e., it reads from the stack within the current script block context.
+- Script execution is non-blocking, meaning you can execute the script line by line, doing other things in between, as the Paula engine maintains its execution state.
+  The only exception is scripted functions that return a value. Since the return value might be needed within the current line, functions are executed in a busy loop before the Paula engine exits.
+  Procedures (which do not return values) are a non-blocking alternative for scripted subroutines. See examples for syntax.
+- Paula script functionality is executed via callbacks—C++ functions registered in the Paula engine by name.
+  When a callback is invoked from the script, the Paula engine calls the corresponding C++ function.
+  Call parameters are passed using an *Args* object, which provides access to the parameter array by index.
+  Parameter values are accessed via a *Var* object, which wraps a pointer to the data (*int* pointer) and provides the value’s type and contents (*int*, *float*, text, etc.).
+- Typed data in variables and the stack is stored in an *int* array format, which includes the data type and size along with the data itself.
+- Paula variables are stored in a fixed-size array containing name-value pairs.
+
 
 # Build
 
