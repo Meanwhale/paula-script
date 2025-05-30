@@ -64,7 +64,17 @@ const POut& POut::print(const Var& x) const
 	}
 	else if (t == NODE_LOGICAL)
 	{
-		print("<LOGICAL>");
+		INT op;
+		if (x.getLogical(op))
+		{
+			switch(op)
+			{
+			case LOGICAL_AND: print("and"); break;
+			case LOGICAL_OR:  print("or" ); break;
+			case LOGICAL_XOR: print("xor"); break;
+			default: print("???");
+			}
+		}
 	}
 	else if (t == NODE_OPERATOR)
 	{

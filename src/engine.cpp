@@ -867,8 +867,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 		}
 		else if (it.isNextType(NODE_LOGICAL))
 		{
-			VRB(LOG.println("bool [logical] bool")); // eg. "a xor b"
-
+			// eg. "a xor b"
 			// read logical operands a and b. push value, read from top, and pop.
 
 			CHECK_CALL(pushAtomicValue(it));
@@ -879,6 +878,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 			// read the logical operator
 
 			it.next();
+			VRB(LOG.print("LOGICAL:").print(it));
 			INT op=-1;
 			it.var().getLogical(op);
 
@@ -889,7 +889,7 @@ ERROR_STATUS core::Engine::pushExprArg(TreeIterator& it)
 			CHECK_ERR(stack.topVar().getBool(b), SYNTAX_ERROR, it);
 			stack.pop();
 
-			LOG.print("LOGICAL: ").print(a).print(" x ").print(b).endl();
+			VRB(LOG.print(" ").print(a).print(" x ").print(b).endl());
 
 			// push result
 
