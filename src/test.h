@@ -19,6 +19,7 @@ namespace paula
 
 		void doubleTest();
 		void operatorTest();
+		void logicalTest();
 		void variableTest();
 		void commandTest();
 		void callbackTest();

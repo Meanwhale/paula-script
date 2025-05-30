@@ -57,5 +57,5 @@ int main()
 	//core::scriptFunctionTest();
 	//core::functionArgTest();
 	//core::recursiveFunctionTest();
-	core::operatorTest();
+	core::logicalTest();
 }

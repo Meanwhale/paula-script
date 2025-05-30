@@ -68,6 +68,29 @@ void core::operatorTest()
 	TEST_BOOL("taassama", true);
 	TEST_BOOL("taaseisama", false);
 }
+void testBool(const char * code, bool aValue)
+{
+	auto err = paula::run(code);
+	ASSERT_NO_ERROR(err);
+	bool b;
+	TEST_BOOL("a", aValue);
+}
+void paula::core::logicalTest()
+{
+	testBool("a:true and true", true);
+	testBool("a:true and false", false);
+	testBool("a:(not(true)) and true", false);
+	testBool("a:false and false", false);
+
+	testBool("a:true or false", true);
+	testBool("a:true or (1=0)", true);
+	testBool("a:true or true", true);
+	testBool("a:false or false", false);
+
+	testBool("a:true xor false", true);
+	testBool("a:true xor true", false);
+	testBool("a:false xor false", false);
+}
 
 void core::variableTest()
 {
@@ -319,6 +342,7 @@ void core::testAll()
 	callbackTest();
 	parenthesisErrorTest();
 	operatorTest();
+	logicalTest();
 	reservedNameTest();
 	argTest();
 	semicolonTest();
