@@ -41,6 +41,7 @@ It prints 20 (``n:20``) Fibonacci numbers.
 
  - Basic data types: 32-bit integer, 64-bit floating point number, text, boolean.
  - Basic arithmetic (+-*/) and comparison operators (<>=).
+ - Logical operators: and, or, xor.
  - Conditions (if) and loops (while).
  - Callbacks to call your source code from a script.
 
@@ -109,6 +110,20 @@ i: 3                          | prints "321"
 while (i > 0)
     print(i)
     i:i-1
+```
+
+#### Logical operators
+
+Logical expressions have a logical operator (_and_, _or_, _xor_) between two boolean operands:<p>
+_operand1 logical_operator operand2_<p>
+
+```
+if (p and q)
+    print("both p and q are true!")
+if (p or q)
+    print("p or q is true!")
+if (p xor q)
+    print("p or q is true, but not both!")
 ```
 
 #### Scripted Procedures and Functions
