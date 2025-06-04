@@ -12,18 +12,25 @@ void paula::printVersion()
 const Error* paula::run(const char* code, const char** args, int numArgs)
 {
 	CharInput input(code);
-	return core::Engine::one.run(input, args, numArgs);
+	return core::Engine::one.runScript(input, args, numArgs);
 }
 const Error* paula::run(const char* code)
 {
 	CharInput input(code);
-	return core::Engine::one.run(input);
+	return core::Engine::one.runScript(input);
 }
-const Error* paula::run(IInputStream&str)
+const Error* paula::runScript(IInputStream&str)
 {
-	return core::Engine::one.run(str);
+	return core::Engine::one.runScript(str);
 }
-
+const Error* paula::runBytecode(IInputStream&str, const char **args, int numArgs)
+{
+	return core::Engine::one.runBytecode(str, args, numArgs);
+}
+const Error *  paula::compile(IInputStream&in, BinaryOutputStream&out)
+{
+	return core::Engine::one.compile(in, out);
+}
 void paula::runSafe(const char*code)
 {
 	CharInput input(code);

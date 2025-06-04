@@ -317,6 +317,28 @@ namespace paula {
 			it.toParent();
 		}
 
+        const Error * Tree::read(IInputStream& input)
+        {
+			if (!input.readInt(top)) return &INPUT_READ_FAIL;
+			for (INT i=0; i<top; i++)
+			{
+				INT in;
+				if (!input.readInt(in)) return &INPUT_READ_FAIL;
+				data[i] = in;
+			}
+			input.close();
+			return NO_ERROR;
+        }
+
+		void Tree::write(BinaryOutputStream& output)
+		{
+			// write size + content
+			output.write(top);
+			output.writeArray(data.ptr(), top);
+			output.flush();
+			output.close();
+		}
+
 		//--------------------------------------------------------------
 		// TreeIterator
 		//--------------------------------------------------------------

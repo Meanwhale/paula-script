@@ -202,6 +202,14 @@ void Engine::reset()
 	const Error* error = nullptr; // NO_ERROR
 }
 
+ERROR_STATUS Engine::compile(IInputStream&input, BinaryOutputStream&output)
+{
+	reset();
+	CHECK_CALL(parse(input)); // read script from stream
+	bytecode.write(output); // save parsed bytecode to stream
+	return NO_ERROR;
+}
+
 
 ERROR_STATUS Engine::addParsedLine()
 {
@@ -230,7 +238,7 @@ void paula::core::Engine::runSafe(IInputStream& input)
 
 void paula::core::Engine::runSafe(IInputStream& input, const char** args, int numArgs)
 {
-	auto error = run(input, args, numArgs);
+	auto error = runScript(input, args, numArgs);
 	if (error != NO_ERROR)
 	{
 #ifndef PAULA_MINI
@@ -261,11 +269,19 @@ ERROR_STATUS Engine::parse(IInputStream& input)
 	}
 	return NO_ERROR;
 }
-ERROR_STATUS Engine::run(IInputStream& input)
+ERROR_STATUS Engine::runBytecode(IInputStream& input, const char **args, int numArgs)
 {
-	return run(input, nullptr, 0);
+	// read bytecode from input stream and run it
+	reset();
+	CHECK_CALL(bytecode.read(input));
+	CHECK_CALL(runBytecode(-1));
+	return NO_ERROR;
 }
-ERROR_STATUS paula::core::Engine::run(IInputStream& input, const char** args, int numArgs)
+ERROR_STATUS Engine::runScript(IInputStream& input)
+{
+	return runScript(input, nullptr, 0);
+}
+ERROR_STATUS paula::core::Engine::runScript(IInputStream& input, const char** args, int numArgs)
 {
 	LOG.println("Paula::run");
 

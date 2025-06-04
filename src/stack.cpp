@@ -1,6 +1,7 @@
 #include "stack.h"
 #include "tree.h"
 #include "args.h"
+#include "stream.h"
 #include "node_types.h"
 
 #include <cstring>

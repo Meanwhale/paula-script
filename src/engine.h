@@ -48,8 +48,10 @@ namespace paula
 			ERROR_STATUS runBytecode(INT startIndex);
 			ERROR_STATUS parse(IInputStream&);
             void reset();
-			ERROR_STATUS run(IInputStream&);
-			ERROR_STATUS run(IInputStream&, const char **args, int numArgs);
+			ERROR_STATUS compile(IInputStream&, BinaryOutputStream&);
+			ERROR_STATUS runBytecode(IInputStream&, const char **args, int numArgs);
+			ERROR_STATUS runScript(IInputStream&);
+			ERROR_STATUS runScript(IInputStream&, const char **args, int numArgs);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 			ERROR_STATUS jump(INT bytecodeIndex);
 			ERROR_STATUS backFromProcedureOrFunction(bool function);

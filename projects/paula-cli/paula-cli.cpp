@@ -35,7 +35,7 @@ int fileNotFound()
 }
 int runScript (IInputStream&input)
 {
-	auto error = Engine::one.run(input);
+	auto error = Engine::one.runScript(input);
 	if (error != NO_ERROR)
 	{
 #ifdef PAULA_MINI

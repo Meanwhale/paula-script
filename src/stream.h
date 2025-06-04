@@ -1,5 +1,6 @@
 #pragma once
 #include "defs.h"
+#include "array.h"
 #ifndef PAULA_MINI
 #include <fstream>
 #endif
@@ -20,6 +21,20 @@ namespace paula
 		virtual void flush()  const = 0;
 		virtual void close()  const = 0;
 		virtual bool closed() const = 0;
+	};
+	class BinaryOutputStream : public IOutputStream
+	{
+	public:
+		void writeArray(INT*, INT size);
+		virtual void write(INT i) = 0;
+	};
+	class StandardBinaryOutput : public BinaryOutputStream
+	{
+	public:
+		virtual void flush()  const override;
+		virtual void close()  const override;
+		virtual bool closed() const override;
+		void write(INT) override;
 	};
 	/**
 	 * @brief Base class for print output.
@@ -112,6 +127,7 @@ namespace paula
 	class IInputStream
 	{
 	public:
+		bool readInt(INT&);
 		virtual bool read(BYTE&) = 0; // we don't know we're at end before reaching it
 		virtual void close() = 0;
 	};
@@ -158,6 +174,34 @@ namespace paula
 		bool read(BYTE&) override;
 		void close() override;
 		const bool found;
+	};
+
+
+	// for testing
+
+	class ArrayBinaryOutput : public BinaryOutputStream
+	{
+	private:
+		INT i;
+	public:
+		core::Array<char>buffer;
+		ArrayBinaryOutput();
+		void flush()  const override;
+		void close()  const override;
+		bool closed() const override;
+		void write(INT) override;
+		INT getByteSize() const;
+	};
+	class ArrayBinaryInput : public IInputStream
+	{
+	private:
+		int i, size;
+		core::Array<char> &buffer;
+	public:
+		ArrayBinaryInput(core::Array<char> & _buffer, INT _size);
+		bool read(BYTE&) override;
+		bool readInt(INT&);
+		void close() override;
 	};
 #endif
 }

@@ -6,6 +6,7 @@
 namespace paula
 {
 	class IInputStream;
+	class IOutputStream;
 
 	// user interface
 
@@ -26,8 +27,15 @@ namespace paula
 	/**
 	*  @brief Run a script and return error, or NO_ERROR, if everything went well.
 	*/
-	[[nodiscard]] const Error * run(IInputStream&);
-		
+	[[nodiscard]] const Error * runScript(IInputStream&);
+	/**
+	*  @brief Run a script and return error, or NO_ERROR, if everything went well.
+	*/
+	[[nodiscard]] const Error * runBytecode(IInputStream&, const char **args, int numArgs);
+	/**
+	*  @brief Compile script and write bytecode.
+	*/
+	[[nodiscard]] const Error *  compile(IInputStream&, BinaryOutputStream&);
 	/**
 	*  @brief Run a script. If an error occurs, print the error.
 	*/

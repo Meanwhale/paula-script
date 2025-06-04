@@ -4,6 +4,8 @@
 namespace paula {
 	class Var;
 	class Args;
+	class IInputStream;
+	class BinaryOutputStream;
 	namespace core
 	{
 		class TreeIterator;
@@ -54,6 +56,10 @@ namespace paula {
 			void printSubtree(TreeIterator&);
             void printCompact();
 			void printCompact(TreeIterator&);
+
+			// serialization
+			const Error * read(IInputStream&input);
+			void write(BinaryOutputStream&output);
 
 			friend class Stack;
 			friend class StackIterator;

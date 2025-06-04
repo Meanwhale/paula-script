@@ -5,6 +5,7 @@ namespace paula {
 	class Args;
 	namespace core
 	{
+		class TreeIterator;
 		class Stack
 		{
 		public:

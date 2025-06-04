@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "array.h"
+#include "stream.h"
 #include "tree.h"
 #include <cstring>
 
@@ -13,7 +14,7 @@ void core::trap(const char* expr, const char* file, int line, const char* msg)
 	HALT;
 }
 
-LONG core::doubleToLongFormat(double value)
+LONG core::doubleToLongFormat(DOUBLE value)
 {
 	// NOTE: these conversions give 'strict-aliasing' warnings. Not even reinterpret_cast help...
 

@@ -329,6 +329,43 @@ void core::safeTest()
 	paula::runSafe("a:!"); // engine handles error
 	LOG.println("Succesfully catched error in 'safeTest'!");
 }
+
+void paula::core::writeBytecodeTest()
+{
+	// write script to output array
+	CharInput scriptInput("a:5\nprint(a)\n");
+	ArrayBinaryOutput out;
+
+	auto error = paula::compile(scriptInput,out);
+	ASSERT_NO_ERROR(error);
+
+	// make the array input and read it
+	
+	ArrayBinaryInput bytecodeInput(out.buffer, out.getByteSize());
+	error = paula::runBytecode(bytecodeInput, nullptr, 0);
+	ASSERT_NO_ERROR(error);
+}
+
+// utils
+
+void paula::core::streamArrayTest()
+{
+	INT data[5] = {1, 2, 3, 4, 5};
+
+	ArrayBinaryOutput out;
+	out.writeArray(data, 5);
+
+	ArrayBinaryInput in(out.buffer, out.getByteSize());
+	INT output = -1;
+	for(int i=0; i<5; i++)
+	{
+		in.readInt(output);
+		ASSERT(output == (i+1));
+	}
+	BYTE b;
+	ASSERT(in.read(b) == false); // end of stream
+}
+
 void core::testAll()
 {
 	stackTest();

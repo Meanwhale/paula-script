@@ -41,6 +41,11 @@ namespace paula
 		void ifTest();
 
         void safeTest();
+		void writeBytecodeTest();
+
+		// utils
+
+		void streamArrayTest();
 
         void testAll();
 		//const Error* iteratorTest();

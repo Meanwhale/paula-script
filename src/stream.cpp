@@ -9,6 +9,20 @@ using namespace paula;
 using namespace paula::core;
 using namespace std;
 
+void StandardBinaryOutput::flush()  const
+{
+	std::cout.flush();
+}
+void StandardBinaryOutput::close()  const
+{
+}
+bool StandardBinaryOutput::closed() const
+{
+	return false;
+}
+
+
+// print out
 
 const POut& POut::print(int x) const
 {
@@ -161,6 +175,23 @@ const NullPrint& NullPrint::print(const TreeIterator& x) const { return *this; }
 const NullPrint& NullPrint::print(const Var& x) const { return *this; }
 const NullPrint& NullPrint::endl() const { return *this; }
 
+// binary input
+
+bool IInputStream::readInt(INT&out)
+{
+	BYTE b0, b1, b2, b3;
+	if (!read(b0)) return false;
+	if (!read(b1)) return false;
+	if (!read(b2)) return false;
+	if (!read(b3)) return false;
+
+	out = static_cast<unsigned char>(b0)
+		| (static_cast<unsigned char>(b1) << 8)
+		| (static_cast<unsigned char>(b2) << 16)
+		| (static_cast<unsigned char>(b3) << 24);
+
+	return true;
+}
 
 // const char * input
 
@@ -224,3 +255,66 @@ void FileInput::close()
 	if (file.is_open()) file.close();
 }
 #endif
+
+// binary out
+
+void paula::BinaryOutputStream::writeArray(INT * data, INT size)
+{
+	for (INT i=0; i<size; i++) write(data[i]);
+
+	//std::cout.write(reinterpret_cast<const char*>(data), size * sizeof(INT));
+}
+
+
+// testing I/O
+
+paula::ArrayBinaryOutput::ArrayBinaryOutput() : i(0), buffer(10000)
+{
+}
+void paula::ArrayBinaryOutput::flush() const
+{
+}
+void paula::ArrayBinaryOutput::close() const
+{
+}
+bool paula::ArrayBinaryOutput::closed() const
+{
+	return false;
+}
+void paula::ArrayBinaryOutput::write(INT number)
+{
+	INT byteCount = sizeof(INT);
+	// Byte-wise copy
+	char* byteData = reinterpret_cast<char*>(&number);
+	for (INT n = 0; n < byteCount; ++n) {
+		buffer[i++] = byteData[n];
+	}
+}
+INT paula::ArrayBinaryOutput::getByteSize() const
+{
+	return i;
+}
+paula::ArrayBinaryInput::ArrayBinaryInput(Array<char>& _buffer, INT _size) : i(0), size(_size), buffer(_buffer)
+{
+}
+bool paula::ArrayBinaryInput::read(BYTE&output)
+{
+	if (i >= size) return false;
+	output = buffer[i++];
+	return true;
+}
+bool paula::ArrayBinaryInput::readInt(INT&output)
+{
+	if (i + 4 > size) return false;
+	output =
+		(static_cast<INT>(buffer[i]))       |
+		(static_cast<INT>(buffer[i + 1]) << 8)  |
+		(static_cast<INT>(buffer[i + 2]) << 16) |
+		(static_cast<INT>(buffer[i + 3]) << 24);
+
+	i += 4;
+	return true;
+}
+void paula::ArrayBinaryInput::close()
+{
+}

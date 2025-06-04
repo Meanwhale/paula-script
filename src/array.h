@@ -1,7 +1,6 @@
 #ifndef _ARRAY_H_
 #define _ARRAY_H_
 #include "utils.h"
-#include "stream.h"
 
 namespace paula { namespace core
 {
