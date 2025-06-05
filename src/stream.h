@@ -18,8 +18,8 @@ namespace paula
 	class IOutputStream
 	{
 	public:
-		virtual void flush()  const = 0;
-		virtual void close()  const = 0;
+		virtual void flush()  = 0;
+		virtual void close()  = 0;
 		virtual bool closed() const = 0;
 	};
 	class BinaryOutputStream : public IOutputStream
@@ -31,8 +31,19 @@ namespace paula
 	class StandardBinaryOutput : public BinaryOutputStream
 	{
 	public:
-		virtual void flush()  const override;
-		virtual void close()  const override;
+		virtual void flush()  override;
+		virtual void close()  override;
+		virtual bool closed() const override;
+		void write(INT) override;
+	};
+	class FileBinaryOutput : public BinaryOutputStream
+	{
+	private:
+		std::ofstream out;
+	public:
+		FileBinaryOutput(const char *);
+		virtual void flush()  override;
+		virtual void close()  override;
 		virtual bool closed() const override;
 		void write(INT) override;
 	};
@@ -42,9 +53,6 @@ namespace paula
 	class POut : public IOutputStream
 	{
 	public:
-
-		virtual void flush()  const = 0;
-
 		// paula printing interface
 		
 		virtual const POut& print(char) const = 0; // eg. std::cout<<c; return *this;
@@ -95,8 +103,8 @@ namespace paula
 	{
 	public:
 		// Inherited via POut
-		void flush()  const override;
-		void close()  const override;
+		void flush() override;
+		void close() override;
 		bool closed() const override;
 		const POut& print(char) const override;
 		const POut& print(const char*) const override;
@@ -110,8 +118,8 @@ namespace paula
 	{
 	public:
 		// Inherited via POut
-		void flush()  const override;
-		void close()  const override;
+		void flush() override;
+		void close() override;
 		bool closed() const  override;
 		const POut& print(char) const override;
 		const POut& print(const char*) const override;
@@ -168,12 +176,11 @@ namespace paula
 	public:
 		static bool exists(const std::string& name);
 
-		explicit FileInput(const char *);
+		explicit FileInput(const char *, bool binary);
 		~FileInput();
 		// Inherited via IInputStream
 		bool read(BYTE&) override;
 		void close() override;
-		const bool found;
 	};
 
 
@@ -186,8 +193,8 @@ namespace paula
 	public:
 		core::Array<char>buffer;
 		ArrayBinaryOutput();
-		void flush()  const override;
-		void close()  const override;
+		void flush() override;
+		void close() override;
 		bool closed() const override;
 		void write(INT) override;
 		INT getByteSize() const;

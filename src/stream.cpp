@@ -9,16 +9,21 @@ using namespace paula;
 using namespace paula::core;
 using namespace std;
 
-void StandardBinaryOutput::flush()  const
+void StandardBinaryOutput::flush()
 {
 	std::cout.flush();
 }
-void StandardBinaryOutput::close()  const
+void StandardBinaryOutput::close()
 {
 }
 bool StandardBinaryOutput::closed() const
 {
 	return false;
+}
+
+void paula::StandardBinaryOutput::write(INT num)
+{
+	std::cout.write(reinterpret_cast<const char*>(&num), sizeof(num));
 }
 
 
@@ -67,6 +72,10 @@ const POut& POut::print(const Var& x) const
 	else if (t == NODE_INTEGER)
 	{
 		INT i; if (x.getInt(i)) print(i);
+	}
+	else if (t == NODE_DOUBLE)
+	{
+		DOUBLE i; if (x.getDouble(i)) print(i);
 	}
 	else if (t == NODE_BOOL)
 	{
@@ -143,8 +152,8 @@ const POut& POut::print(const Error* a) const
 
 // sdt::cout
 
-void STDOut::flush()  const { std::cout<<std::flush; }
-void STDOut::close()  const { }
+void STDOut::flush() { std::cout<<std::flush; }
+void STDOut::close() { }
 bool STDOut::closed() const { return false; }
 const POut& STDOut::print(char x) const { std::cout<<x; return *this; }
 const POut& STDOut::print(const char* x) const { std::cout<<x; return *this; }
@@ -154,8 +163,8 @@ const POut& STDOut::print(double x) const { std::cout<<x; return *this; }
 
 // sdt::cerr
 
-void STDErr::flush()  const { std::cerr<<std::flush; }
-void STDErr::close()  const { }
+void STDErr::flush() { std::cerr<<std::flush; }
+void STDErr::close() { }
 bool STDErr::closed() const { return false; }
 const POut& STDErr::print(char x) const { std::cerr<<x; return *this; }
 const POut& STDErr::print(const char* x) const { std::cerr<<x; return *this; }
@@ -232,16 +241,18 @@ bool FileInput::exists(const std::string& name)
 	f.close();
 	return x;
 }
-FileInput::FileInput(const char*fn) :
-	file(fn),
-	found(file.is_open())
-{
-	if (!found) err.print("FileInput: can't open file: ").print(fn).endl();
+FileInput::FileInput(const char*fn, bool binary)
+{	
+	std::ios::openmode mode = std::ios::in;
+	if (binary) {
+		mode |= std::ios::binary;
+	}
+	file.open(fn, mode);
 }
 
 FileInput::~FileInput()
 {
-	close();
+	// close();
 }
 
 bool FileInput::read(BYTE&c)
@@ -255,6 +266,30 @@ void FileInput::close()
 	if (file.is_open()) file.close();
 }
 #endif
+
+
+// file binary out
+
+FileBinaryOutput::FileBinaryOutput(const char * fileName) : out(fileName, std::ios::binary)
+{
+}
+void FileBinaryOutput::flush() 
+{
+	if (!closed()) out.flush();
+}
+void FileBinaryOutput::close() 
+{ 
+	if (!closed()) out.close();
+}
+bool FileBinaryOutput::closed() const
+{
+	return !out.is_open();
+}
+void FileBinaryOutput::write(INT num)
+{
+	out.write(reinterpret_cast<const char*>(&num), sizeof(INT));
+}
+
 
 // binary out
 
@@ -271,10 +306,10 @@ void paula::BinaryOutputStream::writeArray(INT * data, INT size)
 paula::ArrayBinaryOutput::ArrayBinaryOutput() : i(0), buffer(10000)
 {
 }
-void paula::ArrayBinaryOutput::flush() const
+void paula::ArrayBinaryOutput::flush()
 {
 }
-void paula::ArrayBinaryOutput::close() const
+void paula::ArrayBinaryOutput::close()
 {
 }
 bool paula::ArrayBinaryOutput::closed() const

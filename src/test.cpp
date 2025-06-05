@@ -333,7 +333,7 @@ void core::safeTest()
 void paula::core::writeBytecodeTest()
 {
 	// write script to output array
-	CharInput scriptInput("a:5\nprint(a)\n");
+	CharInput scriptInput("a:5\n");
 	ArrayBinaryOutput out;
 
 	auto error = paula::compile(scriptInput,out);
@@ -344,6 +344,8 @@ void paula::core::writeBytecodeTest()
 	ArrayBinaryInput bytecodeInput(out.buffer, out.getByteSize());
 	error = paula::runBytecode(bytecodeInput, nullptr, 0);
 	ASSERT_NO_ERROR(error);
+	INT a;
+	TEST_INT("a", 5);
 }
 
 // utils

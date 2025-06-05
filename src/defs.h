@@ -50,14 +50,14 @@ namespace paula
 #if PAULA_RELEASE
 	extern const NullPrint log; // optimize debug print away
 #else
-	extern const POut& log;
+	extern POut& log;
 #endif
 #if PAULA_MINI
 	extern const NullPrint err; // optimize debug print away
 #else
-	extern const POut& err; // error output
+	extern POut& err; // error output
 #endif
-	extern const POut& pout; // print output
+	extern POut& pout; // print output
 	
 	// errors
 

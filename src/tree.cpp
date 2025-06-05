@@ -323,7 +323,8 @@ namespace paula {
 			for (INT i=0; i<top; i++)
 			{
 				INT in;
-				if (!input.readInt(in)) return &INPUT_READ_FAIL;
+				if (!input.readInt(in))
+					return &INPUT_READ_FAIL;
 				data[i] = in;
 			}
 			input.close();
