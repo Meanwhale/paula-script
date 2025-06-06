@@ -2,6 +2,11 @@
 #include "engine.h"
 #include "stream.h"
 #include <string.h>
+#ifdef _WIN32
+#include <conio.h>
+#include <fcntl.h>
+#include <io.h>
+#endif
 
 using namespace paula;
 using namespace paula::core;
@@ -34,24 +39,10 @@ int fileNotFound()
 	err.println("file not found.");
 	return -1;
 }
+#ifndef PAULA_MINI
 int runCLIScript (IInputStream&input)
 {
 	auto error = Engine::one.runScript(input);
-	if (error != NO_ERROR)
-	{
-#ifdef PAULA_MINI
-		pout.print("ERROR #").print(error).endl(); // error print disabled for MINI
-#else
-		err.println("ERROR: ").print(error).endl();
-#endif
-		return -1;
-	}
-	pout.endl();
-	return 0;
-}
-int runCLIBytecode (IInputStream&input)
-{
-	auto error = Engine::one.runBytecode(input, nullptr, 0); // TODO CLI args
 	if (error != NO_ERROR)
 	{
 #ifdef PAULA_MINI
@@ -79,8 +70,44 @@ int compileCLIScript (IInputStream&input, BinaryOutputStream&output)
 	pout.endl();
 	return 0;
 }
+#endif
+int runCLIBytecode (IInputStream&input)
+{
+	auto error = Engine::one.runBytecode(input, nullptr, 0); // TODO CLI args
+	if (error != NO_ERROR)
+	{
+#ifdef PAULA_MINI
+		pout.print("ERROR #").print(error).endl(); // error print disabled for MINI
+#else
+		err.println("ERROR: ").print(error).endl();
+#endif
+		return -1;
+	}
+	pout.endl();
+	return 0;
+}
 int main(int argc, char* argv[])
 {
+#ifdef PAULA_MINI
+
+	if (argc <= 1)
+	{
+
+#ifdef _WIN32
+		// set binary mode for StandardBinaryInput
+		_setmode(_fileno(stdin), _O_BINARY);
+#endif
+
+		// read bytecode straight from stdin
+		StandardBinaryInput input;
+		auto a = runCLIBytecode(input);
+
+#ifdef _WIN32
+		_getch(); // wait for key press on Windows
+#endif
+		return a;
+	}
+#else
 	if (argc <= 1)
 	{
 		info(); return 0;
@@ -97,7 +124,6 @@ int main(int argc, char* argv[])
 	}
 	else if (argc == 3)
 	{
-#ifndef PAULA_MINI
 		if (strcmp(argv[1], "-f") == 0)
 		{   
 			// -f read and run script from a file
@@ -165,11 +191,8 @@ int main(int argc, char* argv[])
 			FileBinaryOutput output(outputFileName.c_str());
 			return compileCLIScript(input, output);
 		}
-#endif
 	}
+#endif
 	error();
 	return -1;
-	//CharInputStream input("t:\"hello!\"");
-	//auto error = Paula::one.run(input, false);
-	//std::cin.get();  // Waits for Enter key
 }

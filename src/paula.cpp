@@ -9,6 +9,7 @@ void paula::printVersion()
 	pout.print(PAULA_VERSION);
 }
 
+#ifndef PAULA_MINI
 const Error* paula::run(const char* code, const char** args, int numArgs)
 {
 	CharInput input(code);
@@ -51,3 +52,4 @@ ERROR_STATUS paula::addCallback(const char* callbackName, const Error* (*_action
 {
 	return core::Engine::one.addCallback(callbackName, _action);
 }
+#endif

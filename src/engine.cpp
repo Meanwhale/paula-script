@@ -140,7 +140,9 @@ Engine::Engine() : // NOTE: unnecessary warning about blockStack initialization
 	numCallbacks(0),
 	numProcedures(0),
 	jumpIndex(-1),
+#ifndef PAULA_MINI
 	automata(*this),
+#endif
 	stack(ARG_STACK_SIZE),
 	constants(CONSTANTS_SIZE),
 	bytecode(BYTECODE_SIZE),
@@ -202,6 +204,9 @@ void Engine::reset()
 	const Error* error = nullptr; // NO_ERROR
 }
 
+
+#ifndef PAULA_MINI
+
 ERROR_STATUS Engine::compile(IInputStream&input, BinaryOutputStream&output)
 {
 	reset();
@@ -210,6 +215,42 @@ ERROR_STATUS Engine::compile(IInputStream&input, BinaryOutputStream&output)
 	return NO_ERROR;
 }
 
+void paula::core::Engine::runSafe(IInputStream& input)
+{
+	runSafe(input, nullptr, 0);
+}
+
+void paula::core::Engine::runSafe(IInputStream& input, const char** args, int numArgs)
+{
+	auto error = runScript(input, args, numArgs);
+	if (error != NO_ERROR)
+	{
+		ERR.print("RUN SAFE Caught an exception: ").print(error->name).print(" (id=").print(error->id).print(")").endl();
+		ERR.flush();
+
+		// MINI
+		// log.endl().print("ERROR: L").print(error->id).endl(); // L = line
+
+	}
+	log.flush();
+}
+ERROR_STATUS Engine::parse(IInputStream& input)
+{
+	automata.init(&input);
+	bool running = true;
+	while(running)
+	{
+		running = automata.parseLine(&input);
+		const Error* error = automata.getError();
+		if (error != nullptr) return error;
+		CHECK_CALL(addParsedLine());	// add command to bytecode list
+		automata.resetCommand();		// prepare to another command
+
+		// reset line here so that addParsedLine has correct values
+		if (automata.currentState == automata.stateNewLine) automata.resetNewLine();
+	}
+	return NO_ERROR;
+}
 
 ERROR_STATUS Engine::addParsedLine()
 {
@@ -231,52 +272,6 @@ ERROR_STATUS Engine::addParsedLine()
 	return NO_ERROR;
 }
 
-void paula::core::Engine::runSafe(IInputStream& input)
-{
-	runSafe(input, nullptr, 0);
-}
-
-void paula::core::Engine::runSafe(IInputStream& input, const char** args, int numArgs)
-{
-	auto error = runScript(input, args, numArgs);
-	if (error != NO_ERROR)
-	{
-#ifndef PAULA_MINI
-		ERR.print("RUN SAFE Caught an exception: ").print(error->name).print(" (id=").print(error->id).print(")").endl();
-		ERR.flush();
-#else
-		log.endl().print("ERROR: L").print(error->id).endl(); // L = line
-#endif
-	}
-	log.flush();
-}
-
-
-ERROR_STATUS Engine::parse(IInputStream& input)
-{
-	automata.init(&input);
-	bool running = true;
-	while(running)
-	{
-		running = automata.parseLine(&input);
-		const Error* error = automata.getError();
-		if (error != nullptr) return error;
-		CHECK_CALL(addParsedLine());	// add command to bytecode list
-		automata.resetCommand();		// prepare to another command
-
-		// reset line here so that addParsedLine has correct values
-		if (automata.currentState == automata.stateNewLine) automata.resetNewLine();
-	}
-	return NO_ERROR;
-}
-ERROR_STATUS Engine::runBytecode(IInputStream& input, const char **args, int numArgs)
-{
-	// read bytecode from input stream and run it
-	reset();
-	CHECK_CALL(bytecode.read(input));
-	CHECK_CALL(runBytecode(-1));
-	return NO_ERROR;
-}
 ERROR_STATUS Engine::runScript(IInputStream& input)
 {
 	return runScript(input, nullptr, 0);
@@ -299,13 +294,23 @@ ERROR_STATUS paula::core::Engine::runScript(IInputStream& input, const char** ar
 
 	// parse lines and add them to the bytecode list
 	CHECK_CALL(parse(input));
-	
+
 	// all lines parsed --> execute bytecode
 
 	VRB(bytecode.print());
-	
+
 	CHECK_CALL(runBytecode(-1));
 
+	return NO_ERROR;
+}
+#endif
+
+ERROR_STATUS Engine::runBytecode(IInputStream& input, const char **args, int numArgs)
+{
+	// read bytecode from input stream and run it
+	reset();
+	CHECK_CALL(bytecode.read(input));
+	CHECK_CALL(runBytecode(-1));
 	return NO_ERROR;
 }
 
@@ -682,7 +687,10 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 	}
 	if (blockStackSize == 0 && skipIndentation < 0)
 	{
+		// TODO: onko tämä tarpeellinen?
+#ifndef PAULA_MINI
 		automata.clearBuffer();
+#endif
 	}
 	return NO_ERROR;
 }

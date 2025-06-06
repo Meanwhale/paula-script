@@ -1,9 +1,7 @@
 #pragma once
 #include "defs.h"
 #include "array.h"
-#ifndef PAULA_MINI
 #include <fstream>
-#endif
 
 namespace paula
 {
@@ -159,6 +157,14 @@ namespace paula
 	{
 	public:
 		StandardInput() {};
+		// Inherited via IInputStream
+		bool read(BYTE&) override;
+		void close() override;
+	};
+	class StandardBinaryInput : public IInputStream
+	{
+	public:
+		StandardBinaryInput() {};
 		// Inherited via IInputStream
 		bool read(BYTE&) override;
 		void close() override;

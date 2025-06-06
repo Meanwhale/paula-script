@@ -1,4 +1,5 @@
-﻿#include "byteautomata.h"
+﻿#ifndef PAULA_MINI
+#include "byteautomata.h"
 #include "engine.h"
 
 #define BA_CHECK(x,e) { if (!(x)) { error = &e; return; } }
@@ -681,3 +682,4 @@ void ByteAutomata::defineTransitions()
 	}
 	LOG.endl().print("};").endl();*/
 }}}
+#endif

@@ -42,16 +42,18 @@ namespace paula
 			void startIf();
 			void startProcedureOrFunction(bool function);
 			void skipBlock();
-			ERROR_STATUS addParsedLine();
-			void runSafe(IInputStream&);
-			void runSafe(IInputStream&, const char **args, int numArgs);
-			ERROR_STATUS runBytecode(INT startIndex);
-			ERROR_STATUS parse(IInputStream&);
-            void reset();
+#ifndef PAULA_MINI
 			ERROR_STATUS compile(IInputStream&, BinaryOutputStream&);
-			ERROR_STATUS runBytecode(IInputStream&, const char **args, int numArgs);
+			ERROR_STATUS parse(IInputStream&);
+			ERROR_STATUS addParsedLine();
 			ERROR_STATUS runScript(IInputStream&);
 			ERROR_STATUS runScript(IInputStream&, const char **args, int numArgs);
+			void runSafe(IInputStream&);
+			void runSafe(IInputStream&, const char **args, int numArgs);
+#endif
+            void reset();
+			ERROR_STATUS runBytecode(IInputStream&, const char **args, int numArgs);
+			ERROR_STATUS runBytecode(INT startIndex);
 			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
 			ERROR_STATUS jump(INT bytecodeIndex);
 			ERROR_STATUS backFromProcedureOrFunction(bool function);
@@ -83,8 +85,9 @@ namespace paula
 			ERROR_STATUS lineIndentationInit(INT indentation, bool& executeLine);
 			ERROR_STATUS executeLine(INT indentation, INT _bytecodeIndex, INT lineType, Tree& tree);
 
-
+#ifndef PAULA_MINI
 			ByteAutomata automata;
+#endif
 
 			Block blockStack[MAX_BLOCK_DEPTH];
 

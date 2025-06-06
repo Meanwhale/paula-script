@@ -48,12 +48,12 @@ namespace paula
 	class NullPrint;
 
 #if PAULA_RELEASE
-	extern const NullPrint log; // optimize debug print away
+	extern NullPrint log; // optimize debug print away
 #else
 	extern POut& log;
 #endif
 #if PAULA_MINI
-	extern const NullPrint err; // optimize debug print away
+	extern NullPrint err; // optimize debug print away
 #else
 	extern POut& err; // error output
 #endif

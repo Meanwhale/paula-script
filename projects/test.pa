@@ -2,3 +2,4 @@ name: "Paula"
 population: 123456 
 height: 2.04       
 fact: true         
+print(height)

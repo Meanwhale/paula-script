@@ -13,6 +13,7 @@ namespace paula
 	constexpr const char * PAULA_VERSION = "0.2";
 
 	void printVersion();
+#ifndef PAULA_MINI
 
 	/**
 	*  @brief Run a script with arguments and return error, or NO_ERROR, if everything went well.
@@ -55,4 +56,5 @@ namespace paula
 	*  @brief Add a callback to call from a Paula script.
 	*/
 	const Error * addCallback(const char* name, const Error* (*_action)(Args&));
+#endif
 }

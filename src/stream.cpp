@@ -230,6 +230,22 @@ bool StandardInput::read(BYTE&c)
 void StandardInput::close()
 {
 }
+// standard binary input
+
+bool StandardBinaryInput::read(BYTE&c)
+{ 
+	char temp;
+	if (std::cin.read(&temp, 1))
+	{
+		c = static_cast<unsigned char>(temp);
+		return true;
+	}
+	return false;
+}
+
+void StandardBinaryInput::close()
+{
+}
 
 #ifndef PAULA_MINI
 // file input
@@ -301,6 +317,7 @@ void paula::BinaryOutputStream::writeArray(INT * data, INT size)
 }
 
 
+#ifndef PAULA_MINI
 // testing I/O
 
 paula::ArrayBinaryOutput::ArrayBinaryOutput() : i(0), buffer(10000)
@@ -353,3 +370,4 @@ bool paula::ArrayBinaryInput::readInt(INT&output)
 void paula::ArrayBinaryInput::close()
 {
 }
+#endif

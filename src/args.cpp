@@ -1,5 +1,6 @@
 #include "args.h"
 #include "engine.h"
+#include "stream.h"
 
 using namespace paula;
 using namespace paula::core;

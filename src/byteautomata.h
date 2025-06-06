@@ -1,3 +1,4 @@
+#ifndef PAULA_MINI
 #pragma once
 #include "defs.h"
 #include "array.h"
@@ -123,3 +124,4 @@ namespace paula { namespace core
 		ByteAutomata& operator=(const ByteAutomata&) = delete;
 	};
 }}
+#endif
