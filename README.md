@@ -242,6 +242,17 @@ Test CLI by running a script:
 bin/paula -f projects/test.pa
 ```
 
+Translate script to a bytecode file, to execute later:
+```
+bin/paula -b paula.bytecode
+```
+
+Run translated bytecode:
+```
+bin/paula -c projects/test.pa paula.bytecode
+```
+
+
 Test debug build to see if there's memory or other issues:
 ```
 bin/pauladbg
