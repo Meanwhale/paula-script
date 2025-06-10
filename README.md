@@ -2,11 +2,19 @@
  - **Small** but easy to expand. Currently minimum CLI build size is about 50 kB.
  - **No runtime memory allocation:** everything runs in buffers that are initialized at the start.
  - **Stand-alone:** minimal external dependencies. Built-in parser.
- - **Line-by-line, non-blocking execution**
+ - **Line-by-line, non-blocking execution.**
  - Compiles for Windows (Visual Studio) and Linux (GCC).
  - Command line interface (CLI) and a static library.
 
-**Project status:** work-in-progress. 
+**Paula Script** is work-in-progress and currently applicable to:
+ - Simple scripts for communication with the host application via callbacks.
+ - Store simple variable values, accessed from source code.
+
+**Future plans**
+ - Structured data: dictionary and array.
+ - Complete set for basic programming: math, string, and bit operations.
+ - Save and load entire engine state.
+ - C# API.
 
 Read more about the language details, design, and builds below! 👇
 
