@@ -239,10 +239,10 @@ Build configurations:
 
 Run _make_ with a target option in project root. Build target is _bin_ folder. Make targets:
 ```
-make release    # CLI release build
-make debug      # Debug test build
-make mini       # experimental, minimal CLI
-make example    # example project to try out Paula script. Main source file: projects/paula-example/paula-example.cpp
+make release    # -> "bin/paula". CLI release build
+make debug      # -> "bin/pauladbg". Debug test build
+make mini       # -> "bin/paulamini". Experimental, minimal CLI that can only run bytecode, not compile
+make example    # -> "bin/paulaexample". Example project to try out Paula script. Main: projects/paula-example/paula-example.cpp
 ```
 
 Test CLI by running a script:
@@ -252,24 +252,24 @@ bin/paula -f projects/test.pa
 
 Translate script to a bytecode file, to execute later:
 ```
-bin/paula -b paula.bytecode
+bin/paula -c projects/test.pa paula.bytecode
 ```
 
 Run translated bytecode:
 ```
-bin/paula -c projects/test.pa paula.bytecode
+bin/paula -b paula.bytecode
 ```
 
+Mini version can only run bytecode via input redirection:
+```
+bin/paulamini < paula.bytecode
+```
 
 Test debug build to see if there's memory or other issues:
 ```
 bin/pauladbg
 ```
 
-Test mini version that doesn't have file input. Give script by CLI:
-```
-echo "print(5)" | bin/paulamini -i
-```
 
 
 <hr>
