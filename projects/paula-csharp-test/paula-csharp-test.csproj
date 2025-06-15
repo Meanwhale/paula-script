@@ -9,6 +9,7 @@
     <BaseOutputPath>$(SolutionDir)../../bin/</BaseOutputPath>
     <PackageOutputPath></PackageOutputPath>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
 </Project>

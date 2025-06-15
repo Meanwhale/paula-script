@@ -48,6 +48,12 @@ Var paula::get(const char* varName)
 	return core::Engine::one.vars.get(varName);
 }
 
+const INT* paula::getPtr(const char* varName)
+{
+	auto var = get(varName);
+	return var.getPtr();
+}
+
 ERROR_STATUS paula::addCallback(const char* callbackName, const Error* (*_action)(Args&))
 {
 	return core::Engine::one.addCallback(callbackName, _action);

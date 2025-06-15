@@ -53,6 +53,11 @@ namespace paula
 	Var get(const char * varName);
 
 	/**
+	*  @brief Get a pointer to variable by name. Use for DLL.
+	*/
+	const INT* getPtr(const char * varName);
+
+	/**
 	*  @brief Add a callback to call from a Paula script.
 	*/
 	const Error * addCallback(const char* name, const Error* (*_action)(Args&));

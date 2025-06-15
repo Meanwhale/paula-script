@@ -173,3 +173,8 @@ bool Var::isSubtree() const
 {
 	return (type() & 0xf0ffffff) == 0;
 }
+
+const INT* paula::Var::getPtr()
+{
+	return ptr;
+}

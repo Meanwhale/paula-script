@@ -76,6 +76,8 @@ namespace paula
 		 */
 		bool isSubtree() const;
 
+		const INT* getPtr(); // for DLL
+
 		friend class Args;
 		friend class core::Tree;
 		friend class core::TreeIterator;
