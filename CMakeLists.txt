@@ -7,6 +7,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ── Global MSVC settings ──────────────────────────────────────────────
 
+message(STATUS "Compiler: ${CMAKE_CXX_COMPILER}")
+if(WIN32 AND NOT MSVC)
+    message(FATAL_ERROR "On Windows, only MSVC (cl.exe) is supported. "
+        "Found: ${CMAKE_CXX_COMPILER_ID}. "
+        "Launch VS Code from a Developer Command Prompt for VS 2022.")
+endif()
 if(MSVC)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/W3 /permissive-)
@@ -52,14 +58,17 @@ target_include_directories(paula-core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 # reproduces the original VS behavior.
 target_compile_definitions(paula-core PRIVATE
     $<$<CONFIG:Debug>:PAULA_DEBUG>
-    $<$<CONFIG:Release>:PAULA_RELEASE;PAULA_MINI>
+    $<$<CONFIG:Release>:PAULA_RELEASE>
     $<$<CONFIG:MinSizeRel>:PAULA_RELEASE;PAULA_MINI>
 )
 
 if(MSVC)
     # MinSizeRel mirrors the original "Mini" VS configuration
     target_compile_options(paula-core PRIVATE
-        $<$<CONFIG:MinSizeRel>:/Os /Ob0>
+        $<$<CONFIG:MinSizeRel>:/Os /Ob0 /Gy /GF /GL /GS->
+    )
+    target_link_options(paula-core INTERFACE
+        $<$<CONFIG:MinSizeRel>:/LTCG /OPT:REF /OPT:ICF>
     )
 endif()
 
@@ -82,14 +91,17 @@ target_link_libraries(paula-cli PRIVATE paula-core)
 
 target_compile_definitions(paula-cli PRIVATE
     $<$<CONFIG:Debug>:PAULA_DEBUG>
-    $<$<CONFIG:Release>:PAULA_RELEASE;PAULA_MINI>
+    $<$<CONFIG:Release>:PAULA_RELEASE>
     $<$<CONFIG:MinSizeRel>:PAULA_RELEASE;PAULA_MINI>
 )
 
 if(MSVC)
-    # MinSizeRel: disable RTTI for smaller binary (mirrors "Mini" config)
+    # MinSizeRel: aggressive size optimization (mirrors "Mini" config)
     target_compile_options(paula-cli PRIVATE
-        $<$<CONFIG:MinSizeRel>:/Os /Ob0 /GR->
+        $<$<CONFIG:MinSizeRel>:/Os /Ob0 /GR- /Gy /GF /GL /GS->
+    )
+    target_link_options(paula-cli PRIVATE
+        $<$<CONFIG:MinSizeRel>:/LTCG /OPT:REF /OPT:ICF>
     )
 endif()
 
