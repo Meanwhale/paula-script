@@ -2,14 +2,34 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug paula-test",
+            "name": "paula-test",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${command:cmake.launchTargetPath}",
+            "program": "${workspaceFolder}/build/Debug/paula-test.exe",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "preLaunchTask": "build-debug"
+        },
+        {
+            "name": "paula-cli",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/paula-cli.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "build-debug"
+        },
+        {
+            "name": "paula-example",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/paula-example.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "build-debug"
         }
     ]
 }
