@@ -1,3 +1,23 @@
+# ── Paula Script Build ────────────────────────────────────────────────
+#
+# Targets:
+#   paula-core     Static library (src/)
+#   paula-cli      Command-line interpreter
+#   paula-test     Unit tests                  (Debug only)
+#   paula-example  Demo application            (Debug only)
+#   paula-dll      Windows DLL                 (Debug only, Windows only)
+#
+# Build presets (see CMakePresets.json):
+#   debug    – all targets,  defines PAULA_DEBUG
+#   release  – cli only,     defines PAULA_RELEASE
+#   mini     – cli only,     defines PAULA_RELEASE + PAULA_MINI, size-optimized
+#
+# Prerequisites:
+#   Windows  – Visual Studio 2022 (MSVC, CMake, and Ninja included)
+#   Linux    – CMake 3.21+, Ninja, and a C++17 compiler (g++ or clang++)
+#
+# ──────────────────────────────────────────────────────────────────────
+
 cmake_minimum_required(VERSION 3.21)
 project(paula-script LANGUAGES CXX)
 
