@@ -6,7 +6,7 @@
 #define LOG paula::log
 #define ERR paula::err
 
-#define HALT std::exit(0) 
+#define HALT std::exit(1) 
 #define STR(x) #x
 
 #ifdef VERBOSE
@@ -19,15 +19,16 @@
 // assert: internal error, check: user error
 
 
-#if PAULA_RELEASE
+#ifdef PAULA_RELEASE
 #define ASSERT_MSG(x,msg)
 #define ASSERT(x)
 #else
-#define ASSERT_MSG(x,msg) { if (!(x)) { trap(STR(x), __FILE__, __LINE__, msg); }}
-#define ASSERT(x)         { if (!(x)) { trap(STR(x), __FILE__, __LINE__, ""); }}
+// The { } pattern can misbehave after if without braces. The do { ... } while(0) idiom is the standard fix.
+#define ASSERT_MSG(x,msg) do { if (!(x)) { trap(STR(x), __FILE__, __LINE__, msg); } } while(0)
+#define ASSERT(x)         do { if (!(x)) { trap(STR(x), __FILE__, __LINE__, ""); } } while(0)
 #endif
 
-#define IS_CHAR(c) (c>='a' && c<='z')
+#define IS_CHAR(c) ((c)>='a' && (c)<='z')
 
 // error id is its definition line number
 #ifdef PAULA_MINI
@@ -47,12 +48,12 @@ namespace paula
 	class POut;
 	class NullPrint;
 
-#if PAULA_RELEASE
+#ifdef PAULA_RELEASE
 	extern NullPrint log; // optimize debug print away
 #else
 	extern POut& log;
 #endif
-#if PAULA_MINI
+#ifdef PAULA_MINI
 	extern NullPrint err; // optimize debug print away
 #else
 	extern POut& err; // error output

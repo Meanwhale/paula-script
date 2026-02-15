@@ -9,13 +9,13 @@ STDOut stdOut = STDOut();
 STDErr stdErr = STDErr();
 STDOut stdPrint = STDOut();
 
-#if PAULA_RELEASE
+#ifdef PAULA_RELEASE
 NullPrint paula::log = paula::NullPrint();
 #else
 POut& paula::log = stdOut;
 #endif
 
-#if PAULA_MINI
+#ifdef PAULA_MINI
 NullPrint paula::err = NullPrint();
 #else
 POut& paula::err = stdErr;

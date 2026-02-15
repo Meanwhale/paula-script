@@ -174,7 +174,11 @@ const POut& STDErr::print(double x) const { std::cerr<<x; return *this; }
 // null printer
 
 void             NullPrint::flush() const { }
+const NullPrint& NullPrint::print(char) const { return *this; }
 const NullPrint& NullPrint::print(const char*) const { return *this; }
+const NullPrint& NullPrint::print(int) const { return *this; }
+const NullPrint& NullPrint::print(float) const { return *this; }
+const NullPrint& NullPrint::print(bool) const { return *this; }
 const NullPrint& NullPrint::print(double) const { return *this; }
 const NullPrint& NullPrint::printHex(INT i) const { return *this; }
 const NullPrint& NullPrint::printCharSymbol(CHAR c) const { return *this; }
@@ -194,10 +198,10 @@ bool IInputStream::readInt(INT&out)
 	if (!read(b2)) return false;
 	if (!read(b3)) return false;
 
-	out = static_cast<unsigned char>(b0)
-		| (static_cast<unsigned char>(b1) << 8)
-		| (static_cast<unsigned char>(b2) << 16)
-		| (static_cast<unsigned char>(b3) << 24);
+	out = static_cast<uint32_t>(b0)
+		| (static_cast<uint32_t>(b1) << 8)
+		| (static_cast<uint32_t>(b2) << 16)
+		| (static_cast<uint32_t>(b3) << 24);
 
 	return true;
 }
@@ -359,10 +363,10 @@ bool paula::ArrayBinaryInput::readInt(INT&output)
 {
 	if (i + 4 > size) return false;
 	output =
-		(static_cast<INT>(buffer[i]))       |
-		(static_cast<INT>(buffer[i + 1]) << 8)  |
-		(static_cast<INT>(buffer[i + 2]) << 16) |
-		(static_cast<INT>(buffer[i + 3]) << 24);
+		(static_cast<uint32_t>(static_cast<unsigned char>(buffer[i])))       |
+		(static_cast<uint32_t>(static_cast<unsigned char>(buffer[i + 1])) << 8)  |
+		(static_cast<uint32_t>(static_cast<unsigned char>(buffer[i + 2])) << 16) |
+		(static_cast<uint32_t>(static_cast<unsigned char>(buffer[i + 3])) << 24);
 
 	i += 4;
 	return true;

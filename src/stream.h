@@ -16,6 +16,7 @@ namespace paula
 	class IOutputStream
 	{
 	public:
+		virtual ~IOutputStream() = default;
 		virtual void flush()  = 0;
 		virtual void close()  = 0;
 		virtual bool closed() const = 0;
@@ -84,8 +85,12 @@ namespace paula
 		// use to get debug prints optimized away on release.
 	public:
 		void flush() const;
+		const NullPrint& print(char) const;
 		const NullPrint& print(const char*) const;
-		const NullPrint& print(double) const; // take care of all numbers and bool
+		const NullPrint& print(int) const;
+		const NullPrint& print(float) const;
+		const NullPrint& print(bool) const;
+		const NullPrint& print(double) const;
 		const NullPrint& printHex(INT i) const;
 		const NullPrint& printCharSymbol(CHAR c) const;
 		const NullPrint& print(const Error* a) const;
@@ -133,6 +138,7 @@ namespace paula
 	class IInputStream
 	{
 	public:
+		virtual ~IInputStream() = default;
 		bool readInt(INT&);
 		virtual bool read(BYTE&) = 0; // we don't know we're at end before reaching it
 		virtual void close() = 0;
