@@ -5,7 +5,7 @@
 #   paula-cli      Command-line interpreter – reads and runs .paula scripts
 #   paula-test     Unit tests – exercises core via test.h              (Debug only)
 #   paula-example  Demo application – shows embedding the engine       (Debug only)
-#   paula-dll      Windows DLL – exposes the engine as a shared lib    (Debug only, Windows only)
+#   paula-dll      Windows DLL – exposes the engine as a shared lib    (Windows only)
 #
 # Build presets (see CMakePresets.json):
 #   debug    – all targets,  defines PAULA_DEBUG
@@ -42,6 +42,8 @@ endif()
 if(MSVC)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/W3 /permissive-)
+    set(MINI_COMPILE_FLAGS /Os /Ob0 /Gy /GF /GL /GS-)
+    set(MINI_LINK_FLAGS /LTCG /OPT:REF /OPT:ICF)
 endif()
 
 # ── paula-core (static library) ───────────────────────────────────────
@@ -87,12 +89,8 @@ target_compile_definitions(paula-core PUBLIC
 
 if(MSVC)
     # MinSizeRel mirrors the original "Mini" VS configuration
-    target_compile_options(paula-core PRIVATE
-        $<$<CONFIG:MinSizeRel>:/Os /Ob0 /Gy /GF /GL /GS->
-    )
-    target_link_options(paula-core INTERFACE
-        $<$<CONFIG:MinSizeRel>:/LTCG /OPT:REF /OPT:ICF>
-    )
+    target_compile_options(paula-core PRIVATE $<$<CONFIG:MinSizeRel>:${MINI_COMPILE_FLAGS}>)
+    target_link_options(paula-core INTERFACE $<$<CONFIG:MinSizeRel>:${MINI_LINK_FLAGS}>)
 endif()
 
 # ── paula-test (unit tests, Debug only) ───────────────────────────────
@@ -113,13 +111,9 @@ add_executable(paula-cli projects/paula-cli/paula-cli.cpp)
 target_link_libraries(paula-cli PRIVATE paula-core)
 
 if(MSVC)
-    # MinSizeRel: aggressive size optimization (mirrors "Mini" config)
-    target_compile_options(paula-cli PRIVATE
-        $<$<CONFIG:MinSizeRel>:/Os /Ob0 /GR- /Gy /GF /GL /GS->
-    )
-    target_link_options(paula-cli PRIVATE
-        $<$<CONFIG:MinSizeRel>:/LTCG /OPT:REF /OPT:ICF>
-    )
+    # MinSizeRel: aggressive size optimization; /GR- also disables RTTI
+    target_compile_options(paula-cli PRIVATE $<$<CONFIG:MinSizeRel>:${MINI_COMPILE_FLAGS} /GR->)
+    target_link_options(paula-cli PRIVATE $<$<CONFIG:MinSizeRel>:${MINI_LINK_FLAGS}>)
 endif()
 
 # ── paula-example (demo application, Debug only) ─────────────────────
@@ -130,7 +124,7 @@ add_executable(paula-example projects/paula-example/paula-example.cpp)
 target_link_libraries(paula-example PRIVATE paula-core)
 
 target_compile_definitions(paula-example PRIVATE
-    $<$<CONFIG:Release>:VERBOSE>
+    $<$<CONFIG:Debug>:VERBOSE>
 )
 
 # ── paula-dll (dynamic library, Windows only) ────────────────────────
