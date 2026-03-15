@@ -382,7 +382,12 @@ ERROR_STATUS Engine::runBytecode(INT startIndex)
 
 	return NO_ERROR;
 }
-ERROR_STATUS core::Engine::addCallback(const char* callbackName, const Error * (* _action)(Args&))
+// Accept std::function so callers can pass:
+//   - a plain C++ function pointer         paula::addCallback("f", myFn)
+//   - a capturing lambda                   paula::addCallback("f", [x](Args& a){ ... })
+//   - a C callback via the paula_c bridge  paula_add_callback("f", myCFn)
+//     (paula_c.cpp wraps the C fn pointer in a lambda before calling here)
+ERROR_STATUS core::Engine::addCallback(const char* callbackName, std::function<const Error*(Args&)> _action)
 {
 	INT tmp[MAX_VAR_NAME_DATA_LENGTH];
 	Array<INT> nameData (tmp, MAX_VAR_NAME_DATA_LENGTH);
@@ -687,7 +692,7 @@ ERROR_STATUS core::Engine::executeLine(INT indentation, INT _bytecodeIndex, INT 
 	}
 	if (blockStackSize == 0 && skipIndentation < 0)
 	{
-		// TODO: onko tämä tarpeellinen?
+		// TODO: onko tï¿½mï¿½ tarpeellinen?
 #ifndef PAULA_MINI
 		automata.clearBuffer();
 #endif

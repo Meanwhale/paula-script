@@ -46,15 +46,14 @@ const bool paula::core::Callback::retunsValue()
 	return true;
 }
 
-void core::Callback::setup(Array<INT>& _nameData, const Error* (*_action)(Args&))
+void core::Callback::setup(Array<INT>& _nameData, std::function<const Error*(Args&)> _action)
 {
 	Array<INT> nameData (name, MAX_VAR_NAME_DATA_LENGTH);
 	nameData.copyFrom(_nameData);
 	action = _action;
 }
 
-core::Callback::Callback() :
-	action(0)
+core::Callback::Callback()
 {
 }
 

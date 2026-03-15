@@ -54,8 +54,8 @@ const INT* paula::getPtr(const char* varName)
 	return var.getPtr();
 }
 
-ERROR_STATUS paula::addCallback(const char* callbackName, const Error* (*_action)(Args&))
+ERROR_STATUS paula::addCallback(const char* callbackName, std::function<const Error*(Args&)> action)
 {
-	return core::Engine::one.addCallback(callbackName, _action);
+	return core::Engine::one.addCallback(callbackName, action);
 }
 #endif

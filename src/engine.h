@@ -54,7 +54,7 @@ namespace paula
             void reset();
 			ERROR_STATUS runBytecode(IInputStream&, const char **args, int numArgs);
 			ERROR_STATUS runBytecode(INT startIndex);
-			ERROR_STATUS addCallback(const char* callbackName, const Error* (*_action)(Args&));
+			ERROR_STATUS addCallback(const char* callbackName, std::function<const Error*(Args&)> _action);
 			ERROR_STATUS jump(INT bytecodeIndex);
 			ERROR_STATUS backFromProcedureOrFunction(bool function);
 			ERROR_STATUS callProcedure(INT address, Args&args, bool function);

@@ -2,6 +2,7 @@
 
 #include "defs.h"
 #include "args.h"
+#include <functional>
 
 namespace paula
 {
@@ -60,6 +61,11 @@ namespace paula
 	/**
 	*  @brief Add a callback to call from a Paula script.
 	*/
-	const Error * addCallback(const char* name, const Error* (*_action)(Args&));
+	/**
+	*  @brief Add a callback to call from a Paula script.
+	*  Accepts a plain function pointer, a capturing lambda, or any std::function-compatible callable.
+	*  From C, use paula_add_callback() in paula_c.h instead.
+	*/
+	const Error * addCallback(const char* name, std::function<const Error*(Args&)> action);
 #endif
 }

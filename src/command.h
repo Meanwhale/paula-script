@@ -2,6 +2,7 @@
 #include "defs.h"
 #include "args.h"
 #include "tree.h"
+#include <functional>
 namespace paula
 {
 	namespace core
@@ -36,10 +37,10 @@ namespace paula
 
 			friend class Engine;
 
-			void setup(Array<INT>& _nameData, const Error* (*_action)(Args&));
+			void setup(Array<INT>& _nameData, std::function<const Error*(Args&)> _action);
 			Callback();
 
-			const Error * (*action) (Args&); // pointer to callback function
+			std::function<const Error*(Args&)> action;
 		};
 
 
