@@ -1,16 +1,22 @@
 # ── Paula Script Build ────────────────────────────────────────────────
 #
 # Targets:
-#   paula-core     Static library (src/)
-#   paula-cli      Command-line interpreter
-#   paula-test     Unit tests                  (Debug only)
-#   paula-example  Demo application            (Debug only)
-#   paula-dll      Windows DLL                 (Debug only, Windows only)
+#   paula-core     Static library – the interpreter engine (src/)
+#   paula-cli      Command-line interpreter – reads and runs .paula scripts
+#   paula-test     Unit tests – exercises core via test.h              (Debug only)
+#   paula-example  Demo application – shows embedding the engine       (Debug only)
+#   paula-dll      Windows DLL – exposes the engine as a shared lib    (Debug only, Windows only)
 #
 # Build presets (see CMakePresets.json):
 #   debug    – all targets,  defines PAULA_DEBUG
 #   release  – cli only,     defines PAULA_RELEASE
 #   mini     – cli only,     defines PAULA_RELEASE + PAULA_MINI, size-optimized
+#
+# VSCode run & debug (Run and Debug panel, F5):
+#   "Debug: paula-cli"      Launch the CLI interpreter (Debug build)
+#   "Debug: paula-test"     Run unit tests             (Debug build)
+#   "Debug: paula-example"  Run the demo application   (Debug build)
+#   All configurations build via the "build-debug" task before launching.
 #
 # Prerequisites:
 #   Windows  – Visual Studio 2022 (MSVC, CMake, and Ninja included)
@@ -71,12 +77,9 @@ add_library(paula-core STATIC
 
 target_include_directories(paula-core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# Per-configuration definitions (match original Visual Studio setup).
-# NOTE: Each consumer target sets its own definitions independently to match
-# how the original .vcxproj files were configured. This means some targets
-# may see different header declarations than the library compiles — this
-# reproduces the original VS behavior.
-target_compile_definitions(paula-core PRIVATE
+# Per-configuration definitions, propagated to all consumers via PUBLIC so
+# that header declarations (paula.h, test.h, etc.) match the compiled library.
+target_compile_definitions(paula-core PUBLIC
     $<$<CONFIG:Debug>:PAULA_DEBUG>
     $<$<CONFIG:Release>:PAULA_RELEASE>
     $<$<CONFIG:MinSizeRel>:PAULA_RELEASE;PAULA_MINI>
@@ -108,12 +111,6 @@ target_compile_definitions(paula-test PRIVATE
 
 add_executable(paula-cli projects/paula-cli/paula-cli.cpp)
 target_link_libraries(paula-cli PRIVATE paula-core)
-
-target_compile_definitions(paula-cli PRIVATE
-    $<$<CONFIG:Debug>:PAULA_DEBUG>
-    $<$<CONFIG:Release>:PAULA_RELEASE>
-    $<$<CONFIG:MinSizeRel>:PAULA_RELEASE;PAULA_MINI>
-)
 
 if(MSVC)
     # MinSizeRel: aggressive size optimization (mirrors "Mini" config)

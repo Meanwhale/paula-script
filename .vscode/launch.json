@@ -2,17 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "paula-test",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/paula-test.exe",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
-            "preLaunchTask": "build-debug"
-        },
-        {
-            "name": "paula-cli",
+            "name": "Debug: paula-cli",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/paula-cli.exe",
@@ -22,7 +12,17 @@
             "preLaunchTask": "build-debug"
         },
         {
-            "name": "paula-example",
+            "name": "Debug: paula-test",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/paula-test.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "build-debug"
+        },
+        {
+            "name": "Debug: paula-example",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/paula-example.exe",

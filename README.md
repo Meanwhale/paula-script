@@ -220,55 +220,72 @@ void main()
 
 # Build
 
-#### Visual Studio
+The project uses **CMake** (3.21+, Ninja Multi-Config generator) on both Windows and Linux. A legacy Makefile is also provided for Linux as a shorthand.
 
-Open _projects/paula-vs/paula-vs.sln_. Projects:
+#### Windows — VSCode
 
-- _paula-core_: script parser, engine, etc.
-- _paula-cli_: command line interface (CLI).
-- _paula-test_: unit tests.
-- _paula-example_: example project to try out Paula script. Main source file: _projects/paula-example/paula-example.cpp_
+Prerequisite: Visual Studio 2022 with the CMake and Ninja components.
 
-Build configurations:
+Open the project folder in VSCode. The CMake extension picks up `CMakePresets.json` automatically.
 
-- Debug: asserts and debug prints enabled.
-- Realease: asserts and debug prints disabled.
-- Mini: experimental, minimal build.
+Build via `Ctrl+Shift+B` or the CMake Tools status bar. Three build presets are available:
 
-#### Linux
+| Preset | Targets built | Defines |
+|---|---|---|
+| `debug` | all | `PAULA_DEBUG` |
+| `release` | paula-cli only | `PAULA_RELEASE` |
+| `mini` | paula-cli only | `PAULA_RELEASE`, `PAULA_MINI` |
 
-Run _make_ with a target option in project root. Build target is _bin_ folder. Make targets:
+Run and debug from the **Run and Debug** panel (F5). Available launch configurations:
+- **Debug: paula-cli** — the command-line interpreter
+- **Debug: paula-test** — unit tests
+- **Debug: paula-example** — developer scratchpad (`projects/paula-example/paula-example.cpp`)
+
+Output goes to `build/Debug/`, `build/Release/`, or `build/MinSizeRel/`.
+
+#### Windows — command line
+
+From a **Developer Command Prompt for VS 2022**:
 ```
-make release    # -> "bin/paula". CLI release build
-make debug      # -> "bin/pauladbg". Debug test build
-make mini       # -> "bin/paulamini". Experimental, minimal CLI that can only run bytecode, not compile
-make example    # -> "bin/paulaexample". Example project to try out Paula script. Main: projects/paula-example/paula-example.cpp
-```
-
-Test CLI by running a script:
-```
-bin/paula -f projects/test.pa
-```
-
-Translate script to a bytecode file, to execute later:
-```
-bin/paula -c projects/test.pa paula.bytecode
+cmake --preset default          # configure once
+cmake --build build --preset debug
+cmake --build build --preset release
+cmake --build build --preset mini
 ```
 
-Run translated bytecode:
+#### Linux — CMake
+
 ```
-bin/paula -b paula.bytecode
+cmake --preset default
+cmake --build build --preset release   # bin: build/Release/paula-cli
+cmake --build build --preset debug     # bin: build/Debug/ (all targets)
 ```
 
-Mini version can only run bytecode via input redirection:
+#### Linux — Makefile (shorthand)
+
+Run `make` with a target in the project root. Output goes to `bin/`:
 ```
-bin/paulamini < paula.bytecode
+make release    # -> bin/paula       CLI release build
+make debug      # -> bin/pauladbg   Debug build + ASan/LSan; runs unit tests
+make mini       # -> bin/paulamini  Minimal CLI (bytecode only)
+make example    # -> bin/paulaexample
 ```
 
-Test debug build to see if there's memory or other issues:
+## CLI usage
+
 ```
-bin/pauladbg
+paula -f script.pa              # run a script from a file
+paula -i                        # run script from standard input
+paula -c script.pa out.bytecode # compile script to bytecode file
+paula -b script.bytecode        # run bytecode from file
 ```
+
+The Mini build only reads bytecode from stdin:
+```
+paulamini < script.bytecode
+```
+
+The `PAULA_DIR` environment variable is used as a fallback directory when a file is not found at the given path.
 
 
 
