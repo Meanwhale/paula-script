@@ -10,6 +10,7 @@ What you can build and run:
 - **paula-dll** — embed the engine in another app via a C DLL (Windows)
 - **paula-test** — unit test suite (Debug only)
 - **paula-example** — developer scratchpad for trying engine features (Debug only)
+- **paula-c-example** — ANSI-C embedding demo: inline run/get and file input (Debug only)
 
 ---
 
@@ -18,7 +19,7 @@ What you can build and run:
 | File | Purpose |
 |---|---|
 | [CMakeLists.txt](CMakeLists.txt) | CMake build definition — all targets, flags, per-config defines |
-| [CMakePresets.json](CMakePresets.json) | Configure/build presets: `default` (Ninja), `vs` (VS generator), build presets `debug` / `release` / `mini` |
+| [CMakePresets.json](CMakePresets.json) | Configure preset: `default` (Ninja Multi-Config, Ninja path from `%VSINSTALLDIR%`); build presets `debug` / `release` / `mini` |
 | [Makefile](Makefile) | Linux-only shorthand over g++ — no CMake needed |
 | [.vscode/launch.json](.vscode/launch.json) | VSCode run & debug configurations (three entries) |
 | [.vscode/tasks.json](.vscode/tasks.json) | VSCode build task: `build-debug` (invokes CMake preset) |
@@ -32,6 +33,10 @@ projects/
   paula-cli/paula-cli.cpp     CLI entry point
   paula-vs/paula-vs.cpp       Unit tests entry point  → calls testAll()
   paula-example/              Developer scratchpad (embedding / feature trials)
+  paula-c/                    ANSI-C embedding demo
+    paula_c.h                   Plain-C API header
+    paula_c.cpp                 C++ bridge (extern "C" wrappers)
+    paula_c_example.c           ANSI-C example: inline run/get + file input
   paula-dll/dllmain.cpp       Windows DLL — exports printVersion, runSafe, getPtr
   test.pa / test.bytecode     Sample script and pre-compiled bytecode
 build/                        CMake Ninja Multi-Config output (gitignored)
@@ -53,6 +58,7 @@ Prerequisite: Visual Studio 2022 with CMake and Ninja components. Open the proje
 | **Debug: paula-cli** | Run & Debug panel (`F5`) → _Debug: paula-cli_ |
 | **Debug: paula-test** | Run & Debug panel → _Debug: paula-test_ |
 | **Debug: paula-example** | Run & Debug panel → _Debug: paula-example_ |
+| **Debug: paula-c-example** | Run & Debug panel → _Debug: paula-c-example_ |
 
 Outputs: `build/Debug/`, `build/Release/`, `build/MinSizeRel/`.
 
@@ -77,11 +83,6 @@ cmake --build build --preset mini
 ### Windows — Visual Studio 2022 (native IDE)
 
 Open VS → **Open a local folder** → project root. VS detects `CMakePresets.json` and offers the same three build configurations. No `.sln` file — CMake is the build system.
-
-Alternatively, use the `vs` configure preset to generate a solution into `build-vs/`:
-```bat
-cmake --preset vs
-```
 
 ### Linux — CMake
 
@@ -128,6 +129,7 @@ paulamini < script.bytecode
 | paula-cli | ✓ | ✓ | ✓ | all |
 | paula-test | ✓ | — | — | all |
 | paula-example | ✓ | — | — | all |
-| paula-dll | ✓ | — | — | Windows only |
+| paula-c-example | ✓ | — | — | all |
+| paula-dll | ✓ | ✓ | — | Windows only |
 
-Debug-only targets depend on `test.h` functions that are compiled out (`#ifndef PAULA_RELEASE`) in Release and MinSizeRel.
+`paula-test` and `paula-example` are Debug-only because they depend on `test.h` functions compiled out (`#ifndef PAULA_RELEASE`) in Release and MinSizeRel. `paula-c-example` has no such dependency but is kept Debug-only to match the other dev-tool targets. The `release` and `mini` build presets target only `paula-cli`.

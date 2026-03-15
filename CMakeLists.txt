@@ -5,7 +5,8 @@
 #   paula-cli      Command-line interpreter – reads and runs .paula scripts
 #   paula-test     Unit tests – exercises core via test.h              (Debug only)
 #   paula-example  Demo application – shows embedding the engine       (Debug only)
-#   paula-dll      Windows DLL – exposes the engine as a shared lib    (Windows only)
+#   paula-c-example  ANSI-C embedding demo – run + get, and file input  (Debug only)
+#   paula-dll        Windows DLL – exposes the engine as a shared lib   (Windows only)
 #
 # Build presets (see CMakePresets.json):
 #   debug    – all targets,  defines PAULA_DEBUG
@@ -13,9 +14,10 @@
 #   mini     – cli only,     defines PAULA_RELEASE + PAULA_MINI, size-optimized
 #
 # VSCode run & debug (Run and Debug panel, F5):
-#   "Debug: paula-cli"      Launch the CLI interpreter (Debug build)
-#   "Debug: paula-test"     Run unit tests             (Debug build)
-#   "Debug: paula-example"  Run the demo application   (Debug build)
+#   "Debug: paula-cli"        Launch the CLI interpreter (Debug build)
+#   "Debug: paula-test"       Run unit tests             (Debug build)
+#   "Debug: paula-example"    Run the demo application   (Debug build)
+#   "Debug: paula-c-example"  Run the ANSI-C demo        (Debug build)
 #   All configurations build via the "build-debug" task before launching.
 #
 # Prerequisites:
@@ -25,7 +27,7 @@
 # ──────────────────────────────────────────────────────────────────────
 
 cmake_minimum_required(VERSION 3.21)
-project(paula-script LANGUAGES CXX)
+project(paula-script LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -126,6 +128,19 @@ target_link_libraries(paula-example PRIVATE paula-core)
 target_compile_definitions(paula-example PRIVATE
     $<$<CONFIG:Debug>:VERBOSE>
 )
+
+# ── paula-c-example (ANSI-C embedding demo, Debug only) ──────────────
+# paula_c.cpp is the C++ bridge (compiled as C++); paula_c_example.c is
+# pure ANSI-C.  No dependency on test.h — kept Debug-only to match the
+# other dev-tool targets, but it does not use any PAULA_RELEASE-gated code.
+
+add_executable(paula-c-example
+    projects/paula-c/paula_c.cpp
+    projects/paula-c/paula_c_example.c
+)
+target_link_libraries(paula-c-example PRIVATE paula-core)
+target_include_directories(paula-c-example PRIVATE projects/paula-c)
+set_target_properties(paula-c-example PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED ON)
 
 # ── paula-dll (dynamic library, Windows only) ────────────────────────
 

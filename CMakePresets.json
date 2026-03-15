@@ -18,7 +18,8 @@
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl.exe",
                 "CMAKE_CXX_COMPILER": "cl.exe",
-                "CMAKE_CONFIGURATION_TYPES": "Debug;Release;MinSizeRel"
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Release;MinSizeRel",
+                "CMAKE_MAKE_PROGRAM": "$penv{VSINSTALLDIR}Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe"
             },
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
