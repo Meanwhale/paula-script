@@ -11,9 +11,9 @@
  - Store simple variable values, accessed from source code.
 
 **Future plans**
- - Structured data: dictionary and array.
- - Complete set for basic programming: math, string, and bit operations.
- - Save and load entire engine state.
+ - Data structures, like dictionary (map) and array.
+ - Complete set of functions for basic programming: math, string, and bit operations.
+ - Applications in special environments, like WebAssembly.
 
 Read more about the language details, design, and builds below! 👇
 
