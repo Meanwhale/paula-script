@@ -31,9 +31,9 @@ int paula_run_file(const char* path)
 
 int paula_get_int(const char* var_name, int* out)
 {
-    const paula::INT* ptr = paula::getPtr(var_name);
-    if (ptr == nullptr) return 0;
-    *out = (int)*ptr;
+    paula::INT value = 0;
+    if (!paula::get(var_name).getInt(value)) return 0;
+    *out = (int)value;
     return 1;
 }
 

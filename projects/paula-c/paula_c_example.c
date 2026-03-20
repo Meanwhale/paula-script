@@ -37,7 +37,7 @@ int main(void)
     /* --- pattern 2: register a callback, call it from a script --- */
 
     paula_add_callback("doubler", doubler);
-    paula_run_safe("result: doubler(21)");
+    paula_run_safe("result: doubler(21)\nprint (\"moi\")");
 
     if (paula_get_int("result", &value))
         printf("result = %d\n", value);

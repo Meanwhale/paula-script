@@ -18,6 +18,15 @@
       "args": [],
       "cwd": "${workspaceFolder}",
       "preLaunchTask": "cmake-build-debug"
+    },
+    {
+      "name": "paula-c-example (Debug)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug/paula-c-example.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "cmake-build-debug"
     }
   ]
 }
