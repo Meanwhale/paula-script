@@ -13,6 +13,14 @@ add_executable(paula-cli projects/paula-cli/paula-cli.cpp)
 target_link_libraries(paula-cli PRIVATE paula-core)
 target_compile_definitions(paula-cli PRIVATE PAULA_DEBUG)
 
+add_library(paula-core-mini STATIC ${CORE_SOURCES})
+target_include_directories(paula-core-mini PUBLIC src)
+target_compile_definitions(paula-core-mini PRIVATE PAULA_RELEASE PAULA_MINI)
+
+add_executable(paula-cli-mini projects/paula-cli/paula-cli.cpp)
+target_link_libraries(paula-cli-mini PRIVATE paula-core-mini)
+target_compile_definitions(paula-cli-mini PRIVATE PAULA_RELEASE PAULA_MINI)
+
 add_executable(paula-example projects/paula-example/paula-example.cpp)
 target_link_libraries(paula-example PRIVATE paula-core)
 target_compile_definitions(paula-example PRIVATE PAULA_DEBUG)

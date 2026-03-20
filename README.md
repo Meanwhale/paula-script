@@ -3,8 +3,8 @@
  - **No runtime memory allocation:** everything runs in buffers that are initialized at the start.
  - **Stand-alone:** minimal external dependencies. Built-in parser.
  - **Line-by-line, non-blocking execution.**
- - Compiles for Windows (Visual Studio) and Linux (GCC).
- - Command line interface (CLI) and a static library.
+ - Compiles for Windows and Linux.
+ - Command line interface (CLI), static and dynamic libraries.
 
 **Paula Script** is work-in-progress and currently applicable to:
  - Simple scripts for communication with the host application via callbacks.
@@ -14,7 +14,6 @@
  - Structured data: dictionary and array.
  - Complete set for basic programming: math, string, and bit operations.
  - Save and load entire engine state.
- - C# API.
 
 Read more about the language details, design, and builds below! 👇
 
@@ -220,56 +219,24 @@ void main()
 
 # Build
 
-The project uses **CMake** (3.21+, Ninja Multi-Config generator) on both Windows and Linux. A legacy Makefile is also provided for Linux as a shorthand.
-
-#### Windows — VSCode
+### Windows
 
 Prerequisite: Visual Studio 2022 with the CMake and Ninja components.
 
-Open the project folder in VSCode. The CMake extension picks up `CMakePresets.json` automatically.
-
-Build via `Ctrl+Shift+B` or the CMake Tools status bar. Three build presets are available:
-
-| Preset | Targets built | Defines |
-|---|---|---|
-| `debug` | all | `PAULA_DEBUG` |
-| `release` | paula-cli only | `PAULA_RELEASE` |
-| `mini` | paula-cli only | `PAULA_RELEASE`, `PAULA_MINI` |
-
-Run and debug from the **Run and Debug** panel (F5). Available launch configurations:
-- **Debug: paula-cli** — the command-line interpreter
-- **Debug: paula-test** — unit tests
-- **Debug: paula-example** — developer scratchpad (`projects/paula-example/paula-example.cpp`)
-
-Output goes to `build/Debug/`, `build/Release/`, or `build/MinSizeRel/`.
-
-#### Windows — command line
-
-From a **Developer Command Prompt for VS 2022**:
-```
-cmake --preset default          # configure once
-cmake --build build --preset debug
-cmake --build build --preset release
-cmake --build build --preset mini
-```
-
-#### Linux — CMake
+Open “Developer Command Prompt for VS 2022” and run
 
 ```
-cmake --preset default
-cmake --build build --preset release   # bin: build/Release/paula-cli
-cmake --build build --preset debug     # bin: build/Debug/ (all targets)
+cmake --preset debug
+cmake --build --preset debug                           # all
+cmake --build --preset debug --target paula-example    # specific target
 ```
+#### Visual Studio Code
 
-#### Linux — Makefile (shorthand)
+Go to **Run and debug** and choose a configuration to run.
 
-Run `make` with a target in the project root. Output goes to `bin/`:
-```
-make release    # -> bin/paula       CLI release build
-make debug      # -> bin/pauladbg   Debug build + ASan/LSan; runs unit tests
-make mini       # -> bin/paulamini  Minimal CLI (bytecode only)
-make example    # -> bin/paulaexample
-```
+### Linux
+
+TBD
 
 ## CLI usage
 
@@ -280,7 +247,7 @@ paula -c script.pa out.bytecode # compile script to bytecode file
 paula -b script.bytecode        # run bytecode from file
 ```
 
-The Mini build only reads bytecode from stdin:
+The Mini build only reads bytecode from standard input:
 ```
 paulamini < script.bytecode
 ```
