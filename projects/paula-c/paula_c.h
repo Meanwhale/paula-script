@@ -8,6 +8,19 @@
 #ifndef PAULA_C_H
 #define PAULA_C_H
 
+/* ── Export/import macro ──────────────────────────────────────────── */
+/* Build the DLL:   -DPAULA_DLL_BUILD                                  */
+/* Use the DLL:     -DPAULA_DLL_USE                                    */
+/* Static linking:  neither (PAULA_API expands to nothing)             */
+
+#if defined(PAULA_DLL_BUILD)
+#  define PAULA_API __declspec(dllexport)
+#elif defined(PAULA_DLL_USE)
+#  define PAULA_API __declspec(dllimport)
+#else
+#  define PAULA_API
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,20 +28,20 @@ extern "C" {
 /* ── Script execution ─────────────────────────────────────────────── */
 
 /* Print the Paula version string to stdout. */
-void paula_print_version(void);
+PAULA_API void paula_print_version(void);
 
 /* Run a script string.  Errors are printed to stderr; execution continues. */
-void paula_run_safe(const char* code);
+PAULA_API void paula_run_safe(const char* code);
 
 /* Run a script from a file.
  * Returns 1 on success, 0 if the file is not found. */
-int  paula_run_file(const char* path);
+PAULA_API int  paula_run_file(const char* path);
 
 /* ── Variable access ──────────────────────────────────────────────── */
 
 /* Read an integer variable by name into *out.
  * Returns 1 if the variable exists and holds an integer, 0 otherwise. */
-int  paula_get_int(const char* var_name, int* out);
+PAULA_API int  paula_get_int(const char* var_name, int* out);
 
 /* ── Callbacks ────────────────────────────────────────────────────── */
 
@@ -39,17 +52,17 @@ typedef void* paula_args_t;
 typedef int (*paula_callback_fn)(paula_args_t args);
 
 /* Register a C callback by name. */
-void paula_add_callback(const char* name, paula_callback_fn fn);
+PAULA_API void paula_add_callback(const char* name, paula_callback_fn fn);
 
 /* Number of arguments passed to the callback, e.g. 2 for f(a, b). */
-int  paula_args_count(paula_args_t args);
+PAULA_API int  paula_args_count(paula_args_t args);
 
 /* Read argument at index into *out.
  * Returns 1 if the argument exists and is an integer, 0 otherwise. */
-int  paula_args_get_int(paula_args_t args, int index, int* out);
+PAULA_API int  paula_args_get_int(paula_args_t args, int index, int* out);
 
 /* Set the integer return value of the callback. */
-void paula_args_return_int(paula_args_t args, int value);
+PAULA_API void paula_args_return_int(paula_args_t args, int value);
 
 #ifdef __cplusplus
 }

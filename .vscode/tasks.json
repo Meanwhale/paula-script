@@ -1,15 +1,19 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build-debug",
-            "type": "cmake",
-            "command": "build",
-            "preset": "debug",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "cmake-configure-debug",
+      "type": "shell",
+      "command": "cmake --preset debug",
+      "options": { "cwd": "${workspaceFolder}" }
+    },
+    {
+      "label": "cmake-build-debug",
+      "type": "shell",
+      "command": "cmake --build --preset debug",
+      "group": { "kind": "build", "isDefault": true },
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "cmake-configure-debug"
+    }
+  ]
 }

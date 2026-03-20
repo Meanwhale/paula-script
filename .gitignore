@@ -1,3 +1,6 @@
+# Machine-specific CMake overrides
+CMakeUserPresets.json
+
 # CMake build directories
 build/
 build-*/

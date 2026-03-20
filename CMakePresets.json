@@ -1,54 +1,20 @@
 {
-    "version": 3,
-    "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
-    "configurePresets": [
-        {
-            "name": "default",
-            "displayName": "Ninja Multi-Config",
-            "binaryDir": "${sourceDir}/build",
-            "generator": "Ninja Multi-Config",
-            "toolset": {
-                "value": "host=x64",
-                "strategy": "external"
-            },
-            "architecture": {
-                "value": "x64",
-                "strategy": "external"
-            },
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe",
-                "CMAKE_CONFIGURATION_TYPES": "Debug;Release;MinSizeRel",
-                "CMAKE_MAKE_PROGRAM": "$penv{VSINSTALLDIR}Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": {
-                    "hostOS": [ "Windows" ],
-                    "intelliSenseMode": "windows-msvc-x64"
-                }
-            }
-        }
-    ],
-    "buildPresets": [
-        {
-            "name": "debug",
-            "displayName": "Debug (all targets)",
-            "configurePreset": "default",
-            "configuration": "Debug"
-        },
-        {
-            "name": "release",
-            "displayName": "Release (cli only)",
-            "configurePreset": "default",
-            "configuration": "Release",
-            "targets": ["paula-cli"]
-        },
-        {
-            "name": "mini",
-            "displayName": "MinSizeRel (cli only)",
-            "configurePreset": "default",
-            "configuration": "MinSizeRel",
-            "targets": ["paula-cli"]
-        }
-    ]
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "configurePreset": "debug",
+      "configuration": "Debug"
+    }
+  ]
 }

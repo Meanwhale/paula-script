@@ -1,15 +1,4 @@
-#include "paula.h"
-
-// Paula DLL
-
-extern "C" {
-	__declspec(dllexport) void printVersion() {
-		paula::printVersion();
-	}
-	__declspec(dllexport) void runSafe(const char* code) {
-		paula::runSafe(code);
-	}
-	__declspec(dllexport) const int* getPtr(const char* varName) {
-		return paula::getPtr(varName);
-	}
-}
+// Paula DLL entry point.
+// All exported symbols are defined in projects/paula-c/paula_c.cpp.
+// The DLL API is declared in projects/paula-c/paula_c.h.
+// Consumers: include paula_c.h with -DPAULA_DLL_USE to get dllimport declarations.

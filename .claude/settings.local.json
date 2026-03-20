@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dir:*)",
       "Bash(./build.bat)",
-      "Bash(find /c/Projects/paula-script -not -path */build* -not -path */.git* -type d)"
+      "Bash(find /c/Projects/paula-script -not -path */build* -not -path */.git* -type d)",
+      "Bash(\"C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe\" --build build --config Debug --target paula-dll)"
     ]
   }
 }
