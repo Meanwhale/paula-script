@@ -230,6 +230,14 @@ cmake --preset debug
 cmake --build --preset debug                           # all
 cmake --build --preset debug --target paula-example    # specific target
 ```
+
+C# example that uses Paula DLL:
+
+```
+csc projects/paula-cs/paula_cs_example.cs /out:build\Debug\paula_cs_example.exe
+build\Debug\paula_cs_example.exe
+```
+
 #### Visual Studio Code
 
 Go to **Run and debug** and choose a configuration to run.
