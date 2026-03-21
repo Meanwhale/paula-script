@@ -139,7 +139,7 @@ namespace paula
 	{
 	public:
 		virtual ~IInputStream() = default;
-		bool readInt(INT&);
+		virtual bool readInt(INT&);
 		virtual bool read(BYTE&) = 0; // we don't know we're at end before reaching it
 		virtual void close() = 0;
 	};
@@ -203,7 +203,7 @@ namespace paula
 	private:
 		INT i;
 	public:
-		core::Array<char>buffer;
+		core::Array<uint8_t>buffer;
 		ArrayBinaryOutput();
 		void flush() override;
 		void close() override;
@@ -215,11 +215,11 @@ namespace paula
 	{
 	private:
 		int i, size;
-		core::Array<char> &buffer;
+		core::Array<uint8_t> &buffer;
 	public:
-		ArrayBinaryInput(core::Array<char> & _buffer, INT _size);
+		ArrayBinaryInput(core::Array<uint8_t> & _buffer, INT _size);
 		bool read(BYTE&) override;
-		bool readInt(INT&);
+		bool readInt(INT&) override;
 		void close() override;
 	};
 #endif

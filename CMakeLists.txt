@@ -7,11 +7,11 @@ file(GLOB CORE_SOURCES "src/*.cpp")
 
 add_library(paula-core STATIC ${CORE_SOURCES})
 target_include_directories(paula-core PUBLIC src)
-target_compile_definitions(paula-core PRIVATE PAULA_DEBUG)
+target_compile_definitions(paula-core PRIVATE PAULA_DEBUG VERBOSE)
 
 add_executable(paula-cli projects/paula-cli/paula-cli.cpp)
 target_link_libraries(paula-cli PRIVATE paula-core)
-target_compile_definitions(paula-cli PRIVATE PAULA_DEBUG)
+target_compile_definitions(paula-cli PRIVATE PAULA_DEBUG VERBOSE) 
 
 add_library(paula-core-mini STATIC ${CORE_SOURCES})
 target_include_directories(paula-core-mini PUBLIC src)

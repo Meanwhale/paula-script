@@ -309,7 +309,11 @@ ERROR_STATUS Engine::runBytecode(IInputStream& input, const char **args, int num
 {
 	// read bytecode from input stream and run it
 	reset();
+	stack.clear();
+	stack.pushInt(0);
+	globalArgs = Args(this, stack.topPtr());
 	CHECK_CALL(bytecode.read(input));
+	//VRB(bytecode.printData());
 	CHECK_CALL(runBytecode(-1));
 	return NO_ERROR;
 }
@@ -479,6 +483,8 @@ ERROR_STATUS paula::core::Engine::addProcedure(char* procedureName, INT address,
 void paula::core::Engine::printInfo()
 {
 	LOG.println("-------- INFO --------");
+	// LOG.println("data");
+	// stack.printData();
 	LOG.println("stack");
 	stack.printValues();
 	LOG.println("global args");

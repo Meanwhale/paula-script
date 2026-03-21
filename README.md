@@ -243,7 +243,15 @@ Go to **Run and debug** and choose a configuration to run.
 
 ### Linux
 
-TBD
+Setup and build:
+
+```
+cmake --preset linux-debug
+cmake --build --preset linux-debug
+```
+
+
+
 
 ## CLI usage
 

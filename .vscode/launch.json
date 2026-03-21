@@ -2,31 +2,61 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "paula-cli (Debug)",
+      "name": "paula-cli (Debug, Windows)",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/Debug/paula-cli.exe",
       "args": [],
       "cwd": "${workspaceFolder}/projects/paula-cli",
-      "preLaunchTask": "cmake-build-debug"
+      "preLaunchTask": "cmake-build-debug-windows"
     },
     {
-      "name": "paula-example (Debug)",
+      "name": "paula-example (Debug, Windows)",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/Debug/paula-example.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "cmake-build-debug"
+      "preLaunchTask": "cmake-build-debug-windows"
     },
     {
-      "name": "paula-c-example (Debug)",
+      "name": "paula-c-example (Debug, Windows)",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/Debug/paula-c-example.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "cmake-build-debug"
+      "preLaunchTask": "cmake-build-debug-windows"
+    },
+    {
+      "name": "paula-cli (Debug, Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/paula-cli",
+      "args": ["-b", "/home/dolfin/projects/paula-script/projects/test.bytecode"],
+      "cwd": "${workspaceFolder}/projects/paula-cli",
+      "MIMode": "gdb",
+      "preLaunchTask": "cmake-build-debug-linux"
+    },
+    {
+      "name": "paula-example (Debug, Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/paula-example",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "preLaunchTask": "cmake-build-debug-linux"
+    },
+    {
+      "name": "paula-c-example (Debug, Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/paula-c-example",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "preLaunchTask": "cmake-build-debug-linux"
     }
   ]
 }

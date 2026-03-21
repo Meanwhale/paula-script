@@ -9,6 +9,15 @@ using namespace paula;
 using namespace paula::core;
 using namespace std;
 
+static void encodeInt(INT num, uint8_t bytes[4])
+{
+	uint32_t u = static_cast<uint32_t>(num);
+	bytes[0] = static_cast<uint8_t>(u & 0xFF);
+	bytes[1] = static_cast<uint8_t>((u >> 8) & 0xFF);
+	bytes[2] = static_cast<uint8_t>((u >> 16) & 0xFF);
+	bytes[3] = static_cast<uint8_t>((u >> 24) & 0xFF);
+}
+
 void StandardBinaryOutput::flush()
 {
 	std::cout.flush();
@@ -23,7 +32,9 @@ bool StandardBinaryOutput::closed() const
 
 void paula::StandardBinaryOutput::write(INT num)
 {
-	std::cout.write(reinterpret_cast<const char*>(&num), sizeof(num));
+	uint8_t bytes[4];
+	encodeInt(num, bytes);
+	std::cout.write(reinterpret_cast<const char*>(bytes), sizeof(bytes));
 }
 
 
@@ -124,10 +135,10 @@ char hexs[] =
 const POut& POut::printHex(INT h) const
 {
 	print("0x");
-	for (INT i = 28; i >= 0; i -= 4)
+	uint32_t u = static_cast<uint32_t>(h);
+	for (int i = 28; i >= 0; i -= 4)
 	{
-		int index = (h >> i);
-		index &= 0x0000000f;
+		int index = (u >> i) & 0x0F;
 		print(hexs[index]);
 	}
 	return *this;
@@ -216,8 +227,9 @@ CharInput::CharInput(const char * _str) :
 
 bool CharInput::read(BYTE&c)
 {
+	if (str[i] == '\0') return false;
 	c = str[i++];
-	return c != '\0';
+	return true;
 }
 
 void CharInput::close()
@@ -226,8 +238,9 @@ void CharInput::close()
 // standard input
 
 bool StandardInput::read(BYTE&c)
-{ 
-	if (std::cin.get((char&)c)) return true;
+{
+	char temp;
+	if (std::cin.get(temp)) { c = static_cast<unsigned char>(temp); return true; }
 	return false;
 }
 
@@ -277,8 +290,9 @@ FileInput::~FileInput()
 
 bool FileInput::read(BYTE&c)
 {
-	if (file.get((char&)c)) return true;
-	return false; // Return null character on error
+	char temp;
+	if (file.get(temp)) { c = static_cast<unsigned char>(temp); return true; }
+	return false;
 }
 
 void FileInput::close()
@@ -307,7 +321,9 @@ bool FileBinaryOutput::closed() const
 }
 void FileBinaryOutput::write(INT num)
 {
-	out.write(reinterpret_cast<const char*>(&num), sizeof(INT));
+	uint8_t bytes[4];
+	encodeInt(num, bytes);
+	out.write(reinterpret_cast<const char*>(bytes), sizeof(bytes));
 }
 
 
@@ -339,18 +355,19 @@ bool paula::ArrayBinaryOutput::closed() const
 }
 void paula::ArrayBinaryOutput::write(INT number)
 {
-	INT byteCount = sizeof(INT);
-	// Byte-wise copy
-	char* byteData = reinterpret_cast<char*>(&number);
-	for (INT n = 0; n < byteCount; ++n) {
-		buffer[i++] = byteData[n];
-	}
+	ASSERT_MSG(i + 4 <= buffer.length(), "ArrayBinaryOutput overflow");
+	uint8_t bytes[4];
+	encodeInt(number, bytes);
+	buffer[i++] = bytes[0];
+	buffer[i++] = bytes[1];
+	buffer[i++] = bytes[2];
+	buffer[i++] = bytes[3];
 }
 INT paula::ArrayBinaryOutput::getByteSize() const
 {
 	return i;
 }
-paula::ArrayBinaryInput::ArrayBinaryInput(Array<char>& _buffer, INT _size) : i(0), size(_size), buffer(_buffer)
+paula::ArrayBinaryInput::ArrayBinaryInput(paula::core::Array<uint8_t>& _buffer, INT _size) : i(0), size(_size), buffer(_buffer)
 {
 }
 bool paula::ArrayBinaryInput::read(BYTE&output)
@@ -363,10 +380,10 @@ bool paula::ArrayBinaryInput::readInt(INT&output)
 {
 	if (i + 4 > size) return false;
 	output =
-		(static_cast<uint32_t>(static_cast<unsigned char>(buffer[i])))       |
-		(static_cast<uint32_t>(static_cast<unsigned char>(buffer[i + 1])) << 8)  |
-		(static_cast<uint32_t>(static_cast<unsigned char>(buffer[i + 2])) << 16) |
-		(static_cast<uint32_t>(static_cast<unsigned char>(buffer[i + 3])) << 24);
+		 static_cast<uint32_t>(buffer[i])           |
+		(static_cast<uint32_t>(buffer[i + 1]) <<  8) |
+		(static_cast<uint32_t>(buffer[i + 2]) << 16) |
+		(static_cast<uint32_t>(buffer[i + 3]) << 24);
 
 	i += 4;
 	return true;

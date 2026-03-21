@@ -2,18 +2,32 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "cmake-configure-debug",
+      "label": "cmake-configure-debug-windows",
       "type": "shell",
       "command": "cmake --preset debug",
       "options": { "cwd": "${workspaceFolder}" }
     },
     {
-      "label": "cmake-build-debug",
+      "label": "cmake-build-debug-windows",
       "type": "shell",
       "command": "cmake --build --preset debug",
+      "group": { "kind": "build", "isDefault": false },
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "cmake-configure-debug-windows"
+    },
+    {
+      "label": "cmake-configure-debug-linux",
+      "type": "shell",
+      "command": "cmake --preset linux-debug",
+      "options": { "cwd": "${workspaceFolder}" }
+    },
+    {
+      "label": "cmake-build-debug-linux",
+      "type": "shell",
+      "command": "cmake --build --preset linux-debug",
       "group": { "kind": "build", "isDefault": true },
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": "cmake-configure-debug"
+      "dependsOn": "cmake-configure-debug-linux"
     }
   ]
 }

@@ -163,12 +163,16 @@ void paula::core::Stack::printData()
 	INT topSize = data[top] & SIZE_MASK;
 	for(; i<=top + topSize; i++)
 	{
-		LOG.print(i).print(": ").print(data[i]).endl();
+		LOG.print(i).print(": ").printHex(data[i]).endl();
 	}
 }
 
 void paula::core::Stack::printValues()
-{
+{  
+	if (stackEmpty()) {
+		LOG.print("stack: (empty)").endl();
+		return;
+	}
 	StackIterator argIt(*this);
 	LOG.print("stack: (top) ");
 	do

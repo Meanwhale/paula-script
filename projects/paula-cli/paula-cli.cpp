@@ -1,6 +1,7 @@
 #include "paula.h"
 #include "engine.h"
 #include "stream.h"
+#include "test.h"
 #include <string.h>
 #ifdef _WIN32
 #include <conio.h>
@@ -55,6 +56,25 @@ int runCLIScript (IInputStream&input)
 	pout.endl();
 	return 0;
 }
+void fileTest()
+{
+	// write and read test array to a file
+	auto fn = "paula_test.bin";
+	Array<INT>arr(2);
+	arr[0] = 0x01234567;
+	arr[1] = 0x89abcdf0;
+	FileBinaryOutput o(fn);
+	o.writeArray(arr.ptr(), 2);
+	//o.flush();
+	o.close();
+
+	FileInput in(fn, true);
+	INT trg0=-1, trg1=-1;
+	in.readInt(trg0);
+	in.readInt(trg1);
+	in.close();
+	ASSERT(arr[0] == trg0 && arr[1] == trg1);
+}
 int compileCLIScript (IInputStream&input, BinaryOutputStream&output)
 {
 	auto error = Engine::one.compile(input, output);
@@ -88,6 +108,9 @@ int runCLIBytecode (IInputStream&input)
 }
 int main(int argc, char* argv[])
 {
+#ifdef VERBOSE
+	pout.print("VERBOSE is on").endl();
+#endif
 #ifdef PAULA_MINI
 
 	if (argc <= 1)
@@ -120,6 +143,11 @@ int main(int argc, char* argv[])
 
 			StandardInput input;
 			return runCLIScript(input);
+		}
+		if (strcmp(argv[1], "-t") == 0)
+		{
+			//fileTest();
+			core::testAll(); return 0;
 		}
 	}
 	else if (argc == 3)

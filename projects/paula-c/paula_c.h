@@ -13,10 +13,16 @@
 /* Use the DLL:     -DPAULA_DLL_USE                                    */
 /* Static linking:  neither (PAULA_API expands to nothing)             */
 
-#if defined(PAULA_DLL_BUILD)
-#  define PAULA_API __declspec(dllexport)
-#elif defined(PAULA_DLL_USE)
-#  define PAULA_API __declspec(dllimport)
+#if defined(PAULA_DLL_BUILD) || defined(PAULA_DLL_USE)
+#  if defined(_WIN32)
+#    if defined(PAULA_DLL_BUILD)
+#      define PAULA_API __declspec(dllexport)
+#    else
+#      define PAULA_API __declspec(dllimport)
+#    endif
+#  else
+#    define PAULA_API __attribute__((visibility("default")))
+#  endif
 #else
 #  define PAULA_API
 #endif

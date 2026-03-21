@@ -3,18 +3,32 @@
   "configurePresets": [
     {
       "name": "debug",
-      "displayName": "Debug",
+      "displayName": "Debug (Windows)",
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
       "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "linux-debug",
+      "displayName": "Debug (Linux)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
     }
   ],
   "buildPresets": [
     {
       "name": "debug",
-      "displayName": "Debug",
+      "displayName": "Debug (Windows)",
       "configurePreset": "debug",
       "configuration": "Debug"
+    },
+    {
+      "name": "linux-debug",
+      "displayName": "Debug (Linux)",
+      "configurePreset": "linux-debug"
     }
   ]
 }
